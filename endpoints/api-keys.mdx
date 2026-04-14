@@ -1,0 +1,234 @@
+---
+title: API keys (dashboard endpoints)
+description: Programmatically manage your Prop AI Deals API keys. Create, list, and revoke keys via the dashboard endpoints. Authenticated with Clerk JWT (not API keys).
+---
+
+# API keys
+
+The dashboard endpoints under `/api/v1/api-keys` let you manage your API keys programmatically. These endpoints are intended for the web dashboard and CLI tools — they're authenticated with a Clerk JWT, not an API key.
+
+> **Authentication:** These endpoints require a Clerk session token (`Bearer eyJ...`), not a `paid_*` API key.
+
+## Create an API key
+
+```http
+POST /api/v1/api-keys
+```
+
+Generates a new API key. **The `key` field is shown only once and never returned again** — store it immediately.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/api-keys \
+  -H "Authorization: Bearer $CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Production server" }'
+```
+
+```javascript
+const res = await fetch('https://api.propaideals.co.uk/api/v1/api-keys', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${clerkToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ name: 'Production server' }),
+})
+const created = await res.json()
+console.log('Save this:', created.key)
+```
+
+```python
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/api-keys",
+    json={"name": "Production server"},
+    headers={"Authorization": f"Bearer {clerk_token}"},
+)
+created = res.json()
+print("Save this:", created["key"])
+```
+
+### Body parameters
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes | Human-readable name (1–100 chars) |
+| `expires_at` | ISO datetime | no | Optional expiry timestamp (UTC) |
+
+### Response — `201 Created`
+
+```json
+{
+  "id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+  "name": "Production server",
+  "prefix": "paid_a1b2c3",
+  "key": "paid_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+  "scopes": [
+    "properties:read",
+    "market-data:read",
+    "rentals:read",
+    "investment:read",
+    "areas:read",
+    "spatial:read"
+  ],
+  "plan": "developer",
+  "status": "active",
+  "last_used": null,
+  "expires_at": null,
+  "created_at": "2026-04-14T10:30:00Z"
+}
+```
+
+> **The `key` field is only returned in this response.** All other endpoints (and listings) only return the `prefix`. If you lose the key, you must revoke and re-create it.
+
+### Limits
+
+- Maximum **5 active keys per user**. Creating a 6th returns `400 Bad Request` with the message "Maximum of 5 active API keys per user reached".
+
+## List your API keys
+
+```http
+GET /api/v1/api-keys
+```
+
+Returns all of your API keys (active and revoked).
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/api-keys \
+  -H "Authorization: Bearer $CLERK_TOKEN"
+```
+
+### Response
+
+```json
+[
+  {
+    "id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "name": "Production server",
+    "prefix": "paid_a1b2c3",
+    "scopes": ["properties:read", "market-data:read"],
+    "plan": "developer",
+    "status": "active",
+    "last_used": "2026-04-14T10:25:00Z",
+    "expires_at": null,
+    "created_at": "2026-04-14T10:30:00Z"
+  },
+  {
+    "id": "9c8d7e6f-...",
+    "name": "Staging server",
+    "prefix": "paid_x9y8z7",
+    "scopes": ["properties:read"],
+    "plan": "developer",
+    "status": "revoked",
+    "last_used": "2026-04-10T08:00:00Z",
+    "expires_at": null,
+    "created_at": "2026-03-01T09:00:00Z"
+  }
+]
+```
+
+## Revoke an API key
+
+```http
+DELETE /api/v1/api-keys/{key_id}
+```
+
+Immediately revokes a key. The Redis cache is purged within 5 minutes of revocation, after which all requests using the key fail with `401 invalid_api_key`.
+
+### Request
+
+```bash
+curl -X DELETE https://api.propaideals.co.uk/api/v1/api-keys/5fa1b2c3-d4e5-6f78-9012-3456789abcde \
+  -H "Authorization: Bearer $CLERK_TOKEN"
+```
+
+### Response — `200 OK`
+
+```json
+{
+  "status": "revoked",
+  "key_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde"
+}
+```
+
+Returns `404` if the key doesn't exist or doesn't belong to the authenticated user.
+
+## Get current usage
+
+```http
+GET /api/v1/api-billing/usage
+```
+
+Returns the current billing period's usage across all your active keys.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/api-billing/usage \
+  -H "Authorization: Bearer $CLERK_TOKEN"
+```
+
+### Response
+
+```json
+{
+  "requests_used": 4321,
+  "requests_limit": 100000,
+  "ai_chat_used": 87,
+  "ai_chat_limit": 1000,
+  "plan_tier": "professional",
+  "plan_name": "Professional",
+  "billing_period_start": "2026-04-01T00:00:00+00:00",
+  "billing_period_end": "2026-05-01T00:00:00+00:00"
+}
+```
+
+`null` for `requests_limit` or `ai_chat_limit` means **unlimited** (Enterprise plans).
+
+## List available plans
+
+```http
+GET /api/v1/api-billing/plans
+```
+
+Public endpoint (no auth required) — returns the list of API plans for your pricing page.
+
+### Response
+
+```json
+[
+  {
+    "id": "developer",
+    "name": "Developer",
+    "monthly_price_pence": 0,
+    "monthly_request_limit": 10000,
+    "rate_limit_per_second": 5,
+    "ai_chat_limit": 100,
+    "batch_limit": 50,
+    "scopes": ["properties:read", "market-data:read", "rentals:read", "areas:read", "spatial:read"]
+  },
+  {
+    "id": "professional",
+    "name": "Professional",
+    "monthly_price_pence": 9900,
+    "monthly_request_limit": 100000,
+    "rate_limit_per_second": 20,
+    "ai_chat_limit": 1000,
+    "batch_limit": 100,
+    "scopes": ["properties:read", "market-data:read", "rentals:read", "investment:read", "areas:read", "spatial:read", "leads:read"]
+  },
+  {
+    "id": "business",
+    "name": "Business",
+    "monthly_price_pence": 49900,
+    "monthly_request_limit": 1000000,
+    "rate_limit_per_second": 100,
+    "ai_chat_limit": 10000,
+    "batch_limit": 200,
+    "scopes": ["properties:read", "market-data:read", "rentals:read", "investment:read", "areas:read", "spatial:read", "planning:read", "leads:read", "ai:chat"]
+  }
+]
+```

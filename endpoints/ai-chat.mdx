@@ -1,0 +1,222 @@
+---
+title: AI chat endpoint
+description: Conversational property intelligence powered by GPT-4.1. Natural language search, multi-turn conversations, sub-3-second responses with property cards and investment analysis. Required scope ai:chat.
+---
+
+# AI chat
+
+The AI chat endpoint exposes the same Ultimate AI System that powers the propaideals.co.uk web app — a multi-agent system built on GPT-4.1 that can search 2.1M+ UK properties, run investment analysis, retrieve sold history, and answer property questions in natural language.
+
+**Required scope:** `ai:chat`
+**Cost:** 5 requests per call (against your monthly request quota), plus 1 AI chat call (against your AI chat quota)
+
+## Send a chat message
+
+```http
+POST /api/v1/ultimate-ai/chat
+```
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/ultimate-ai/chat \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Show me 3-bed houses under £400k in Manchester with at least 7% rental yield",
+    "session_id": "sess_my_user_123"
+  }'
+```
+
+```javascript
+const res = await fetch('https://api.propaideals.co.uk/api/v1/ultimate-ai/chat', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    message: 'Show me 3-bed houses under £400k in Manchester with at least 7% rental yield',
+    session_id: 'sess_my_user_123',
+  }),
+})
+const { data } = await res.json()
+console.log(data.response_text)
+console.log(`${data.properties.length} properties found`)
+```
+
+```python
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/ultimate-ai/chat",
+    json={
+        "message": "Show me 3-bed houses under £400k in Manchester with at least 7% rental yield",
+        "session_id": "sess_my_user_123",
+    },
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+body = res.json()["data"]
+print(body["response_text"])
+for prop in body["properties"]:
+    print(f"  - {prop['address']}: £{prop['price_numeric']:,} ({prop['estimated_rental_yield']}% yield)")
+```
+
+### Body parameters
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `message` | string | yes | The user's natural-language message (max 4,000 chars) |
+| `session_id` | string | no | Session identifier for multi-turn conversations. Reuse to maintain context. Auto-generated if omitted. |
+| `context` | object | no | Optional structured context (e.g. user's investor profile) |
+| `top_k` | integer | no | Max properties to return (default `5`, max `20`) |
+
+### Response
+
+```json
+{
+  "data": {
+    "session_id": "sess_my_user_123",
+    "message_id": "msg_a1b2c3d4",
+    "response_text": "I found 12 three-bedroom houses in Manchester under £400,000 with rental yields above 7%. The strongest deals are in M9 and M40, where you can find Victorian terraces yielding 8–9% gross. Here are the top picks:",
+    "intent": "property_search",
+    "properties": [
+      {
+        "id": "5fa1b2c3-...",
+        "title": "3 bedroom terraced house for sale",
+        "address": "12 Example Road, Manchester M9",
+        "price_numeric": 285000,
+        "bedrooms": 3,
+        "estimated_rental_yield": 8.4,
+        "bmv_discount_percentage": 6.2,
+        "deal_score": 81,
+        /* ... full property fields ... */
+        "ai_insight": "Strong yield, BMV discount of 6%, and on a street with rising values. Worth a viewing."
+      }
+      /* ... more properties ... */
+    ],
+    "follow_up_suggestions": [
+      "Show me more in M40",
+      "What about HMO-suitable properties?",
+      "Compare the top 3 deals side by side"
+    ],
+    "agents_used": ["intent_classifier", "search_agent", "analysis_agent", "response_agent"],
+    "latency_ms": 2840
+  }
+}
+```
+
+## Multi-turn conversations
+
+Pass the same `session_id` on subsequent requests to maintain context. The AI remembers the previous turn and can interpret references like "show me more", "what about cheaper ones", or "tell me about the first property".
+
+```python
+session_id = "sess_user_123_2026_04_14"
+
+# Turn 1
+requests.post(
+    "https://api.propaideals.co.uk/api/v1/ultimate-ai/chat",
+    json={"message": "Find me high-yield BTL flats in Liverpool", "session_id": session_id},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+
+# Turn 2 — refers back to the first turn
+requests.post(
+    "https://api.propaideals.co.uk/api/v1/ultimate-ai/chat",
+    json={"message": "Show me only the ones under £150k", "session_id": session_id},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+
+# Turn 3 — refers to a specific result
+requests.post(
+    "https://api.propaideals.co.uk/api/v1/ultimate-ai/chat",
+    json={"message": "Tell me more about the first one", "session_id": session_id},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+```
+
+Sessions persist for 24 hours of inactivity in Redis.
+
+## Streaming responses
+
+For lower perceived latency, use the streaming endpoint. It returns Server-Sent Events (SSE) as the AI generates its response.
+
+```http
+POST /api/v1/ultimate-ai/chat-stream
+```
+
+```javascript
+const res = await fetch('https://api.propaideals.co.uk/api/v1/ultimate-ai/chat-stream', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}`,
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+  },
+  body: JSON.stringify({ message: 'Find me HMO opportunities in Birmingham', session_id }),
+})
+
+const reader = res.body.getReader()
+const decoder = new TextDecoder()
+
+while (true) {
+  const { done, value } = await reader.read()
+  if (done) break
+
+  const chunk = decoder.decode(value)
+  for (const line of chunk.split('\n').filter(l => l.startsWith('data: '))) {
+    const event = JSON.parse(line.slice(6))
+    if (event.type === 'token') process.stdout.write(event.text)
+    if (event.type === 'property') console.log('\nProperty:', event.property.address)
+    if (event.type === 'done') console.log('\nDone')
+  }
+}
+```
+
+### Event types
+
+| Event | Payload | Description |
+|---|---|---|
+| `token` | `{ text: string }` | Next text token of the response |
+| `property` | `{ property: PropertyCard }` | A property card the AI found |
+| `progress` | `{ stage: string, message: string }` | Status update (e.g. "Searching properties...") |
+| `done` | `{ session_id, message_id }` | Stream complete |
+| `error` | `{ code, message }` | Stream-level error |
+
+## Show more properties
+
+```http
+POST /api/v1/ultimate-ai/show-more
+```
+
+Returns the next page of properties for an existing session — without re-running the AI search.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/ultimate-ai/show-more \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "session_id": "sess_user_123_2026_04_14",
+    "offset": 5,
+    "limit": 5
+  }'
+```
+
+This endpoint costs 1 request (not 5), since no AI inference is performed.
+
+## Cost notes
+
+A single `/ultimate-ai/chat` call consumes:
+
+- **5 requests** from your monthly request quota (vs 1 for non-AI endpoints)
+- **1 AI chat call** from your AI chat quota
+
+Use the AI chat endpoint when you need natural language understanding. For deterministic structured queries, the [properties endpoint](./properties) is 5× cheaper and faster.
+
+## Best practices
+
+- **Reuse `session_id`** across turns from the same user. Don't start a new session per message.
+- **Cache responses** on the client side keyed by `(session_id, message)` — users often re-issue the same query.
+- **Use streaming** for any user-facing UI; it dramatically improves perceived latency.
+- **Set a sensible `top_k`**. The default is 5; raise to 10–20 only if you need the wider set.
+- **Include `context`** when you have a user profile — the AI can personalise results without you having to explain the user every turn.

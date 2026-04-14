@@ -1,0 +1,356 @@
+---
+title: Properties endpoint
+description: Search, list, and retrieve UK property listings from Rightmove, Zoopla, and OnTheMarket. 140+ filter parameters, BMV scoring, rental yields, agent details. Required scope properties:read.
+---
+
+# Properties
+
+The `/api/v1/properties` endpoint is the workhorse of the Prop AI Deals API. It serves 2.1M+ live UK property listings with deep filtering, BMV scoring, rental yield estimates, and agent details.
+
+**Required scope:** `properties:read`
+**Cost:** 1 request per call
+
+## Search properties
+
+```http
+GET /api/v1/properties
+```
+
+Returns a paginated list of properties matching the filter criteria.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?area=London&min_price=300000&max_price=500000&min_bedrooms=2&listing_type=sale&limit=20" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```javascript
+const params = new URLSearchParams({
+  area: 'London',
+  min_price: '300000',
+  max_price: '500000',
+  min_bedrooms: '2',
+  listing_type: 'sale',
+  limit: '20',
+})
+
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/properties?${params}`,
+  { headers: { Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}` } }
+)
+const { data } = await res.json()
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/properties",
+    params={
+        "area": "London",
+        "min_price": 300_000,
+        "max_price": 500_000,
+        "min_bedrooms": 2,
+        "listing_type": "sale",
+        "limit": 20,
+    },
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+properties = res.json()["data"]["properties"]
+```
+
+### Query parameters
+
+#### Location
+
+| Param | Type | Description |
+|---|---|---|
+| `area` | string | City, town, or area name (e.g. `London`, `Manchester`, `Edinburgh`) |
+| `postcode` | string | Full postcode or outcode (e.g. `M1 1AA` or `M1`) |
+| `outcode` | string | Postcode prefix only (e.g. `SW1`) |
+| `region` | string | UK region (e.g. `North West`, `Greater London`) |
+| `radius_miles` | number | Search radius around `lat` + `lon` (default `5`, max `50`) |
+| `lat` | number | Latitude for radius search |
+| `lon` | number | Longitude for radius search |
+
+#### Price
+
+| Param | Type | Description |
+|---|---|---|
+| `min_price` | integer | Minimum price (GBP) |
+| `max_price` | integer | Maximum price (GBP) |
+| `price_qualifier` | string | `asking`, `oiro` (offers in region of), `oieo`, `guide`, `from`, `auction` |
+
+#### Property attributes
+
+| Param | Type | Description |
+|---|---|---|
+| `min_bedrooms` | integer | Minimum bedrooms |
+| `max_bedrooms` | integer | Maximum bedrooms |
+| `bedrooms` | integer | Exact bedroom count |
+| `min_bathrooms` | integer | Minimum bathrooms |
+| `property_type` | string\|array | `house`, `flat`, `bungalow`, `detached`, `semi-detached`, `terraced`, `studio`, `maisonette`, `land`, `commercial` |
+| `tenure` | string | `freehold`, `leasehold`, `share-of-freehold`, `commonhold` |
+| `min_floor_area_sqft` | integer | Minimum internal area |
+| `max_floor_area_sqft` | integer | Maximum internal area |
+| `epc_rating_min` | string | Minimum EPC rating: `A`, `B`, `C`, `D`, `E`, `F`, `G` |
+| `council_tax_band` | string | `A`–`H` (England, Scotland) or `A`–`I` (Wales) |
+
+#### Listing type & source
+
+| Param | Type | Description |
+|---|---|---|
+| `listing_type` | string | `sale` (default) or `rent` |
+| `source` | string\|array | `rightmove`, `zoopla`, `onthemarket` (default: all) |
+| `status` | string | `active` (default), `under_offer`, `sold_stc`, `let_agreed` |
+
+#### Features (boolean filters)
+
+| Param | Type | Description |
+|---|---|---|
+| `has_garden` | boolean | Property has a garden |
+| `has_parking` | boolean | Off-street parking available |
+| `has_garage` | boolean | Garage included |
+| `chain_free` | boolean | Chain-free transaction |
+| `new_build` | boolean | New build property |
+| `auction` | boolean | Property going to auction |
+| `retirement` | boolean | Retirement property |
+| `shared_ownership` | boolean | Shared ownership scheme |
+
+#### Investment filters
+
+| Param | Type | Description |
+|---|---|---|
+| `min_yield` | number | Minimum gross rental yield (%) |
+| `max_yield` | number | Maximum gross rental yield (%) |
+| `min_bmv_discount` | number | Minimum below-market-value discount (%) |
+| `is_btl` | boolean | Suitable for buy-to-let |
+| `is_hmo` | boolean | HMO licensable |
+| `is_serviced_accommodation` | boolean | Suitable for short-term let |
+
+#### Listing age
+
+| Param | Type | Description |
+|---|---|---|
+| `max_days_on_market` | integer | Listed within the last N days |
+| `min_days_on_market` | integer | Stale listings older than N days |
+| `first_seen_after` | ISO date | Only properties first scraped after this date |
+
+#### Agent
+
+| Param | Type | Description |
+|---|---|---|
+| `agent_name` | string | Filter by estate agent name (substring match) |
+
+#### Pagination & sorting
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `page` | integer | `1` | Page number (1-indexed) |
+| `limit` | integer | `20` | Results per page (max 100) |
+| `sort_by` | string | `newest` | `newest`, `price_asc`, `price_desc`, `highest_yield`, `best_bmv`, `best_investment` |
+
+### Response
+
+```json
+{
+  "data": {
+    "properties": [
+      {
+        "id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+        "external_id": "rm_148273629",
+        "source": "rightmove",
+        "title": "3 bedroom terraced house for sale",
+        "description": "A beautifully presented Victorian terraced house...",
+        "url": "https://www.rightmove.co.uk/properties/148273629",
+
+        "price": "£395,000",
+        "price_numeric": 395000,
+        "price_qualifier": "asking",
+        "currency": "GBP",
+
+        "address": "12 Example Road, Manchester",
+        "postcode": "M1 1AA",
+        "outcode": "M1",
+        "area": "Manchester",
+        "region": "North West",
+        "country": "England",
+        "latitude": 53.4808,
+        "longitude": -2.2426,
+
+        "bedrooms": 3,
+        "bathrooms": 1,
+        "reception_rooms": 2,
+        "property_type": "terraced",
+        "tenure": "freehold",
+        "floor_area_sqft": 1240,
+        "epc_rating": "C",
+        "council_tax_band": "C",
+
+        "has_garden": true,
+        "has_parking": false,
+        "chain_free": false,
+        "new_build": false,
+
+        "estimated_rental_pcm": 1850,
+        "estimated_rental_yield": 5.62,
+        "bmv_discount_percentage": 8.5,
+        "deal_score": 78,
+        "investment_score": 82,
+
+        "agent_id": "ag_98273",
+        "agent_name": "Example Estates",
+        "agent_phone": "0161 123 4567",
+        "agent_logo": "https://media.propaideals.co.uk/agents/example-estates.png",
+
+        "listing_type": "sale",
+        "status": "active",
+        "first_seen": "2026-04-01T09:30:00Z",
+        "last_updated": "2026-04-13T14:22:00Z",
+        "days_on_market": 13,
+
+        "main_image_url": "https://media.rightmove.co.uk/dir/propertyimg/.../IMG_00.jpg",
+        "image_count": 24
+      }
+    ],
+    "total": 4823,
+    "page": 1,
+    "limit": 20,
+    "pages": 242
+  },
+  "meta": { /* request metadata */ }
+}
+```
+
+## Get property by ID
+
+```http
+GET /api/v1/properties/{property_id}
+```
+
+Returns full details for a single property, including all images, the full description, agent details, transport links, nearby schools, price history, and enrichment data.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties/5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```python
+property_id = "5fa1b2c3-d4e5-6f78-9012-3456789abcde"
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/properties/{property_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+property = res.json()["data"]
+```
+
+### Response
+
+Returns the same property object as the search endpoint, plus these additional fields:
+
+```json
+{
+  "data": {
+    /* ... all search fields ... */
+
+    "images": [
+      { "url": "https://...", "caption": "Living room", "order": 1 },
+      { "url": "https://...", "caption": "Kitchen", "order": 2 }
+    ],
+    "floor_plans": [
+      { "url": "https://...", "floor_level": "ground", "sequence_order": 1 }
+    ],
+
+    "transport_data": {
+      "nearest_station": "Manchester Piccadilly",
+      "station_distance_miles": 0.4,
+      "all_stations": [
+        { "name": "Manchester Piccadilly", "distance_miles": 0.4, "type": "national_rail" },
+        { "name": "Piccadilly Gardens", "distance_miles": 0.6, "type": "tram" }
+      ]
+    },
+
+    "nearest_schools": [
+      { "name": "Example Primary", "distance_miles": 0.2, "ofsted_rating": "Good", "type": "primary" },
+      { "name": "Example High School", "distance_miles": 0.8, "ofsted_rating": "Outstanding", "type": "secondary" }
+    ],
+
+    "price_history": [
+      { "date": "2026-04-01", "price": 395000, "change_type": "listed" },
+      { "date": "2026-04-13", "price": 379000, "change_type": "reduced" }
+    ],
+
+    "key_features": [
+      "Victorian terraced house",
+      "South-facing garden",
+      "Recently refurbished",
+      "Walk to city centre"
+    ]
+  }
+}
+```
+
+## Common patterns
+
+### Find high-yield BTL properties under £200k in the Midlands
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?\
+region=West%20Midlands&\
+max_price=200000&\
+min_yield=8&\
+is_btl=true&\
+sort_by=highest_yield&\
+limit=50" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+### Find chain-free flats in Manchester listed in the last week
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?\
+area=Manchester&\
+property_type=flat&\
+chain_free=true&\
+max_days_on_market=7&\
+sort_by=newest" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+### Find BMV opportunities in London (>10% discount)
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?\
+area=London&\
+min_bmv_discount=10&\
+sort_by=best_bmv&\
+limit=100" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+### Page through all properties in a postcode
+
+```python
+properties = []
+page = 1
+while True:
+    res = requests.get(
+        "https://api.propaideals.co.uk/api/v1/properties",
+        params={"postcode": "SW1", "limit": 100, "page": page},
+        headers={"Authorization": f"Bearer {API_KEY}"},
+    )
+    body = res.json()["data"]
+    properties.extend(body["properties"])
+    if page >= body["pages"]:
+        break
+    page += 1
+```
+
+## Related endpoints
+
+- **[Spatial search](./spatial)** — Viewport, polygon, and radius queries
+- **[Market data](./market-data)** — Sold history and comparables for a property
+- **[AI chat](./ai-chat)** — Natural language property search

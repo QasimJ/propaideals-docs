@@ -1,0 +1,187 @@
+---
+title: Response format
+description: How Prop AI Deals API responses are structured. Covers the JSON envelope, pagination, headers, request IDs, and timestamps.
+---
+
+# Response format
+
+Every JSON response from the Prop AI Deals API is wrapped in a consistent envelope. Errors share the same shape across all endpoints, and metadata about the request (latency, usage, request ID) lives in `meta`.
+
+## Envelope
+
+```json
+{
+  "data": { /* endpoint-specific payload */ },
+  "meta": {
+    "request_id": "req_8c7f2a1b9d4e3f5a",
+    "timestamp": 1713088200.123,
+    "latency_ms": 184.5,
+    "usage": {
+      "monthly_used": 4321,
+      "monthly_limit": 100000,
+      "request_cost": 1
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `data` | object | Endpoint-specific payload — varies per endpoint. See the endpoint reference. |
+| `meta.request_id` | string | Unique ID for this request. Include in support tickets. |
+| `meta.timestamp` | number | Unix epoch (seconds, with millisecond precision) when the response was finalised. |
+| `meta.latency_ms` | number | Server-side processing time in milliseconds. |
+| `meta.usage.monthly_used` | integer | Requests consumed this billing period after this call. |
+| `meta.usage.monthly_limit` | integer | Soft cap for the billing period. |
+| `meta.usage.request_cost` | integer | What this single request consumed (1 for most, 5 for AI). |
+
+> The `data` field always contains the actual response. Always read `body.data`, never `body` directly.
+
+## Errors share the same envelope
+
+Errors omit `data` and `meta`, returning only an `error` object:
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Retry after 1.0 seconds.",
+    "retry_after": 1.0
+  }
+}
+```
+
+See [Errors](./errors) for the full reference.
+
+## Headers
+
+Every response includes:
+
+| Header | Description |
+|---|---|
+| `X-Request-ID` | Same value as `meta.request_id` |
+| `X-RateLimit-Limit` | Per-second cap for this key |
+| `X-RateLimit-Remaining` | Per-second budget left in the current window |
+| `X-Request-Cost` | Cost of this request (1 or 5) |
+| `X-Monthly-Usage` | Requests used this billing period |
+| `X-Monthly-Limit` | Soft cap for the billing period |
+
+## Pagination
+
+List endpoints (`GET /api/v1/properties`, `GET /api/v1/spatial/search/*`, etc.) return paginated results.
+
+### Offset pagination (default)
+
+Use `page` and `limit` query parameters:
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?area=London&page=2&limit=20" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "properties": [ /* 20 properties */ ],
+    "total": 4823,
+    "page": 2,
+    "limit": 20,
+    "pages": 242
+  }
+}
+```
+
+| Param | Type | Default | Max | Description |
+|---|---|---|---|---|
+| `page` | integer | `1` | — | 1-indexed page number |
+| `limit` | integer | `20` | `100` | Items per page |
+
+### Cursor pagination (large result sets)
+
+For result sets above ~10,000 items, offset pagination becomes slow. Use cursor pagination instead:
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?area=London&limit=100" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "properties": [ /* 100 properties */ ],
+    "next_cursor": "eyJpZCI6IjVmYTFiMmMzIiwic2VlbiI6IjIwMjYtMDQtMDFUMDk6MzA6MDBaIn0=",
+    "has_more": true
+  }
+}
+```
+
+Pass the cursor on the next request:
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/properties?area=London&limit=100&cursor=eyJpZCI6..." \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+When `has_more` is `false`, you've reached the end.
+
+## Timestamps
+
+All timestamps are returned as **ISO 8601** strings in UTC:
+
+```
+2026-04-14T09:30:00Z
+```
+
+Parse with:
+
+```javascript
+const date = new Date('2026-04-14T09:30:00Z')
+```
+
+```python
+from datetime import datetime
+date = datetime.fromisoformat('2026-04-14T09:30:00Z'.replace('Z', '+00:00'))
+```
+
+## Money values
+
+Prices are returned as integers (pounds, no pence) in the `*_numeric` fields. The string `price` field is a formatted display string ("£450,000") and should never be parsed for calculations.
+
+```json
+{
+  "price": "£450,000",
+  "price_numeric": 450000,
+  "currency": "GBP"
+}
+```
+
+## Coordinates
+
+Latitude and longitude are returned as floats in WGS84 (EPSG:4326) — the same projection used by Google Maps, Mapbox, and Leaflet:
+
+```json
+{
+  "latitude": 53.4808,
+  "longitude": -2.2426
+}
+```
+
+## Field availability
+
+Not every property has every field populated. Optional fields can be `null`. Always check before accessing nested properties:
+
+```javascript
+// Good
+const yield = property.estimated_rental_yield ?? 0
+
+// Bad
+const yield = property.estimated_rental_yield.toFixed(1)  // crashes on null
+```
+
+```python
+# Good
+yield_pct = property.get("estimated_rental_yield") or 0
+
+# Bad
+yield_pct = property["estimated_rental_yield"]  # KeyError on missing
+```

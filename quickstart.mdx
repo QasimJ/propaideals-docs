@@ -1,0 +1,178 @@
+---
+title: Quickstart
+description: Make your first authenticated request to the Prop AI Deals API in under 3 minutes. Includes cURL, Node.js, and Python examples.
+---
+
+# Quickstart
+
+Get from zero to your first API response in three minutes.
+
+## 1. Create an account
+
+Sign up at [propaideals.co.uk/sign-up](https://propaideals.co.uk/sign-up) and choose the **Developer** plan (or higher) to enable API access.
+
+## 2. Generate an API key
+
+1. Open the [API dashboard](https://propaideals.co.uk/dashboard/api)
+2. Click **Create API Key**
+3. Give it a name (e.g. `Production app`)
+4. Copy the key shown — it starts with `paid_` and is only displayed once
+
+```
+paid_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+```
+
+> **Important:** Treat your API key like a password. Store it in an environment variable, never commit it to source control, and rotate it if you suspect it's been exposed.
+
+## 3. Make your first request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/properties?area=Manchester&limit=5 \
+  -H "Authorization: Bearer paid_your_api_key_here"
+```
+
+```javascript
+// Node.js 18+ (built-in fetch)
+const response = await fetch(
+  'https://api.propaideals.co.uk/api/v1/properties?area=Manchester&limit=5',
+  {
+    headers: {
+      Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}`,
+    },
+  }
+)
+
+if (!response.ok) {
+  throw new Error(`API error: ${response.status}`)
+}
+
+const { data, meta } = await response.json()
+console.log(`Found ${data.total} Manchester properties`)
+console.log(`Request ID: ${meta.request_id}`)
+console.log(`Monthly usage: ${meta.usage.monthly_used}/${meta.usage.monthly_limit}`)
+```
+
+```python
+import os
+import requests
+
+API_KEY = os.environ["PROPAIDEALS_API_KEY"]
+
+response = requests.get(
+    "https://api.propaideals.co.uk/api/v1/properties",
+    params={"area": "Manchester", "limit": 5},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    timeout=15,
+)
+response.raise_for_status()
+
+body = response.json()
+print(f"Found {body['data']['total']} Manchester properties")
+print(f"Request ID: {body['meta']['request_id']}")
+```
+
+```ruby
+require "net/http"
+require "json"
+require "uri"
+
+uri = URI("https://api.propaideals.co.uk/api/v1/properties")
+uri.query = URI.encode_www_form(area: "Manchester", limit: 5)
+
+req = Net::HTTP::Get.new(uri)
+req["Authorization"] = "Bearer #{ENV['PROPAIDEALS_API_KEY']}"
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+body = JSON.parse(res.body)
+puts "Found #{body['data']['total']} Manchester properties"
+```
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "os"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET",
+        "https://api.propaideals.co.uk/api/v1/properties?area=Manchester&limit=5", nil)
+    req.Header.Set("Authorization", "Bearer "+os.Getenv("PROPAIDEALS_API_KEY"))
+
+    res, err := http.DefaultClient.Do(req)
+    if err != nil { panic(err) }
+    defer res.Body.Close()
+
+    var body map[string]any
+    json.NewDecoder(res.Body).Decode(&body)
+    fmt.Printf("Found %v Manchester properties\n", body["data"].(map[string]any)["total"])
+}
+```
+
+## 4. Understand the response
+
+Every successful response is wrapped in an envelope:
+
+```json
+{
+  "data": {
+    "properties": [
+      {
+        "id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+        "title": "3 bed terraced house for sale",
+        "address": "12 Example Road, Manchester",
+        "postcode": "M1 1AA",
+        "price_numeric": 245000,
+        "bedrooms": 3,
+        "bathrooms": 1,
+        "property_type": "terraced",
+        "latitude": 53.4808,
+        "longitude": -2.2426,
+        "agent_name": "Example Estates",
+        "agent_logo": "https://...",
+        "estimated_rental_yield": 7.2,
+        "bmv_discount_percentage": 8.5,
+        "first_seen": "2026-04-01T09:30:00Z",
+        "url": "https://www.rightmove.co.uk/properties/..."
+      }
+    ],
+    "total": 1842,
+    "page": 1,
+    "limit": 5
+  },
+  "meta": {
+    "request_id": "req_8c7f2a1b9d4e3f5a",
+    "timestamp": 1713088200.123,
+    "latency_ms": 184.5,
+    "usage": {
+      "monthly_used": 12,
+      "monthly_limit": 10000,
+      "request_cost": 1
+    }
+  }
+}
+```
+
+- **`data`** — Endpoint payload (varies by endpoint)
+- **`meta.request_id`** — Include this in support tickets
+- **`meta.usage`** — Live usage counters; useful for budget alerts
+
+Every response also includes these headers:
+
+```
+X-RateLimit-Limit: 10
+X-RateLimit-Remaining: 9
+X-Request-Cost: 1
+X-Monthly-Usage: 12
+X-Monthly-Limit: 10000
+```
+
+## 5. Next steps
+
+- **[Authentication](./authentication)** — Manage and rotate keys
+- **[Rate limits](./rate-limits)** — Avoid hitting quotas
+- **[Errors](./errors)** — Build robust error handling
+- **[Properties endpoint](./endpoints/properties)** — Full filter reference

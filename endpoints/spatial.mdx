@@ -1,0 +1,239 @@
+---
+title: Spatial search endpoint
+description: PostGIS-powered spatial search for UK properties. Search by map viewport bounding box, drawn polygon, or radius around a point. Required scope spatial:read.
+---
+
+# Spatial search
+
+The spatial search endpoints use PostGIS GIST indexes to return properties matching a geographic shape. Use these instead of `area=` filters when you have explicit map coordinates — they're an order of magnitude faster on large queries.
+
+**Required scope:** `spatial:read`
+**Cost:** 1 request per call
+
+## Search within a viewport (bounding box)
+
+```http
+POST /api/v1/spatial/search/viewport
+```
+
+Returns properties inside a rectangular bounding box. Designed for map-based UIs where users pan and zoom.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/spatial/search/viewport \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "north": 51.5174,
+    "south": 51.5074,
+    "east": -0.1178,
+    "west": -0.1378,
+    "zoom": 14,
+    "limit": 100,
+    "filters": {
+      "min_price": 300000,
+      "max_price": 600000,
+      "min_bedrooms": 2
+    }
+  }'
+```
+
+```javascript
+const res = await fetch('https://api.propaideals.co.uk/api/v1/spatial/search/viewport', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    north: 51.5174,
+    south: 51.5074,
+    east: -0.1178,
+    west: -0.1378,
+    zoom: 14,
+    limit: 100,
+    filters: {
+      min_price: 300000,
+      max_price: 600000,
+      min_bedrooms: 2,
+    },
+  }),
+})
+const { data } = await res.json()
+```
+
+### Body parameters
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `north` | number | yes | Maximum latitude (top edge) |
+| `south` | number | yes | Minimum latitude (bottom edge) |
+| `east` | number | yes | Maximum longitude (right edge) |
+| `west` | number | yes | Minimum longitude (left edge) |
+| `zoom` | integer | no | Map zoom level (1–20). Triggers clustering when `zoom < 14` and result count > 100. |
+| `limit` | integer | no | Max properties to return (default `100`, max `500`) |
+| `filters` | object | no | Same filter object as the [properties endpoint](./properties) |
+
+### Response
+
+```json
+{
+  "data": {
+    "properties": [
+      {
+        "id": "5fa1b2c3-...",
+        "title": "2 bedroom apartment for sale",
+        "price_numeric": 425000,
+        "latitude": 51.5124,
+        "longitude": -0.1278,
+        "bedrooms": 2,
+        /* ... full property fields ... */
+      }
+    ],
+    "total": 187,
+    "viewport": {
+      "north": 51.5174, "south": 51.5074,
+      "east": -0.1178, "west": -0.1378
+    },
+    "clustered": false
+  }
+}
+```
+
+When `clustered` is `true`, the response includes cluster centroids instead of individual properties — zoom in to see them.
+
+## Search within a drawn polygon
+
+```http
+POST /api/v1/spatial/search/polygon/draw
+```
+
+Returns properties inside an arbitrary polygon. Use this for "draw on map" UIs.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/spatial/search/polygon/draw \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "polygon_coordinates": [
+      [-0.138, 51.517],
+      [-0.118, 51.517],
+      [-0.118, 51.507],
+      [-0.138, 51.507],
+      [-0.138, 51.517]
+    ],
+    "limit": 100,
+    "filters": { "max_price": 500000 }
+  }'
+```
+
+### Body parameters
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `polygon_coordinates` | array | yes* | Array of `[longitude, latitude]` pairs. Min 3, max 20 vertices. First and last point should match (closed ring). |
+| `polygon_wkt` | string | yes* | Alternative: WKT-encoded polygon string |
+| `limit` | integer | no | Max properties (default `100`, max `500`) |
+| `filters` | object | no | Same filter object as the properties endpoint |
+
+\* Provide either `polygon_coordinates` or `polygon_wkt`, not both.
+
+> Coordinates are `[longitude, latitude]` (GeoJSON order), **not** `[lat, lon]`. This trips up most first-time users.
+
+## Search within a radius
+
+```http
+POST /api/v1/spatial/search/radius
+```
+
+Returns properties within `radius_miles` of a centre point. Equivalent to `GET /api/v1/properties?lat=...&lon=...&radius_miles=...` but slightly faster for large radii.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/spatial/search/radius \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "lat": 51.5074,
+    "lon": -0.1278,
+    "radius_miles": 2,
+    "limit": 100,
+    "filters": { "min_bedrooms": 3, "max_price": 800000 }
+  }'
+```
+
+### Body parameters
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `lat` | number | yes | Centre latitude |
+| `lon` | number | yes | Centre longitude |
+| `radius_miles` | number | yes | Search radius (max `25`) |
+| `limit` | integer | no | Max properties (default `100`, max `500`) |
+| `filters` | object | no | Same filter object as the properties endpoint |
+
+### Response
+
+Same shape as viewport search, plus a `distance_meters` field on each property:
+
+```json
+{
+  "data": {
+    "properties": [
+      {
+        "id": "5fa1b2c3-...",
+        "title": "3 bedroom house for sale",
+        "latitude": 51.5095,
+        "longitude": -0.1290,
+        "distance_meters": 230,
+        /* ... */
+      }
+    ],
+    "total": 412
+  }
+}
+```
+
+Properties are sorted by ascending distance from the centre point.
+
+## Common patterns
+
+### Find all properties around a London tube station
+
+```python
+# Bond Street station
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/spatial/search/radius",
+    json={
+        "lat": 51.5142,
+        "lon": -0.1494,
+        "radius_miles": 0.5,
+        "filters": {"listing_type": "rent", "min_bedrooms": 1},
+        "limit": 200,
+    },
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+```
+
+### Search a custom catchment area
+
+```python
+# A school catchment polygon (5 vertices)
+catchment = [
+    [-2.245, 53.485],
+    [-2.235, 53.486],
+    [-2.234, 53.479],
+    [-2.247, 53.478],
+    [-2.245, 53.485],  # close the ring
+]
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/spatial/search/polygon/draw",
+    json={"polygon_coordinates": catchment, "limit": 500},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+```

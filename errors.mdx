@@ -1,0 +1,232 @@
+---
+title: Errors
+description: Prop AI Deals API error format, error codes, HTTP status codes, and how to handle every possible failure mode in production code.
+---
+
+# Errors
+
+The Prop AI Deals API uses standard HTTP status codes. Every error response has the same JSON shape so your error handler only needs to be written once.
+
+## Error response format
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Retry after 1.0 seconds.",
+    "retry_after": 1.0
+  }
+}
+```
+
+- **`error.code`** — Stable machine-readable string. Switch on this in code.
+- **`error.message`** — Human-readable explanation. Show in UI / log to console.
+- **Additional fields** — Some errors include extra context (e.g. `retry_after`, `required_scope`).
+
+## HTTP status codes
+
+| Status | Meaning |
+|---|---|
+| `200` | Success |
+| `400` | Malformed request — fix and retry |
+| `401` | Authentication failed — check your API key |
+| `403` | Authenticated, but key lacks the required scope |
+| `404` | Resource not found |
+| `422` | Validation error — request body or query params invalid |
+| `429` | Rate limit or quota exceeded — back off and retry |
+| `500` | Internal server error — usually transient, retry with backoff |
+| `502` | Upstream bad gateway — retry |
+| `503` | Service temporarily unavailable — retry with backoff |
+
+## Error codes
+
+### `invalid_api_key` — 401
+
+The `Authorization` header is missing, malformed, or the key has been revoked / expired.
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "Invalid or expired API key"
+  }
+}
+```
+
+**Fix:** Verify the header is exactly `Authorization: Bearer paid_...`. Check the key hasn't been revoked in the dashboard.
+
+### `insufficient_scope` — 403
+
+Your key is valid, but its plan doesn't grant access to this endpoint.
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "This key lacks the required scope: ai:chat"
+  }
+}
+```
+
+**Fix:** Upgrade your plan, or use a different endpoint. See [Authentication › Scopes](./authentication#scopes).
+
+### `rate_limit_exceeded` — 429
+
+You're sending requests faster than your plan's per-second limit allows.
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Retry after 1.0 seconds.",
+    "retry_after": 1.0
+  }
+}
+```
+
+**Fix:** Sleep for `retry_after` seconds and retry. Implement client-side throttling. See [Rate limits](./rate-limits).
+
+### `monthly_quota_exceeded` — 429
+
+You've used 2× your monthly request allowance (a hard cap above the soft limit).
+
+```json
+{
+  "error": {
+    "code": "monthly_quota_exceeded",
+    "message": "Monthly request quota exceeded"
+  }
+}
+```
+
+**Fix:** Wait until the next billing period or upgrade your plan.
+
+### `ai_chat_quota_exceeded` — 429
+
+AI chat endpoints have a separate monthly quota that's been used up.
+
+```json
+{
+  "error": {
+    "code": "ai_chat_quota_exceeded",
+    "message": "AI chat quota exceeded for this billing period"
+  }
+}
+```
+
+**Fix:** Wait until the next billing period or upgrade. AI requests cost 5× a normal request.
+
+### `validation_error` — 422
+
+The request body or query string failed validation.
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid value for 'min_price': must be a positive integer",
+    "details": {
+      "field": "min_price",
+      "value": "-100"
+    }
+  }
+}
+```
+
+**Fix:** Check the endpoint reference for valid field types and ranges.
+
+### `not_found` — 404
+
+The resource ID doesn't exist or has been deleted.
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Property not found: 5fa1b2c3-d4e5-6f78-9012-3456789abcde"
+  }
+}
+```
+
+**Fix:** Check the ID. Property IDs are UUIDs.
+
+### `internal_error` — 500
+
+Something went wrong on our side. We're already alerted.
+
+```json
+{
+  "error": {
+    "code": "internal_error",
+    "message": "An unexpected error occurred. Please try again."
+  }
+}
+```
+
+**Fix:** Retry with exponential backoff. If it persists, contact support with your `meta.request_id`.
+
+## Recommended retry policy
+
+Implement exponential backoff with jitter for `429`, `500`, `502`, and `503`. Don't retry `400`, `401`, `403`, `404`, or `422` — they will fail the same way every time.
+
+```javascript
+async function callApi(url, options, attempt = 0) {
+  const res = await fetch(url, options)
+  if (res.ok) return res.json()
+
+  const body = await res.json().catch(() => ({}))
+  const code = body.error?.code
+
+  // Don't retry client errors
+  if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+    throw new Error(`${code}: ${body.error?.message}`)
+  }
+
+  // Retry with backoff
+  if (attempt >= 5) {
+    throw new Error(`Max retries exceeded: ${code}`)
+  }
+
+  const retryAfter = body.error?.retry_after ?? Math.pow(2, attempt)
+  const jitter = Math.random() * 0.3
+  await new Promise(r => setTimeout(r, (retryAfter + jitter) * 1000))
+  return callApi(url, options, attempt + 1)
+}
+```
+
+```python
+import time, random, requests
+
+def call_api(url, headers, attempt=0):
+    res = requests.get(url, headers=headers, timeout=15)
+    if res.ok:
+        return res.json()
+
+    body = res.json() if res.headers.get("content-type", "").startswith("application/json") else {}
+    code = body.get("error", {}).get("code")
+
+    # Don't retry client errors
+    if 400 <= res.status_code < 500 and res.status_code != 429:
+        raise RuntimeError(f"{code}: {body.get('error', {}).get('message')}")
+
+    if attempt >= 5:
+        raise RuntimeError(f"Max retries exceeded: {code}")
+
+    retry_after = body.get("error", {}).get("retry_after", 2 ** attempt)
+    time.sleep(retry_after + random.uniform(0, 0.3))
+    return call_api(url, headers, attempt + 1)
+```
+
+## Getting help
+
+Every response includes a unique `meta.request_id`. Include it when you contact support:
+
+```
+Subject: API request failing
+Request ID: req_8c7f2a1b9d4e3f5a
+Error code: internal_error
+Endpoint: GET /api/v1/properties?area=London
+Time: 2026-04-14T10:23:00Z
+```
+
+Email: `api@propaideals.co.uk`

@@ -1,0 +1,31 @@
+# Prop AI Deals API
+
+> The Prop AI Deals API is a REST API for UK property data, market intelligence, investment analysis, and AI-powered search. It exposes 2.1M+ live property listings from Rightmove, Zoopla, and OnTheMarket, enriched with HM Land Registry sold history (~5M transactions), EPC certificates, rental estimates, BMV (below-market-value) scoring, and a multi-agent AI chat system. Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams.
+
+Base URL: `https://api.propaideals.co.uk`
+Authentication: Bearer API keys (prefix `paid_`) sent in `Authorization` header
+All endpoints under `/api/v1/`. JSON responses wrapped in `{ data, meta }` envelope.
+
+## Getting started
+
+- [README](https://docs.propaideals.co.uk/api/README.md): API overview, capabilities, base URL, quick example, and links to all reference docs
+- [Quickstart](https://docs.propaideals.co.uk/api/quickstart.md): Make your first authenticated request in under 3 minutes with cURL, Node.js, Python, Ruby, and Go examples
+- [Authentication](https://docs.propaideals.co.uk/api/authentication.md): API key format (`paid_*`), creating keys from the dashboard, scopes per plan, key rotation, and the difference between API keys and Clerk JWT tokens
+- [Rate limits](https://docs.propaideals.co.uk/api/rate-limits.md): Per-second rate limits, monthly request quotas, AI chat quotas, plan comparison table, rate limit headers, and best practices for staying within limits
+- [Errors](https://docs.propaideals.co.uk/api/errors.md): Standard error envelope, error codes (`invalid_api_key`, `rate_limit_exceeded`, `monthly_quota_exceeded`, `ai_chat_quota_exceeded`, `insufficient_scope`, `validation_error`, `not_found`, `internal_error`), and recommended retry policy with exponential backoff
+- [Response format](https://docs.propaideals.co.uk/api/response-format.md): JSON envelope, pagination (offset and cursor), timestamps, money values, coordinates, and field availability conventions
+
+## API reference
+
+- [Properties endpoint](https://docs.propaideals.co.uk/api/endpoints/properties.md): Search, list, and retrieve UK property listings via `GET /api/v1/properties` and `GET /api/v1/properties/{id}`. 140+ filter parameters (location, price, bedrooms, property type, features, investment metrics, agent), pagination, sorting, and full response schema. Required scope `properties:read`.
+- [Spatial search endpoint](https://docs.propaideals.co.uk/api/endpoints/spatial.md): PostGIS-powered spatial queries via `POST /api/v1/spatial/search/viewport`, `POST /api/v1/spatial/search/polygon/draw`, and `POST /api/v1/spatial/search/radius`. Bounding box, drawn polygon, and radius search. Required scope `spatial:read`.
+- [Market data endpoint](https://docs.propaideals.co.uk/api/endpoints/market-data.md): Sold history (`GET /api/v1/market-data/{id}/sold-history`), on-street comparables (`GET /api/v1/market-data/{id}/on-street`), and area price trends (`GET /api/v1/market-data/area/{outcode}/trends`). Combines HM Land Registry, Zoopla, and Rightmove sold data with PostGIS spatial matching. Required scope `market-data:read`.
+- [AI chat endpoint](https://docs.propaideals.co.uk/api/endpoints/ai-chat.md): Conversational property intelligence via `POST /api/v1/ultimate-ai/chat` and `POST /api/v1/ultimate-ai/chat-stream`. GPT-4.1-powered multi-agent system with natural language search, multi-turn conversations via `session_id`, SSE streaming, and a `show-more` pagination endpoint. Required scope `ai:chat`. Costs 5 requests per call.
+- [API keys (dashboard endpoints)](https://docs.propaideals.co.uk/api/endpoints/api-keys.md): Create, list, and revoke API keys via `POST/GET/DELETE /api/v1/api-keys`. Get current usage via `GET /api/v1/api-billing/usage`. List available plans via `GET /api/v1/api-billing/plans`. These endpoints use Clerk JWT auth, not API keys.
+
+## Optional
+
+- [Changelog](https://docs.propaideals.co.uk/api/changelog.md): Version history, breaking changes, and deprecation timeline
+- [OpenAPI spec](https://api.propaideals.co.uk/openapi.json): Machine-readable OpenAPI 3.1 specification
+- [Postman collection](https://docs.propaideals.co.uk/postman.json): Importable Postman collection with example requests
+- [Status page](https://status.propaideals.co.uk): Real-time API uptime and incident history

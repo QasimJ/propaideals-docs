@@ -1,0 +1,32 @@
+---
+title: Changelog
+description: Prop AI Deals API release notes, breaking changes, and deprecation timeline.
+---
+
+# Changelog
+
+This page lists user-visible changes to the Prop AI Deals API. We follow [SemVer](https://semver.org/) at the API level — breaking changes are versioned (`/api/v2/`) and announced at least 90 days in advance.
+
+## 2026-04-14 — Public API beta launch
+
+**New:**
+- Public API key authentication (`paid_*` bearer tokens)
+- `POST/GET/DELETE /api/v1/api-keys` — Manage your API keys from the dashboard
+- `GET /api/v1/api-billing/usage` — Live usage counters per billing period
+- `GET /api/v1/api-billing/plans` — List available API plans
+- Standard response envelope `{ data, meta }` on all `paid_*` requests
+- Rate-limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-Request-Cost`, `X-Monthly-Usage`, `X-Monthly-Limit`
+- Comprehensive [docs](./index), [llms.txt](./llms.txt) for AI agents
+
+**Changed:**
+- API key dashboard responses now use `key`, `plan`, `status`, `last_used` (was `raw_key`, `plan_id`, `is_active`, `last_used_at`) for consistency with frontend types
+- `UsageResponse` fields renamed: `requests_used`, `requests_limit`, `plan_tier`, `plan_name` (was `monthly_used`, `monthly_limit`, `plan_id`)
+
+**Fixed:**
+- API key creation now correctly returns the raw key field to the dashboard so it can be displayed once and copied
+
+## How to subscribe to changes
+
+- Watch the [GitHub changelog repo](https://github.com/propaideals/api-changelog) for RSS-style updates
+- Subscribe to the API mailing list at [propaideals.co.uk/api](https://propaideals.co.uk/api)
+- Follow [@propaideals_dev](https://twitter.com/propaideals_dev) on Twitter

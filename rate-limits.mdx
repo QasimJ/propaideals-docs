@@ -1,0 +1,172 @@
+---
+title: Rate limits
+description: Per-second rate limits, monthly request quotas, AI chat quotas, and rate limit headers for the Prop AI Deals API. Includes plan comparison and best practices for staying within limits.
+---
+
+# Rate limits
+
+The Prop AI Deals API enforces three types of limits:
+
+1. **Per-second rate limit** — How many requests you can send in a single second
+2. **Monthly request quota** — Total requests allowed per billing period
+3. **AI chat quota** — Separate quota for AI endpoints (which cost 5× normal requests)
+
+All limits are per **API key** (not per IP).
+
+## Plan comparison
+
+| Plan | Requests / month | Per-second limit | AI chat / month | Price (GBP/mo) |
+|---|---|---|---|---|
+| **Developer** | 10,000 | 5 req/s | 100 | Free |
+| **Professional** | 100,000 | 20 req/s | 1,000 | £99 |
+| **Business** | 1,000,000 | 100 req/s | 10,000 | £499 |
+| **Enterprise** | Custom | Custom | Custom | Talk to sales |
+
+> **AI requests cost 5× a normal request** against your monthly request quota. A single `/api/v1/ultimate-ai/chat` call uses 5 of your monthly requests *and* 1 AI chat call.
+
+Live plan details and current pricing: `GET https://api.propaideals.co.uk/api/v1/api-billing/plans`
+
+## How limits are enforced
+
+### Per-second rate limit
+
+Sliding-window counter per key in Redis. If you exceed it, the request fails immediately with `429 rate_limit_exceeded`:
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Retry after 1.0 seconds.",
+    "retry_after": 1.0
+  }
+}
+```
+
+### Monthly quota (soft + hard cap)
+
+- **Soft cap** = your plan's monthly limit. You can exceed it by up to 2× during the month for occasional spikes.
+- **Hard cap** = 2× your plan's monthly limit. Once you hit this, all requests fail with `429 monthly_quota_exceeded` until the next billing period.
+
+We recommend setting up alerts at 80% of your soft cap. Monitor `meta.usage.monthly_used` on every response.
+
+### AI chat quota
+
+AI endpoints (`/api/v1/ultimate-ai/*`) consume two budgets simultaneously:
+
+1. **5 requests** from the monthly request quota
+2. **1 AI chat call** from the AI chat quota
+
+When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Standard endpoints continue to work.
+
+## Rate-limit headers
+
+Every successful response includes these headers so you can budget without polling separately:
+
+```
+X-RateLimit-Limit: 20            # Per-second cap for this key
+X-RateLimit-Remaining: 18        # Per-second budget left in this window
+X-Request-Cost: 1                # How much this request consumed (1 or 5)
+X-Monthly-Usage: 4321            # Requests used this billing period
+X-Monthly-Limit: 100000          # Soft cap for the billing period
+```
+
+The same data appears in the response envelope:
+
+```json
+{
+  "meta": {
+    "usage": {
+      "monthly_used": 4321,
+      "monthly_limit": 100000,
+      "request_cost": 1
+    }
+  }
+}
+```
+
+## Live usage endpoint
+
+Get the current state of all quotas in one call:
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/api-billing/usage \
+  -H "Authorization: Bearer eyJ..."   # Clerk JWT, not paid_ key
+```
+
+```json
+{
+  "requests_used": 4321,
+  "requests_limit": 100000,
+  "ai_chat_used": 87,
+  "ai_chat_limit": 1000,
+  "plan_tier": "professional",
+  "plan_name": "Professional",
+  "billing_period_start": "2026-04-01T00:00:00+00:00",
+  "billing_period_end": "2026-05-01T00:00:00+00:00"
+}
+```
+
+This endpoint requires a Clerk session token (it's a dashboard endpoint), not an API key.
+
+## Best practices
+
+### Throttle client-side
+
+Most production traffic is bursty. Add a token-bucket or leaky-bucket throttle so you never hit the per-second limit in the first place.
+
+```javascript
+import { RateLimiter } from 'limiter'
+
+const limiter = new RateLimiter({ tokensPerInterval: 18, interval: 'second' })
+
+async function fetchProperty(id) {
+  await limiter.removeTokens(1)
+  return fetch(`https://api.propaideals.co.uk/api/v1/properties/${id}`, {
+    headers: { Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}` },
+  }).then(r => r.json())
+}
+```
+
+```python
+from ratelimit import limits, sleep_and_retry
+
+@sleep_and_retry
+@limits(calls=18, period=1)  # 18 calls per second, leaving headroom
+def fetch_property(property_id):
+    return requests.get(
+        f"https://api.propaideals.co.uk/api/v1/properties/{property_id}",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+    ).json()
+```
+
+Leave 10–20% headroom below your nominal limit to absorb clock skew and request bursts.
+
+### Cache aggressively
+
+Properties don't change second-to-second. A simple in-memory cache with a 5-minute TTL can cut your bill by 80%+ for read-heavy workloads.
+
+```python
+from cachetools import TTLCache, cached
+
+cache = TTLCache(maxsize=10_000, ttl=300)  # 5 minutes
+
+@cached(cache)
+def get_property(property_id: str) -> dict:
+    return fetch_property(property_id)
+```
+
+### Batch where possible
+
+Use the search endpoints (`GET /api/v1/properties?area=...`) instead of N parallel `GET /api/v1/properties/{id}` calls. One paginated request returns up to 100 properties for the cost of one request.
+
+### Monitor `meta.usage`
+
+Log `meta.usage.monthly_used` on every response. Page yourself when usage crosses 80% of your soft cap so you can upgrade before hitting the hard cap.
+
+### Use exponential backoff on 429
+
+See [Errors › Recommended retry policy](./errors#recommended-retry-policy) for a copy-paste retry helper.
+
+### Run separate keys per environment
+
+Production, staging, and CI should each have their own key. That way a runaway script in CI can't burn through your production quota.

@@ -1,0 +1,90 @@
+---
+title: Prop AI Deals API
+description: REST API for UK property data, market intelligence, investment analysis, and AI-powered search. Access 2.1M+ live and sold UK properties with PostGIS spatial search, BMV scoring, rental yields, and HM Land Registry history.
+---
+
+# Prop AI Deals API
+
+The Prop AI Deals API gives you programmatic access to the UK's largest live property dataset — 2.1M+ listings from Rightmove, Zoopla, and OnTheMarket, enriched with HM Land Registry sold history, EPC certificates, rental estimates, BMV (below-market-value) scoring, and AI-powered investment analysis.
+
+Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams that need fresh, structured UK real estate data.
+
+## Base URL
+
+```
+https://api.propaideals.co.uk
+```
+
+All endpoints are versioned under `/api/v1/`.
+
+## What you can do
+
+| Capability | Endpoints |
+|---|---|
+| Search live for-sale and rental listings | `GET /api/v1/properties` |
+| Get full property details | `GET /api/v1/properties/{id}` |
+| Search by viewport, polygon, or radius | `POST /api/v1/spatial/search/*` |
+| Look up sold history (HM Land Registry + Zoopla + Rightmove) | `GET /api/v1/market-data/{id}/sold-history` |
+| Find on-street comparable sales | `GET /api/v1/market-data/{id}/on-street` |
+| Pull rental estimates and yields | `GET /api/v1/rentals/*` |
+| Run BTL, BRRR, flip, HMO, SA calculators | `POST /api/v1/calculations/*` |
+| Get area market intelligence | `GET /api/v1/market-intelligence/*` |
+| Query off-market and motivated-seller leads | `GET /api/v1/off-market/*` |
+| Chat with the property AI | `POST /api/v1/ultimate-ai/chat` |
+
+## Quick example
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/properties?area=London&min_price=300000&max_price=500000 \
+  -H "Authorization: Bearer paid_your_api_key_here"
+```
+
+```javascript
+const res = await fetch(
+  'https://api.propaideals.co.uk/api/v1/properties?area=London&min_price=300000&max_price=500000',
+  { headers: { Authorization: 'Bearer paid_your_api_key_here' } }
+)
+const { data, meta } = await res.json()
+console.log(data.properties)
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/properties",
+    params={"area": "London", "min_price": 300000, "max_price": 500000},
+    headers={"Authorization": "Bearer paid_your_api_key_here"},
+)
+res.raise_for_status()
+print(res.json()["data"]["properties"])
+```
+
+## Get started
+
+1. **[Quickstart](./quickstart)** — Make your first request in under 3 minutes
+2. **[Authentication](./authentication)** — Create and use API keys
+3. **[Rate limits](./rate-limits)** — Per-second and monthly quotas
+4. **[Errors](./errors)** — Error codes and how to handle them
+5. **[Response format](./response-format)** — Envelope, pagination, headers
+
+## API reference
+
+- **[Properties](./endpoints/properties)** — Search, list, and retrieve UK property listings
+- **[Spatial search](./endpoints/spatial)** — Viewport, polygon, radius queries
+- **[Market data](./endpoints/market-data)** — Sold history, comparables, price trends
+- **[AI chat](./endpoints/ai-chat)** — Conversational property intelligence
+- **[API keys (dashboard)](./endpoints/api-keys)** — Create and manage your keys
+
+## SDK & tooling
+
+- **OpenAPI spec**: `https://api.propaideals.co.uk/openapi.json`
+- **Postman collection**: `https://docs.propaideals.co.uk/postman.json`
+- **Status page**: `https://status.propaideals.co.uk`
+- **Changelog**: [./changelog.md](./changelog)
+- **AI agent index**: [./llms.txt](./llms.txt) — Markdown index for LLM-based agents
+
+## Support
+
+- Email: `api@propaideals.co.uk`
+- Office hours: Mon–Fri 09:00–17:00 GMT

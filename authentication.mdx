@@ -1,0 +1,143 @@
+---
+title: Authentication
+description: Authenticate Prop AI Deals API requests with bearer API keys. Covers key creation, rotation, scopes, security best practices, and the difference between API keys and Clerk JWT tokens.
+---
+
+# Authentication
+
+The Prop AI Deals API uses **bearer API keys** for all programmatic access. Keys are created from your dashboard and sent on every request via the `Authorization` header.
+
+## API key format
+
+Keys look like this:
+
+```
+paid_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+```
+
+- Prefix: `paid_` (37 characters total)
+- 32 hex characters of cryptographic randomness after the prefix
+- Hashed with HMAC-SHA256 in our database — we cannot recover a lost key
+- Cached in Redis for sub-millisecond validation
+- One key carries the full plan and scope set of the user who created it
+
+## Creating an API key
+
+### From the dashboard
+
+1. Open [propaideals.co.uk/dashboard/api](https://propaideals.co.uk/dashboard/api)
+2. Click **Create API Key**
+3. Enter a descriptive name (e.g. `production-server`, `staging-app`)
+4. Copy the key from the modal — **this is the only time it will be shown**
+5. Store it in your secret manager (1Password, AWS Secrets Manager, Doppler, etc.)
+
+### Limits
+
+- Maximum **5 active keys per user**
+- Revoke an old key before creating a 6th
+- Each key inherits its plan from your active subscription
+
+## Sending the key
+
+Send the key in the `Authorization` header on every request:
+
+```http
+GET /api/v1/properties HTTP/1.1
+Host: api.propaideals.co.uk
+Authorization: Bearer paid_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+Accept: application/json
+```
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/properties \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```javascript
+fetch('https://api.propaideals.co.uk/api/v1/properties', {
+  headers: { Authorization: `Bearer ${process.env.PROPAIDEALS_API_KEY}` },
+})
+```
+
+```python
+import os, requests
+requests.get(
+    "https://api.propaideals.co.uk/api/v1/properties",
+    headers={"Authorization": f"Bearer {os.environ['PROPAIDEALS_API_KEY']}"},
+)
+```
+
+## Scopes
+
+Each plan grants a set of scopes. The middleware checks the request path against the required scope:
+
+| Scope | Endpoint prefix | What it grants |
+|---|---|---|
+| `properties:read` | `/api/v1/properties` | Listing search and detail |
+| `market-data:read` | `/api/v1/market-data` | Sold history, comparables |
+| `rentals:read` | `/api/v1/rentals` | Rental estimates, yields |
+| `investment:read` | `/api/v1/investment`, `/api/v1/calculations`, `/api/v1/evaluations` | Calculators and deal scoring |
+| `areas:read` | `/api/v1/areas`, `/api/v1/districts`, `/api/v1/market-intelligence` | Area-level analytics |
+| `spatial:read` | `/api/v1/spatial` | Viewport / polygon / radius search |
+| `planning:read` | `/api/v1/planning` | Planning applications |
+| `leads:read` | `/api/v1/leads`, `/api/v1/off-market` | Off-market and motivated-seller signals |
+| `ai:chat` | `/api/v1/ultimate-ai` | Conversational AI (cost: 5 per request) |
+
+Requests to a path your key doesn't have scope for return:
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "This key lacks the required scope: properties:read"
+  }
+}
+```
+
+## Rotating keys
+
+We recommend rotating production keys at least every 90 days, and immediately if you suspect exposure.
+
+1. Create a new key in the dashboard
+2. Deploy it to your application as a new env var
+3. Verify traffic is flowing on the new key (check `last_used` in the dashboard)
+4. Revoke the old key
+
+Revocation is instant — within 5 minutes of revoking, no requests using that key will succeed (the Redis cache TTL is 5 minutes; you can call the dashboard "Revoke" button to purge it immediately).
+
+## Two authentication systems
+
+Prop AI Deals has two separate authentication paths:
+
+| | API keys (`paid_*`) | Clerk JWT (`eyJhbG...`) |
+|---|---|---|
+| **Who uses it** | Server-to-server, scripts, integrations | Logged-in users in the web app |
+| **How obtained** | Created in the dashboard | Issued by Clerk on browser sign-in |
+| **Lifetime** | Until revoked | Short-lived (rotated every 60 minutes) |
+| **Scopes** | Plan-based, fixed at creation | Full user permissions |
+| **Used for** | The public API (everything in this documentation) | The dashboard, billing, account settings |
+| **Header** | `Authorization: Bearer paid_...` | `Authorization: Bearer eyJ...` |
+| **Rate limited per** | Key | User |
+
+The same endpoint can usually accept either token type. The middleware auto-detects which one was sent based on the prefix.
+
+## Security best practices
+
+- **Never** put API keys in client-side JavaScript, mobile apps, browser extensions, or public source control. Anyone with the key can use your full quota.
+- **Use environment variables.** `process.env.PROPAIDEALS_API_KEY` in Node, `os.environ["PROPAIDEALS_API_KEY"]` in Python.
+- **Use a secrets manager** in production (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, Doppler, 1Password Secrets Automation).
+- **Restrict by network** where possible — IP allowlisting on your egress proxy adds defence in depth.
+- **Monitor `last_used`** in the dashboard to detect inactive keys.
+- **Rotate** regularly. If you ever leak a key, revoke it within minutes.
+- **One key per environment.** Use a separate key for production, staging, and local development.
+
+## Verifying a key works
+
+Hit the cheapest endpoint with your key — it should return `200`:
+
+```bash
+curl -i https://api.propaideals.co.uk/api/v1/properties?limit=1 \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+You should see `HTTP/1.1 200 OK` and headers including `X-RateLimit-Limit`, `X-Monthly-Usage`. If you get `401 invalid_api_key`, the key is wrong, expired, or revoked. See [Errors](./errors) for the full reference.

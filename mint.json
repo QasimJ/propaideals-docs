@@ -1,0 +1,117 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Prop AI Deals",
+  "versions": ["v1"],
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://propaideals.co.uk"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0F4C81",
+    "light": "#2563EB",
+    "dark": "#0F4C81",
+    "anchors": {
+      "from": "#0F4C81",
+      "to": "#8B5CF6"
+    }
+  },
+  "metadata": {
+    "og:site_name": "Prop AI Deals API",
+    "og:image": "https://propaideals.co.uk/og-image.png",
+    "twitter:site": "@propaideals"
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:api@propaideals.co.uk"
+    },
+    {
+      "name": "Status",
+      "url": "https://status.propaideals.co.uk"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get API Key",
+    "url": "https://propaideals.co.uk/dashboard/api"
+  },
+  "tabs": [
+    {
+      "name": "Documentation",
+      "url": "/"
+    },
+    {
+      "name": "API reference",
+      "url": "endpoints"
+    },
+    {
+      "name": "Changelog",
+      "url": "changelog"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Quickstart",
+      "icon": "rocket",
+      "url": "quickstart"
+    },
+    {
+      "name": "llms.txt",
+      "icon": "robot",
+      "url": "https://docs.propaideals.co.uk/llms.txt"
+    },
+    {
+      "name": "OpenAPI",
+      "icon": "code",
+      "url": "https://api.propaideals.co.uk/openapi.json"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get started",
+      "pages": [
+        "index",
+        "quickstart",
+        "authentication",
+        "rate-limits",
+        "errors",
+        "response-format"
+      ]
+    },
+    {
+      "group": "API reference",
+      "pages": [
+        "endpoints/properties",
+        "endpoints/spatial",
+        "endpoints/market-data",
+        "endpoints/ai-chat",
+        "endpoints/api-keys"
+      ]
+    },
+    {
+      "group": "Resources",
+      "pages": ["changelog"]
+    }
+  ],
+  "footerSocials": {
+    "website": "https://propaideals.co.uk",
+    "twitter": "https://twitter.com/propaideals",
+    "linkedin": "https://www.linkedin.com/company/propaideals"
+  },
+  "search": {
+    "prompt": "Search the API docs, endpoints, scopes, error codes..."
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true
+  },
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-XXXXXXXXXX"
+    }
+  },
+  "seo": {
+    "indexHiddenPages": false
+  }
+}

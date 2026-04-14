@@ -1,0 +1,226 @@
+---
+title: Market data endpoint
+description: Sold history, on-street comparables, and price trends for UK properties. Combines HM Land Registry, Zoopla, and Rightmove sold data with PostGIS spatial matching. Required scope market-data:read.
+---
+
+# Market data
+
+The market data endpoints return historical sale prices, comparables, and price trends for any UK property. Data is sourced from HM Land Registry Price Paid Data (~5M transactions, 1995–present), Zoopla, and Rightmove sold listings.
+
+**Required scope:** `market-data:read`
+**Cost:** 1 request per call
+
+## Get sold history for a property
+
+```http
+GET /api/v1/market-data/{property_id}/sold-history
+```
+
+Returns historical sale records for a specific property, matched via three priorities: UPRN (Zoopla only), PostGIS spatial match, and Land Registry building number matching.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/market-data/5fa1b2c3-d4e5-6f78-9012-3456789abcde/sold-history \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```python
+property_id = "5fa1b2c3-d4e5-6f78-9012-3456789abcde"
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/market-data/{property_id}/sold-history",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+history = res.json()["data"]
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "current_price": 395000,
+    "sold_records": [
+      {
+        "sale_date": "2018-06-15",
+        "sale_price": 285000,
+        "source": "land_registry",
+        "match_confidence": "exact_uprn",
+        "property_type": "T",
+        "tenure": "F",
+        "new_build": false
+      },
+      {
+        "sale_date": "2010-09-22",
+        "sale_price": 192000,
+        "source": "land_registry",
+        "match_confidence": "spatial_paon",
+        "property_type": "T",
+        "tenure": "F",
+        "new_build": false
+      },
+      {
+        "sale_date": "2003-04-11",
+        "sale_price": 145000,
+        "source": "land_registry",
+        "match_confidence": "spatial_paon",
+        "property_type": "T",
+        "tenure": "F",
+        "new_build": false
+      }
+    ],
+    "summary": {
+      "first_sale_date": "2003-04-11",
+      "first_sale_price": 145000,
+      "last_sale_date": "2018-06-15",
+      "last_sale_price": 285000,
+      "total_appreciation_pct": 96.55,
+      "annualised_appreciation_pct": 4.5
+    }
+  }
+}
+```
+
+### Match confidence values
+
+| Value | Meaning |
+|---|---|
+| `exact_uprn` | UPRN exact match (highest confidence — Zoopla only) |
+| `spatial_uprn` | PostGIS match within 25m + UPRN agreement |
+| `spatial_paon` | PostGIS match within 25m + building number agreement |
+| `spatial_only` | PostGIS match within 25m, no building number |
+| `address_match` | Address string match |
+
+## Get on-street comparables
+
+```http
+GET /api/v1/market-data/{property_id}/on-street
+```
+
+Returns comparable sales on the **same street** as the target property. Useful for valuation work where you want to anchor against truly comparable houses.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/market-data/5fa1b2c3-d4e5-6f78-9012-3456789abcde/on-street?max_age_years=5&limit=20" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `max_age_years` | integer | `5` | Only return sales within the last N years |
+| `limit` | integer | `20` | Max comparables (max `100`) |
+| `min_bedrooms` | integer | — | Only matching bedroom count |
+| `max_bedrooms` | integer | — | |
+| `property_type` | string | — | Filter by `D`/`S`/`T`/`F` (Detached/Semi/Terrace/Flat) |
+| `radius_meters` | integer | `100` | Search radius from target |
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "street_name": "Example Road",
+    "comparables": [
+      {
+        "address": "14 Example Road, Manchester",
+        "sale_date": "2025-11-22",
+        "sale_price": 380000,
+        "property_type": "T",
+        "bedrooms": 3,
+        "distance_meters": 18,
+        "source": "land_registry",
+        "price_per_sqft": 306
+      },
+      {
+        "address": "8 Example Road, Manchester",
+        "sale_date": "2025-08-04",
+        "sale_price": 365000,
+        "property_type": "T",
+        "bedrooms": 3,
+        "distance_meters": 32,
+        "source": "land_registry",
+        "price_per_sqft": 294
+      }
+    ],
+    "summary": {
+      "comparables_count": 12,
+      "median_price": 372500,
+      "average_price": 374100,
+      "median_price_per_sqft": 301,
+      "lowest_sale": 320000,
+      "highest_sale": 425000
+    }
+  }
+}
+```
+
+## Get area price trends
+
+```http
+GET /api/v1/market-data/area/{outcode}/trends
+```
+
+Returns rolling 1yr / 3yr / 5yr price trends for a postcode outcode. Useful for area-level dashboards.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/market-data/area/M1/trends \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "outcode": "M1",
+    "city": "Manchester",
+    "median_price_current": 245000,
+    "1yr": { "median_price": 232000, "change_pct": 5.6, "transactions": 487 },
+    "3yr": { "median_price": 198000, "change_pct": 23.7, "transactions": 1632 },
+    "5yr": { "median_price": 174000, "change_pct": 40.8, "transactions": 2841 },
+    "by_property_type": {
+      "F": { "median_price": 185000, "1yr_change_pct": 4.2 },
+      "T": { "median_price": 295000, "1yr_change_pct": 6.8 },
+      "S": { "median_price": 320000, "1yr_change_pct": 7.1 },
+      "D": { "median_price": 485000, "1yr_change_pct": 5.3 }
+    }
+  }
+}
+```
+
+## Common patterns
+
+### Estimate appreciation since purchase
+
+```python
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/market-data/{property_id}/sold-history",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+).json()["data"]
+
+if res["sold_records"]:
+    last_sale = res["sold_records"][0]
+    current = res["current_price"]
+    appreciation = (current - last_sale["sale_price"]) / last_sale["sale_price"] * 100
+    print(f"Appreciated {appreciation:.1f}% since {last_sale['sale_date']}")
+```
+
+### Build a quick comparables-based valuation
+
+```python
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/market-data/{property_id}/on-street",
+    params={"max_age_years": 2, "min_bedrooms": 3, "max_bedrooms": 3},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+).json()["data"]
+
+property_sqft = 1240  # from the property detail endpoint
+estimated_value = res["summary"]["median_price_per_sqft"] * property_sqft
+```
