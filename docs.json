@@ -1,0 +1,100 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Prop AI Deals",
+  "description": "REST API for UK property data, market intelligence, investment analysis, and AI-powered search. Access 2.1M+ live and sold UK properties with PostGIS spatial search, BMV scoring, rental yields, and HM Land Registry history.",
+  "colors": {
+    "primary": "#0F4C81",
+    "light": "#2563EB",
+    "dark": "#0F4C81"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://propaideals.co.uk"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "index",
+              "quickstart",
+              "authentication",
+              "rate-limits",
+              "errors",
+              "response-format"
+            ]
+          },
+          {
+            "group": "API reference",
+            "pages": [
+              "endpoints/properties",
+              "endpoints/spatial",
+              "endpoints/market-data",
+              "endpoints/ai-chat",
+              "endpoints/api-keys"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": ["changelog"]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "llms.txt",
+          "href": "https://docs.propaideals.co.uk/llms.txt",
+          "icon": "robot"
+        },
+        {
+          "anchor": "Status",
+          "href": "https://status.propaideals.co.uk",
+          "icon": "signal-bars"
+        }
+      ]
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:api@propaideals.co.uk"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get API Key",
+      "href": "https://propaideals.co.uk/dashboard/api"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://twitter.com/propaideals",
+      "linkedin": "https://www.linkedin.com/company/propaideals",
+      "website": "https://propaideals.co.uk"
+    }
+  },
+  "integrations": {
+    "ga4": {
+      "measurementId": "G-457945N3S7"
+    }
+  },
+  "seo": {
+    "metatags": {
+      "og:site_name": "Prop AI Deals API",
+      "twitter:site": "@propaideals"
+    },
+    "indexing": "navigable"
+  },
+  "search": {
+    "prompt": "Search endpoints, scopes, error codes..."
+  }
+}
