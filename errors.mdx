@@ -88,33 +88,72 @@ You're sending requests faster than your plan's per-second limit allows.
 
 ### `monthly_quota_exceeded` — 429
 
-You've used 2× your monthly request allowance (a hard cap above the soft limit).
+You've reached your plan's **hard monthly request limit**. There is no 2× soft/hard split — once you hit the number printed in `X-Monthly-Limit`, every subsequent request is rejected until the next calendar month rolls over.
 
 ```json
 {
   "error": {
     "code": "monthly_quota_exceeded",
-    "message": "Monthly request quota exceeded"
+    "message": "Monthly request quota exceeded (250000/250000). Upgrade your plan or wait until the next billing period.",
+    "used": 250000,
+    "limit": 250000
   }
 }
 ```
 
-**Fix:** Wait until the next billing period or upgrade your plan.
+**This error is NOT transient.** Do not retry with backoff — retries will fail with the same error until the billing period resets.
+
+**Fix:** Upgrade your plan at `/dashboard/api` (takes effect immediately after Stripe charges succeed), or wait until the first of next month when usage counters reset.
 
 ### `ai_chat_quota_exceeded` — 429
 
-AI chat endpoints have a separate monthly quota that's been used up.
+AI chat endpoints (`/api/v1/ultimate-ai/*`) have a separate monthly quota that's been used up.
 
 ```json
 {
   "error": {
     "code": "ai_chat_quota_exceeded",
-    "message": "AI chat quota exceeded for this billing period"
+    "message": "AI chat quota exceeded (2500/2500). Upgrade your plan or wait until the next billing period.",
+    "used": 2500,
+    "limit": 2500
   }
 }
 ```
 
-**Fix:** Wait until the next billing period or upgrade. AI requests cost 5× a normal request.
+Starter plans do not include AI chat at all — they receive `403 insufficient_scope` on AI endpoints instead.
+
+**Fix:** Upgrade to Professional (2,500 AI chats/month) or Business (15,000 AI chats/month). Non-AI endpoints continue to work normally until your main monthly quota is also exhausted.
+
+### `endpoint_not_in_public_api` — 403
+
+You tried to call an internal endpoint (like `/api/v1/api-keys` or `/api/v1/dashboard/*`) with a `paid_*` API key. The public API exposes only the routes listed in the [API reference](./endpoints/properties) — dashboard and billing endpoints require a Clerk session token, not an API key.
+
+```json
+{
+  "error": {
+    "code": "endpoint_not_in_public_api",
+    "message": "The endpoint /api/v1/dashboard/stats is not exposed via API key authentication."
+  }
+}
+```
+
+**Fix:** Check the [supported endpoint list](./endpoints/properties). If you need the requested endpoint exposed publicly, email `api@propaideals.co.uk`.
+
+### `Service temporarily busy` — 503
+
+The API server rejected your request because its database connection pool was at >85% capacity. This is a protective fast-fail under high concurrent load, not a quota or auth error.
+
+```json
+{
+  "error": "Service temporarily busy",
+  "detail": "Database connection pool at capacity. Please retry.",
+  "retry_after": 2
+}
+```
+
+The response includes a `Retry-After: 2` header. 503s do **not** count against your monthly quota — we only charge successful handler executions.
+
+**Fix:** Retry after `retry_after` seconds with exponential backoff. If you see sustained 503s, you're pushing concurrent load higher than your plan's capacity — throttle client-side.
 
 ### `validation_error` — 422
 

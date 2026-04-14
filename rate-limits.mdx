@@ -1,30 +1,32 @@
 ---
 title: Rate limits
-description: Per-second rate limits, monthly request quotas, AI chat quotas, and rate limit headers for the Prop AI Deals API. Includes plan comparison and best practices for staying within limits.
+description: Per-second rate limits, monthly request quotas, AI chat quotas, and rate limit headers for the Prop AI Deals API. Covers the Starter, Professional, and Business plans with concrete numbers.
 ---
 
 # Rate limits
 
-The Prop AI Deals API enforces three types of limits:
+The Prop AI Deals API enforces three types of limits on every `paid_*` key:
 
-1. **Per-second rate limit** — How many requests you can send in a single second
-2. **Monthly request quota** — Total requests allowed per billing period
-3. **AI chat quota** — Separate quota for AI endpoints (which cost 5× normal requests)
+1. **Per-second rate limit** — Sliding-window counter, rejects with `429` when exceeded
+2. **Monthly request quota** — **Hard cap** at the plan's `monthly_request_limit`. No soft/hard split, no 2× tolerance. Once you hit the cap, requests are blocked until the next billing period.
+3. **AI chat quota** — Separate quota for AI endpoints (which also cost 5× normal requests against your monthly quota)
 
-All limits are per **API key** (not per IP).
+All limits are per **API key** (not per IP, not per user). If a user has multiple keys, each gets its own quota.
 
 ## Plan comparison
 
-| Plan | Requests / month | Per-second limit | AI chat / month | Price (GBP/mo) |
-|---|---|---|---|---|
-| **Developer** | 10,000 | 5 req/s | 100 | Free |
-| **Professional** | 100,000 | 20 req/s | 1,000 | £99 |
-| **Business** | 1,000,000 | 100 req/s | 10,000 | £499 |
-| **Enterprise** | Custom | Custom | Custom | Talk to sales |
+| Plan | Price (GBP/mo) | Requests / month | Per-second | AI chats / month | Batch limit |
+|---|---|---|---|---|---|
+| **Starter** | £99 | 50,000 | 10 req/s | 250 | 100 |
+| **Professional** | £299 | 250,000 | 25 req/s | 2,500 | 200 |
+| **Business** | £999 | 1,500,000 | 50 req/s | 15,000 | 500 |
+| **Enterprise** | Custom | Custom | Custom | Custom | Custom |
 
-> **AI requests cost 5× a normal request** against your monthly request quota. A single `/api/v1/ultimate-ai/chat` call uses 5 of your monthly requests *and* 1 AI chat call.
+**All tiers are paid — there is no free tier.** Every plan grants read access to properties, market data, investment calculators, spatial search, planning data, and lead generators. Professional and Business also include the `ai:chat` scope for conversational AI.
 
-Live plan details and current pricing: `GET https://api.propaideals.co.uk/api/v1/api-billing/plans`
+**Enterprise** plans are custom-provisioned (negotiated limits, dedicated infrastructure, SLAs). Email `api@propaideals.co.uk` to discuss.
+
+Live plan details: `GET https://api.propaideals.co.uk/api/v1/api-billing/plans`
 
 ## How limits are enforced
 
@@ -42,32 +44,77 @@ Sliding-window counter per key in Redis. If you exceed it, the request fails imm
 }
 ```
 
-### Monthly quota (soft + hard cap)
+Sleep for `retry_after` seconds and retry. See [retry policy](./errors#recommended-retry-policy).
 
-- **Soft cap** = your plan's monthly limit. You can exceed it by up to 2× during the month for occasional spikes.
-- **Hard cap** = 2× your plan's monthly limit. Once you hit this, all requests fail with `429 monthly_quota_exceeded` until the next billing period.
+### Monthly request quota — HARD cap
 
-We recommend setting up alerts at 80% of your soft cap. Monitor `meta.usage.monthly_used` on every response.
+The plan's `monthly_request_limit` is a **hard ceiling** (not a soft target). Example for Professional at 250,000 requests/month:
+
+- Request #249,999 → ✅ 200 OK, `X-Monthly-Usage: 249999`
+- Request #250,000 → ✅ 200 OK, `X-Monthly-Usage: 250000`
+- Request #250,001 → ❌ 429 `monthly_quota_exceeded`
+
+Once you've consumed the full quota, **every subsequent request returns 429** until the calendar month rolls over or you upgrade your plan.
+
+```json
+{
+  "error": {
+    "code": "monthly_quota_exceeded",
+    "message": "Monthly request quota exceeded (250000/250000). Upgrade your plan or wait until the next billing period.",
+    "used": 250000,
+    "limit": 250000
+  }
+}
+```
+
+We recommend setting up alerts at **80% of your monthly quota** so you have time to upgrade before hitting the cap. Monitor `meta.usage.monthly_used` on every response, or poll `GET /api/v1/api-billing/usage` periodically.
 
 ### AI chat quota
 
 AI endpoints (`/api/v1/ultimate-ai/*`) consume two budgets simultaneously:
 
-1. **5 requests** from the monthly request quota
-2. **1 AI chat call** from the AI chat quota
+1. **5 requests** from the monthly request quota (AI requests cost 5×)
+2. **1 AI chat call** from the separate AI chat quota
 
-When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Standard endpoints continue to work.
+When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Non-AI endpoints continue to work normally until the main monthly quota is also exhausted.
+
+```json
+{
+  "error": {
+    "code": "ai_chat_quota_exceeded",
+    "message": "AI chat quota exceeded (2500/2500). Upgrade your plan or wait until the next billing period.",
+    "used": 2500,
+    "limit": 2500
+  }
+}
+```
+
+**Starter plans do not include AI chat** — the `ai:chat` scope is only granted to Professional and Business. Sending a `paid_*` Starter key to `/api/v1/ultimate-ai/chat` returns `403 insufficient_scope`.
+
+### Service-level backpressure (`503`)
+
+During high concurrent traffic, the API server may return `503 Service temporarily busy` when its database connection pool is >85% utilized. This is a protective fast-fail to prevent cascade failures — not an authentication or quota error. The response includes a `Retry-After: 2` header.
+
+```json
+{
+  "error": "Service temporarily busy",
+  "detail": "Database connection pool at capacity. Please retry.",
+  "retry_after": 2
+}
+```
+
+**Recommended handling:** retry after `retry_after` seconds with exponential backoff. 503s don't count against your monthly quota — we only increment usage on successful handler execution.
 
 ## Rate-limit headers
 
 Every successful response includes these headers so you can budget without polling separately:
 
 ```
-X-RateLimit-Limit: 20            # Per-second cap for this key
-X-RateLimit-Remaining: 18        # Per-second budget left in this window
-X-Request-Cost: 1                # How much this request consumed (1 or 5)
-X-Monthly-Usage: 4321            # Requests used this billing period
-X-Monthly-Limit: 100000          # Soft cap for the billing period
+X-RateLimit-Limit: 25           # Per-second cap for this key (matches your plan)
+X-RateLimit-Remaining: 23       # Per-second budget left in this 1-second window
+X-Request-Cost: 1               # How much this request consumed (1 for most, 5 for AI)
+X-Monthly-Usage: 4321           # Requests used this billing period (after this call)
+X-Monthly-Limit: 250000         # Your plan's monthly hard cap
 ```
 
 The same data appears in the response envelope:
@@ -77,7 +124,7 @@ The same data appears in the response envelope:
   "meta": {
     "usage": {
       "monthly_used": 4321,
-      "monthly_limit": 100000,
+      "monthly_limit": 250000,
       "request_cost": 1
     }
   }
@@ -86,27 +133,25 @@ The same data appears in the response envelope:
 
 ## Live usage endpoint
 
-Get the current state of all quotas in one call:
+Get the current state of all quotas in one call (uses Clerk session auth, not API key):
 
 ```bash
 curl https://api.propaideals.co.uk/api/v1/api-billing/usage \
-  -H "Authorization: Bearer eyJ..."   # Clerk JWT, not paid_ key
+  -H "Authorization: Bearer eyJ..."
 ```
 
 ```json
 {
   "requests_used": 4321,
-  "requests_limit": 100000,
+  "requests_limit": 250000,
   "ai_chat_used": 87,
-  "ai_chat_limit": 1000,
+  "ai_chat_limit": 2500,
   "plan_tier": "professional",
   "plan_name": "Professional",
   "billing_period_start": "2026-04-01T00:00:00+00:00",
   "billing_period_end": "2026-05-01T00:00:00+00:00"
 }
 ```
-
-This endpoint requires a Clerk session token (it's a dashboard endpoint), not an API key.
 
 ## Best practices
 
@@ -117,7 +162,8 @@ Most production traffic is bursty. Add a token-bucket or leaky-bucket throttle s
 ```javascript
 import { RateLimiter } from 'limiter'
 
-const limiter = new RateLimiter({ tokensPerInterval: 18, interval: 'second' })
+// Professional plan: 25 req/s — leave 10-20% headroom
+const limiter = new RateLimiter({ tokensPerInterval: 22, interval: 'second' })
 
 async function fetchProperty(id) {
   await limiter.removeTokens(1)
@@ -130,8 +176,9 @@ async function fetchProperty(id) {
 ```python
 from ratelimit import limits, sleep_and_retry
 
+# Professional plan: 25 req/s — leave 10-20% headroom
 @sleep_and_retry
-@limits(calls=18, period=1)  # 18 calls per second, leaving headroom
+@limits(calls=22, period=1)
 def fetch_property(property_id):
     return requests.get(
         f"https://api.propaideals.co.uk/api/v1/properties/{property_id}",
@@ -139,7 +186,7 @@ def fetch_property(property_id):
     ).json()
 ```
 
-Leave 10–20% headroom below your nominal limit to absorb clock skew and request bursts.
+Leave 10–20% headroom below your nominal limit to absorb clock skew and transient bursts.
 
 ### Cache aggressively
 
@@ -157,16 +204,20 @@ def get_property(property_id: str) -> dict:
 
 ### Batch where possible
 
-Use the search endpoints (`GET /api/v1/properties?area=...`) instead of N parallel `GET /api/v1/properties/{id}` calls. One paginated request returns up to 100 properties for the cost of one request.
+Use the search endpoints (`GET /api/v1/properties?area=...&limit=100`) instead of N parallel `GET /api/v1/properties/{id}` calls. One paginated request returns up to 100 properties for the cost of one request — saves 99 quota units and improves latency.
 
 ### Monitor `meta.usage`
 
-Log `meta.usage.monthly_used` on every response. Page yourself when usage crosses 80% of your soft cap so you can upgrade before hitting the hard cap.
+Log `meta.usage.monthly_used` on every response. Page yourself when usage crosses **80%** of your monthly limit so you can upgrade before hitting the hard cap.
 
-### Use exponential backoff on 429
+For Professional (250,000 requests/month), 80% = 200,000 requests. At 25 req/s sustained, that's ~2.2 hours. At 5 req/s sustained, that's 11 hours. Set your alerting accordingly.
+
+### Handle `429` and `503` with exponential backoff
+
+Both `429 rate_limit_exceeded` (per-second) and `503 Service temporarily busy` (server pressure) are transient and should be retried with backoff. `429 monthly_quota_exceeded` is NOT transient — don't retry, upgrade instead.
 
 See [Errors › Recommended retry policy](./errors#recommended-retry-policy) for a copy-paste retry helper.
 
 ### Run separate keys per environment
 
-Production, staging, and CI should each have their own key. That way a runaway script in CI can't burn through your production quota.
+Production, staging, and CI should each have their own key. That way a runaway script in CI can't burn through your production quota. You can have up to 5 active keys per user account.

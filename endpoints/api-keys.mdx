@@ -201,34 +201,62 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
 ```json
 [
   {
-    "id": "developer",
-    "name": "Developer",
-    "monthly_price_pence": 0,
-    "monthly_request_limit": 10000,
-    "rate_limit_per_second": 5,
-    "ai_chat_limit": 100,
-    "batch_limit": 50,
-    "scopes": ["properties:read", "market-data:read", "rentals:read", "areas:read", "spatial:read"]
+    "id": "starter",
+    "name": "Starter",
+    "monthly_price_pence": 9900,
+    "monthly_request_limit": 50000,
+    "rate_limit_per_second": 10,
+    "ai_chat_limit": 250,
+    "batch_limit": 100,
+    "scopes": [
+      "properties:read",
+      "market-data:read",
+      "investment:read",
+      "areas:read",
+      "spatial:read",
+      "planning:read",
+      "leads:read"
+    ]
   },
   {
     "id": "professional",
     "name": "Professional",
-    "monthly_price_pence": 9900,
-    "monthly_request_limit": 100000,
-    "rate_limit_per_second": 20,
-    "ai_chat_limit": 1000,
-    "batch_limit": 100,
-    "scopes": ["properties:read", "market-data:read", "rentals:read", "investment:read", "areas:read", "spatial:read", "leads:read"]
+    "monthly_price_pence": 29900,
+    "monthly_request_limit": 250000,
+    "rate_limit_per_second": 25,
+    "ai_chat_limit": 2500,
+    "batch_limit": 200,
+    "scopes": [
+      "properties:read",
+      "market-data:read",
+      "investment:read",
+      "areas:read",
+      "spatial:read",
+      "planning:read",
+      "leads:read",
+      "ai:chat"
+    ]
   },
   {
     "id": "business",
     "name": "Business",
-    "monthly_price_pence": 49900,
-    "monthly_request_limit": 1000000,
-    "rate_limit_per_second": 100,
-    "ai_chat_limit": 10000,
-    "batch_limit": 200,
-    "scopes": ["properties:read", "market-data:read", "rentals:read", "investment:read", "areas:read", "spatial:read", "planning:read", "leads:read", "ai:chat"]
+    "monthly_price_pence": 99900,
+    "monthly_request_limit": 1500000,
+    "rate_limit_per_second": 50,
+    "ai_chat_limit": 15000,
+    "batch_limit": 500,
+    "scopes": [
+      "properties:read",
+      "market-data:read",
+      "investment:read",
+      "areas:read",
+      "spatial:read",
+      "planning:read",
+      "leads:read",
+      "ai:chat"
+    ]
   }
 ]
 ```
+
+**All tiers are paid** — there is no free or Developer tier. The three plans are £99, £299, and £999 per month respectively. Enterprise plans are provisioned manually (contact `api@propaideals.co.uk`).
