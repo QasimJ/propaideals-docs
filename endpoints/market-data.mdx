@@ -1,11 +1,11 @@
 ---
 title: Market data endpoint
-description: Sold history, on-street comparables, and price trends for UK properties. Combines HM Land Registry, Zoopla, and Rightmove sold data with PostGIS spatial matching. Required scope market-data:read.
+description: Sold history, on-street comparables, and price trends for UK properties. Combines HM Land Registry full price-paid data with multi-portal sold listings via PostGIS spatial matching. Required scope market-data:read.
 ---
 
 # Market data
 
-The market data endpoints return historical sale prices, comparables, and price trends for any UK property. Data is sourced from HM Land Registry Price Paid Data (~5M transactions, 1995–present), Zoopla, and Rightmove sold listings.
+The market data endpoints return historical sale prices, comparables, and price trends for any UK property. Data is sourced from **HM Land Registry Price Paid Data** (~5M transactions, 1995–present) and aggregated multi-portal sold listings, joined via PostGIS spatial matching.
 
 **Required scope:** `market-data:read`
 **Cost:** 1 request per call
@@ -16,7 +16,7 @@ The market data endpoints return historical sale prices, comparables, and price 
 GET /api/v1/market-data/{property_id}/sold-history
 ```
 
-Returns historical sale records for a specific property, matched via three priorities: UPRN (Zoopla only), PostGIS spatial match, and Land Registry building number matching.
+Returns historical sale records for a specific property, matched via three priorities: exact UPRN match, PostGIS spatial match, and Land Registry building-number matching.
 
 ### Request
 
@@ -86,7 +86,7 @@ history = res.json()["data"]
 
 | Value | Meaning |
 |---|---|
-| `exact_uprn` | UPRN exact match (highest confidence — Zoopla only) |
+| `exact_uprn` | UPRN exact match (highest confidence) |
 | `spatial_uprn` | PostGIS match within 25m + UPRN agreement |
 | `spatial_paon` | PostGIS match within 25m + building number agreement |
 | `spatial_only` | PostGIS match within 25m, no building number |

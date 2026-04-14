@@ -1,11 +1,11 @@
 ---
 title: Properties endpoint
-description: Search, list, and retrieve UK property listings from Rightmove, Zoopla, and OnTheMarket. 140+ filter parameters, BMV scoring, rental yields, agent details. Required scope properties:read.
+description: Search, list, and retrieve on-market UK property listings aggregated from every major UK property portal. 140+ filter parameters, BMV scoring, rental yields, agent details. Required scope properties:read.
 ---
 
 # Properties
 
-The `/api/v1/properties` endpoint is the workhorse of the Prop AI Deals API. It serves 2.1M+ live UK property listings with deep filtering, BMV scoring, rental yield estimates, and agent details.
+The `/api/v1/properties` endpoint is the workhorse of the Prop AI Deals API. It serves **2.1M+ on-market UK property listings** aggregated from every major UK property portal and refreshed continuously, with deep filtering, BMV scoring, rental yield estimates, and agent details. For **off-market** leads (distressed sales, motivated sellers, repossessions, probate stock) see the [off-market lead generators](./api-keys).
 
 **Required scope:** `properties:read`
 **Cost:** 1 request per call

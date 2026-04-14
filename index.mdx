@@ -5,7 +5,7 @@ description: REST API for UK property data, market intelligence, investment anal
 
 # Prop AI Deals API
 
-The Prop AI Deals API gives you programmatic access to the UK's largest live property dataset — 2.1M+ listings from Rightmove, Zoopla, and OnTheMarket, enriched with HM Land Registry sold history, EPC certificates, rental estimates, BMV (below-market-value) scoring, and AI-powered investment analysis.
+The Prop AI Deals API gives you programmatic access to the UK's largest live property dataset — **2.1M+ on-market UK listings plus an exclusive off-market lead pool**, enriched with HM Land Registry sold history, EPC certificates, rental estimates, BMV (below-market-value) scoring, and AI-powered investment analysis.
 
 Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams that need fresh, structured UK real estate data.
 
@@ -24,7 +24,8 @@ All endpoints are versioned under `/api/v1/`.
 | Search live for-sale and rental listings | `GET /api/v1/properties` |
 | Get full property details | `GET /api/v1/properties/{id}` |
 | Search by viewport, polygon, or radius | `POST /api/v1/spatial/search/*` |
-| Look up sold history (HM Land Registry + Zoopla + Rightmove) | `GET /api/v1/market-data/{id}/sold-history` |
+| Look up sold history (HM Land Registry + multi-portal aggregation) | `GET /api/v1/market-data/{id}/sold-history` |
+| Source **off-market** distressed / motivated-seller leads | `GET /api/v1/off-market-lead-generators/*` |
 | Find on-street comparable sales | `GET /api/v1/market-data/{id}/on-street` |
 | Pull rental estimates and yields | `GET /api/v1/rentals/*` |
 | Run BTL, BRRR, flip, HMO, SA calculators | `POST /api/v1/calculations/*` |
