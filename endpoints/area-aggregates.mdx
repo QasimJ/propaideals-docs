@@ -1,0 +1,142 @@
+---
+title: Area aggregates (yields, rents, agents)
+description: Aggregate rental yields, rental prices, and active estate agent listings across UK postcode outcodes. For investor area-screening and competitive analysis.
+---
+
+# Area aggregates
+
+Three endpoints for area-level analytics. All scoped per postcode outcode (e.g. `M1`, `SW1`, `EH4`).
+
+**Available on:** Starter, Professional, Business
+**Cost:** 1 request per call
+
+## Yields by area
+
+```http
+GET /api/v1/yields/area/{outcode}
+```
+
+**Required scope:** `areas:read`
+
+Aggregates gross rental yield across all sale listings in an outcode. Returns mean, median, p25, and p75 alongside the underlying sample size.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/yields/area/M1 \
+  -H "Authorization: Bearer paid_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "sample_size": 423,
+    "average_gross_yield_pct": 6.82,
+    "median_gross_yield_pct": 6.40,
+    "p25_gross_yield_pct": 5.10,
+    "p75_gross_yield_pct": 8.20,
+    "average_price": 215000,
+    "average_monthly_rent": 1185
+  }
+}
+```
+
+Yields above 25% are excluded as data quality outliers (typically a missing decimal point in the source rent estimate). If `sample_size` is `0`, the area has no live sale listings with usable rent estimates — try a wider outcode or use the [search endpoint](./properties) directly.
+
+## Rents by area
+
+```http
+GET /api/v1/rents/area/{outcode}
+```
+
+**Required scope:** `areas:read`
+
+Aggregates monthly rents across all active rental listings in an outcode. Returns overall stats plus a per-bedroom breakdown.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/rents/area/M1 \
+  -H "Authorization: Bearer paid_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "sample_size": 1247,
+    "average_monthly_rent": 1450,
+    "median_monthly_rent": 1325,
+    "p25_monthly_rent": 1100,
+    "p75_monthly_rent": 1700,
+    "by_bedrooms": {
+      "1": {"sample_size": 312, "average_monthly_rent": 1050, "median_monthly_rent": 1000},
+      "2": {"sample_size": 542, "average_monthly_rent": 1380, "median_monthly_rent": 1325},
+      "3": {"sample_size": 287, "average_monthly_rent": 1825, "median_monthly_rent": 1750},
+      "4": {"sample_size": 89,  "average_monthly_rent": 2400, "median_monthly_rent": 2300},
+      "5": {"sample_size": 17,  "average_monthly_rent": 3250, "median_monthly_rent": 3100}
+    }
+  }
+}
+```
+
+## Active estate agents
+
+```http
+GET /api/v1/agents-list/area/{outcode}
+```
+
+**Required scope:** `areas:read`
+
+Returns the most active estate agents in an outcode, ranked by active listing count. Useful for competitive intelligence and agent outreach.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/agents-list/area/M1?limit=20" \
+  -H "Authorization: Bearer paid_..."
+```
+
+### Query parameters
+
+| Param | Type | Default | Max |
+|---|---|---|---|
+| `limit` | integer | 20 | 100 |
+
+### Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "count": 20,
+    "agents": [
+      {
+        "name": "Savills - Manchester",
+        "branch_id": "rm_BRANCH_12345",
+        "company_name": "Savills",
+        "phone": "0161 123 4567",
+        "listing_count": 187
+      }
+    ]
+  }
+}
+```
+
+## Use cases
+
+- **Investor area screening** — Filter outcodes by minimum yield or rent before drilling into individual properties
+- **Market intelligence dashboards** — Show clients the rent/yield landscape for an area at a glance
+- **Outreach lists** — Pull the top 20 active agents in a target area for off-market BD
+- **Comparable rent assessments** — Per-bedroom medians for valuation appeals or tenant-side disputes
+
+## Related endpoints
+
+- **[Properties](./properties)** — Drill down into individual listings filtered by outcode
+- **[Market data](./market-data)** — Sold prices and historical trends
+- **[Spatial search](./spatial)** — When you want shapes, not postcodes

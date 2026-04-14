@@ -1,0 +1,170 @@
+---
+title: Connect with AI agents (MCP)
+description: Connect Claude Code, Cursor, Claude Desktop, Continue, and any other MCP-aware AI client to the Prop AI Deals API documentation. Three integration paths — MCP server, llms.txt, and llms-full.txt — covering every major LLM agent ecosystem.
+---
+
+# Connect with AI agents
+
+Prop AI Deals is **AI-native by design**. Every major AI agent ecosystem can discover and use our API documentation without a single line of glue code on your side. Three integration layers, in order of richness:
+
+| Layer | Best for | URL |
+|---|---|---|
+| **MCP Server** | Claude Code, Cursor, Claude Desktop, Continue, Cline, any MCP client | `https://docs.propaideals.co.uk/mcp` |
+| **`llms.txt`** | ChatGPT browsing, Perplexity, Claude search, You.com | `https://docs.propaideals.co.uk/llms.txt` |
+| **`llms-full.txt`** | One-shot context loading for any LLM | `https://docs.propaideals.co.uk/llms-full.txt` |
+
+## MCP Server (recommended)
+
+Our docs are exposed as a **Model Context Protocol** server with two tools:
+
+- `search_prop_ai_deals` — semantic + keyword search across all our API docs
+- `query_docs_filesystem_prop_ai_deals` — read individual doc pages directly
+
+When connected, your AI agent can answer questions about our API, generate working code samples for any endpoint, and look up plan details, rate limits, and error codes — all without the user pasting docs into the chat.
+
+### Claude Code
+
+Add the MCP server with one CLI command:
+
+```bash
+claude mcp add propaideals https://docs.propaideals.co.uk/mcp
+```
+
+Then in any Claude Code session you can ask:
+
+```
+> How do I search for properties in London with a yield above 8%?
+> What error code do I get when I exceed the monthly cap?
+> Generate a Python script that fetches sold history for a property
+```
+
+Claude Code will use the MCP server to look up real answers from our docs.
+
+### Cursor
+
+Add to your `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "propaideals": {
+      "url": "https://docs.propaideals.co.uk/mcp"
+    }
+  }
+}
+```
+
+Restart Cursor. The Cursor chat will now have a "propaideals" tool available — it'll auto-invoke when you ask property API questions.
+
+### Claude Desktop
+
+Edit your `claude_desktop_config.json` (located in `~/Library/Application Support/Claude/` on macOS, `%APPDATA%\Claude\` on Windows):
+
+```json
+{
+  "mcpServers": {
+    "propaideals": {
+      "type": "http",
+      "url": "https://docs.propaideals.co.uk/mcp"
+    }
+  }
+}
+```
+
+Restart Claude Desktop. You'll see a hammer icon (🔨) in the chat input — click it to confirm the `propaideals` server is connected.
+
+### Continue (VS Code / JetBrains)
+
+Edit `~/.continue/config.json`:
+
+```json
+{
+  "experimental": {
+    "modelContextProtocolServers": [
+      {
+        "transport": {
+          "type": "http",
+          "url": "https://docs.propaideals.co.uk/mcp"
+        }
+      }
+    ]
+  }
+}
+```
+
+### Cline (VS Code)
+
+In Cline settings → MCP Servers → Add Server → enter `https://docs.propaideals.co.uk/mcp`.
+
+### Other MCP clients
+
+Any MCP-compatible client should work. The transport is **HTTP streaming** (not stdio), and authentication is **public read-only** — no API key needed to read the docs.
+
+## `llms.txt` (for non-MCP agents)
+
+If your agent doesn't speak MCP yet, it almost certainly knows about [llmstxt.org](https://llmstxt.org). Our `llms.txt` is a structured Markdown index of all the API docs:
+
+```
+https://docs.propaideals.co.uk/llms.txt
+https://www.propaideals.co.uk/llms.txt
+```
+
+Both URLs serve the same file. ChatGPT browsing, Perplexity, Claude search, You.com, and most "research mode" agents will discover and use it automatically when answering questions about our API.
+
+You can also paste it into any chat:
+
+```
+Here's the Prop AI Deals API documentation index:
+https://docs.propaideals.co.uk/llms.txt
+
+Help me build a Python script that searches for high-yield properties.
+```
+
+## `llms-full.txt` (one-shot context)
+
+For agents that prefer to load all docs into context at once (instead of fetching pages incrementally), we provide a **2,400+ line concatenated file**:
+
+```
+https://docs.propaideals.co.uk/llms-full.txt
+https://www.propaideals.co.uk/llms-full.txt
+```
+
+This is the entire public API documentation — quickstart, authentication, rate limits, errors, response format, every endpoint reference, and the changelog — in one Markdown file. Useful for:
+
+- Long-context models that can ingest the whole thing in a single message
+- Pre-loading the docs into a system prompt
+- Building a custom RAG index of our docs offline
+- Agents that don't want to make N HTTP calls during a conversation
+
+## What this means for your apps
+
+If you're building a property tool and want users to be able to ask natural-language questions like:
+
+> "Find me 3-bed houses under £400k with at least 7% yield in Manchester"
+
+...you have three options:
+
+1. **Use our [AI chat endpoint](./endpoints/ai-chat)** directly — we run the LLM, you get back property cards. Costs 5× a normal request.
+2. **Connect your AI agent to our MCP server** so it can look up the right endpoint to call, then call it itself with your `paid_*` key. The agent does the orchestration; you pay our standard rate.
+3. **Embed our `llms.txt` in your system prompt** so any LLM you use already knows our API surface.
+
+Option 1 is fastest to ship. Option 2 gives you the most control. Option 3 is the cheapest.
+
+## Verifying the MCP server
+
+You can test the MCP server is reachable without an MCP client by sending a JSON-RPC call directly:
+
+```bash
+curl -X POST https://docs.propaideals.co.uk/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+```
+
+You should get back a list of two tools: `search_prop_ai_deals` and `query_docs_filesystem_prop_ai_deals`.
+
+## Status & support
+
+The MCP server is hosted by [Mintlify](https://mintlify.com) and inherits their uptime. We monitor it as part of our [status page](https://status.propaideals.co.uk).
+
+If you have an issue connecting an AI agent or want a feature, email `api@propaideals.co.uk`.

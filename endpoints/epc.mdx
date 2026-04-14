@@ -1,0 +1,127 @@
+---
+title: EPC certificates endpoint
+description: Look up Energy Performance Certificate (EPC) data for UK properties by postcode, UPRN, or Prop AI Deals property ID. Joins HMG EPC register data with our property table for instant address resolution.
+---
+
+# EPC certificates
+
+The EPC endpoints return Energy Performance Certificate data for UK properties. Data is sourced from the [HMG EPC register](https://www.gov.uk/government/collections/energy-performance-certificates-epcs) and matched to live listings via UPRN and PostGIS spatial joins.
+
+**Required scope:** `epc:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Get EPCs for a postcode
+
+```http
+GET /api/v1/epc/postcode/{postcode}
+```
+
+Returns up to 100 EPC records for properties in the given postcode, ordered by EPC date desc.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/epc/postcode/M1%201AA?limit=10 \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/epc/postcode/M1 1AA",
+    params={"limit": 10},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+records = res.json()["data"]["records"]
+```
+
+### Query parameters
+
+| Param | Type | Default | Max | Description |
+|---|---|---|---|---|
+| `limit` | integer | 20 | 100 | Max records to return |
+
+### Response
+
+```json
+{
+  "data": {
+    "count": 10,
+    "records": [
+      {
+        "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+        "energy_rating": "C",
+        "epc_score": 71,
+        "epc_url": "https://find-energy-certificate.service.gov.uk/...",
+        "epc_lmk_key": "abc123def456...",
+        "epc_date": "2024-08-15",
+        "construction_age_band": "1976-1982",
+        "sqft_estimated": false,
+        "uprn": 100012345678,
+        "address": "12 Example Road, Manchester",
+        "postcode": "M1 1AA"
+      }
+    ]
+  }
+}
+```
+
+## Get EPC by UPRN
+
+```http
+GET /api/v1/epc/uprn/{uprn}
+```
+
+Direct lookup by Unique Property Reference Number — the most reliable identifier for a UK property.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/epc/uprn/100012345678 \
+  -H "Authorization: Bearer paid_..."
+```
+
+Returns the same `EpcRecord` shape as above, or `404` if no EPC matches that UPRN.
+
+## Get EPC by property ID
+
+```http
+GET /api/v1/epc/property/{property_id}
+```
+
+Look up the EPC linked to a specific Prop AI Deals property UUID (returned from the [properties endpoint](./properties)).
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/epc/property/5fa1b2c3-d4e5-6f78-9012-3456789abcde \
+  -H "Authorization: Bearer paid_..."
+```
+
+## Field reference
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | UUID | Internal Prop AI Deals property identifier |
+| `energy_rating` | string | EPC band: `A` (best) – `G` (worst) |
+| `epc_score` | integer | EPC numerical score 1–100 |
+| `epc_url` | string | Direct link to the official HMG certificate PDF |
+| `epc_lmk_key` | string | LMK certificate key (use to query MHCLG datasets directly) |
+| `epc_date` | ISO date | Date the certificate was issued |
+| `construction_age_band` | string | Era the property was built (e.g. `1976-1982`) |
+| `sqft_estimated` | boolean | `true` if `floor_area_sqft` was derived from the EPC certificate |
+| `uprn` | integer | Unique Property Reference Number (12-digit) |
+| `address` | string | Full property address |
+| `postcode` | string | Postcode |
+
+## Use cases
+
+- **Mortgage origination:** Fetch EPC for a property before underwriting (lenders increasingly require minimum EPC C from 2030)
+- **Refurb planning:** Identify F/G rated properties in a postcode for retrofit business
+- **Compliance:** Landlords need EPC C+ to let from 2028 — bulk-check a portfolio
+- **Investment scoring:** EPC band correlates with future MEES compliance cost
+
+## Related endpoints
+
+- **[UPRN lookup](./uprn-lookup)** — Resolve a UPRN to property metadata
+- **[Properties](./properties)** — Search live listings (returns the property UUIDs you'd pass here)

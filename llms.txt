@@ -1,11 +1,12 @@
 # Prop AI Deals API
 
-> The Prop AI Deals API is a REST API for UK property data, market intelligence, investment analysis, and AI-powered search. It exposes 2.1M+ live property listings from Rightmove, Zoopla, and OnTheMarket, enriched with HM Land Registry sold history (~5M transactions), EPC certificates, rental estimates, BMV (below-market-value) scoring, and a multi-agent AI chat system. Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams.
+> The Prop AI Deals API is a REST API for UK property data, market intelligence, investment analysis, and AI-powered search. It exposes 2.1M+ live property listings from Rightmove, Zoopla, and OnTheMarket, enriched with HM Land Registry sold history (~5M transactions), EPC certificates, rental estimates, BMV (below-market-value) scoring, build cost data from Spon's 2026 price book, and a multi-agent AI chat system. Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams.
 
 Base URL: `https://api.propaideals.co.uk`
 Authentication: Bearer API keys (prefix `paid_`) sent in `Authorization` header
 All endpoints under `/api/v1/`. JSON responses wrapped in `{ data, meta }` envelope.
-Plans: Starter £99/mo (50K req, 10 req/s), Professional £299/mo (250K req, 25 req/s, AI chat), Business £999/mo (1.5M req, 50 req/s, AI chat). All tiers paid — no free tier. Sign up at https://propaideals.co.uk/dashboard/api.
+Plans: Starter £99/mo (50K req, 10 req/s), Professional £299/mo (250K req, 25 req/s, AI chat + build cost), Business £999/mo (1.5M req, 50 req/s, AI chat + build cost). All tiers paid — no free tier. Sign up at https://propaideals.co.uk/developers.
+MCP Server: `https://docs.propaideals.co.uk/mcp` — connect Claude Code, Cursor, Claude Desktop, Continue, or any MCP-aware AI client to query our docs in real time. No setup required, public read-only access.
 
 ## Getting started
 
@@ -15,14 +16,19 @@ Plans: Starter £99/mo (50K req, 10 req/s), Professional £299/mo (250K req, 25 
 - [Rate limits](https://docs.propaideals.co.uk/rate-limits): Per-second rate limits, monthly request quotas (HARD caps — no soft/hard split), AI chat quotas, plan comparison table, rate limit headers, 503 backpressure handling, and best practices
 - [Errors](https://docs.propaideals.co.uk/errors): Standard error envelope, error codes (`invalid_api_key`, `rate_limit_exceeded`, `monthly_quota_exceeded`, `ai_chat_quota_exceeded`, `insufficient_scope`, `endpoint_not_in_public_api`, `Service temporarily busy`), and recommended retry policy with exponential backoff
 - [Response format](https://docs.propaideals.co.uk/response-format): JSON envelope, pagination (offset and cursor), timestamps, money values, coordinates, and field availability conventions
+- [Connect with AI agents](https://docs.propaideals.co.uk/connect-with-ai): Connect Claude Code, Cursor, Claude Desktop, Continue, and any MCP-aware AI client to the Prop AI Deals docs via the MCP server, llms.txt, or llms-full.txt
 
 ## API reference
 
 - [Properties endpoint](https://docs.propaideals.co.uk/endpoints/properties): Search, list, and retrieve UK property listings via `GET /api/v1/properties` and `GET /api/v1/properties/{id}`. 140+ filter parameters (location, price, bedrooms, property type, features, investment metrics, agent), pagination, sorting, and full response schema. Required scope `properties:read`.
 - [Spatial search endpoint](https://docs.propaideals.co.uk/endpoints/spatial): PostGIS-powered spatial queries via `POST /api/v1/spatial/search/viewport`, `POST /api/v1/spatial/search/polygon/draw`, and `POST /api/v1/spatial/search/radius`. Bounding box, drawn polygon, and radius search. Required scope `spatial:read`.
-- [Market data endpoint](https://docs.propaideals.co.uk/endpoints/market-data): Sold history (`GET /api/v1/market-data/{id}/sold-history`), on-street comparables (`GET /api/v1/market-data/{id}/on-street`), and area price trends (`GET /api/v1/market-data/area/{outcode}/trends`). Combines HM Land Registry, Zoopla, and Rightmove sold data with PostGIS spatial matching. Required scope `market-data:read`.
+- [Market data endpoint](https://docs.propaideals.co.uk/endpoints/market-data): Sold history (`GET /api/v1/market-data/{id}/sold-history`), on-street comparables (`GET /api/v1/market-data/{id}/on-street`), and area price trends. Combines HM Land Registry, Zoopla, and Rightmove sold data with PostGIS spatial matching. Required scope `market-data:read`.
+- [EPC certificates](https://docs.propaideals.co.uk/endpoints/epc): Energy Performance Certificate lookups via `GET /api/v1/epc/postcode/{postcode}`, `GET /api/v1/epc/uprn/{uprn}`, and `GET /api/v1/epc/property/{id}`. Returns rating, score, certificate URL, construction era, UPRN, and address. Required scope `epc:read`.
+- [UPRN lookup](https://docs.propaideals.co.uk/endpoints/uprn): Resolve a Unique Property Reference Number via `GET /api/v1/uprn/{uprn}`. Returns linked property metadata, address, postcode, EPC band, construction era, and source confidence. Required scope `epc:read`.
+- [Area aggregates](https://docs.propaideals.co.uk/endpoints/area-aggregates): Yields by area (`GET /api/v1/yields/area/{outcode}`), rents by area with per-bedroom breakdown (`GET /api/v1/rents/area/{outcode}`), and active estate agents (`GET /api/v1/agents-list/area/{outcode}`). Required scope `areas:read`.
+- [Build cost](https://docs.propaideals.co.uk/endpoints/build-cost): Search Spon's Architects' & Builders' Price Book 2026 for UK construction and refurb cost data via `GET /api/v1/build-cost/search?q=`. Hybrid vector + full-text search across 68 chunks of the canonical industry reference. Required scope `build-cost:read` (Professional and Business plans only).
 - [AI chat endpoint](https://docs.propaideals.co.uk/endpoints/ai-chat): Conversational property intelligence via `POST /api/v1/ultimate-ai/chat` and `POST /api/v1/ultimate-ai/chat-stream`. GPT-4.1-powered multi-agent system with natural language search, multi-turn conversations via `session_id`, SSE streaming, and a `show-more` pagination endpoint. Required scope `ai:chat` (Professional and Business plans only). Costs 5 requests per call against the monthly request quota plus 1 against the AI chat quota.
-- [API keys (dashboard endpoints)](https://docs.propaideals.co.uk/endpoints/api-keys): Create, list, and revoke API keys via `POST/GET/DELETE /api/v1/api-keys`. Get current usage via `GET /api/v1/api-billing/usage`. List available plans via `GET /api/v1/api-billing/plans`. Subscribe via `POST /api/v1/api-billing/subscribe`. These endpoints use Clerk JWT auth, not API keys.
+- [API keys (dashboard endpoints)](https://docs.propaideals.co.uk/endpoints/api-keys): Create, list, and revoke API keys via `POST/GET/DELETE /api/v1/api-keys`. Get current usage via `GET /api/v1/api-billing/usage`. List available plans via `GET /api/v1/api-billing/plans`. Subscribe via `POST /api/v1/api-billing/subscribe`. Manage subscription via `POST /api/v1/api-billing/portal`. These endpoints use Clerk JWT auth, not API keys.
 
 ## Optional
 

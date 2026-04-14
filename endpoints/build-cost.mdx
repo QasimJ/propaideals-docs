@@ -1,0 +1,103 @@
+---
+title: Build cost endpoint
+description: Search Spon's Architects' & Builders' Price Book 2026 for UK construction and refurb cost data. Hybrid vector + full-text search across 68 chunks of the canonical industry reference.
+---
+
+# Build cost search
+
+Search the canonical UK construction price reference — **Spon's Architects' and Builders' Price Book 2026** — for ballpark build, refurb, and material costs. Powered by hybrid vector + full-text search over 68 chunks of the book in our `propai_rag` pgvector database.
+
+**Required scope:** `build-cost:read`
+**Cost:** 1 request per call
+**Available on:** Professional, Business
+
+## Search build costs
+
+```http
+GET /api/v1/build-cost/search?q={query}
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/build-cost/search?q=loft+conversion+per+sqm" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/build-cost/search",
+    params={"q": "kitchen extension cost per sqm", "limit": 5},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+matches = res.json()["data"]["matches"]
+for m in matches:
+    print(f"{m['title']}\n{m['snippet']}\n")
+```
+
+### Query parameters
+
+| Param | Type | Default | Max | Description |
+|---|---|---|---|---|
+| `q` | string | _(required)_ | — | Search query — try industry terms like "rebuild cost", "rcc beam", "thermal insulation" |
+| `limit` | integer | 5 | 20 | Max matches to return |
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "loft conversion per sqm",
+    "count": 3,
+    "matches": [
+      {
+        "title": "Loft conversions — Section 4.2",
+        "snippet": "Loft conversion with new dormer window, joists, insulation, and stair to comply with Building Regulations Part B. Average cost per square metre of usable floor area: £1,800 – £2,400 in Greater London, £1,400 – £1,900 elsewhere in the UK...",
+        "relevance": 0.0892,
+        "source": "Spon's Architects' and Builders' Price Book 2026",
+        "metadata": {
+          "page": 412,
+          "section": "4.2"
+        }
+      }
+    ],
+    "disclaimer": "Build cost data is sourced from Spon's Architects' and Builders' Price Book 2026. Use as a directional guide only — always commission a quantity surveyor for actual project pricing."
+  }
+}
+```
+
+## What's covered
+
+The full Spon's 2026 reference includes pricing for:
+
+- **New build construction** (per sqm by build type and region)
+- **Refurbishment** (kitchens, bathrooms, extensions, conversions)
+- **Materials** (concrete, steel, timber, brick, glazing, insulation)
+- **Trades** (bricklaying, electrical, plumbing, decoration)
+- **External works** (drives, paving, fencing, landscaping)
+- **Mechanical & electrical** (boilers, heat pumps, solar PV, wiring)
+- **Demolition and groundworks**
+- **Professional fees** (architect, QS, structural engineer)
+- **Regional adjustments** (London/SE/SW/Midlands/North)
+
+## Important caveats
+
+> ⚠️ **This is a directional pricing tool, NOT a substitute for a quantity surveyor.**
+>
+> Spon's prices are list-prices for typical projects — actual build costs vary by site conditions, contractor relationships, market timing, and specification. For any project where you're committing real capital, get at least three quotes from local builders and engage a chartered QS.
+
+The disclaimer is included on every response so downstream apps can show it to end users.
+
+## Use cases
+
+- **Refurbishment ROI modeling** — Estimate the cost side of a flip/BRRR before submitting an offer
+- **Development feasibility** — Quick GDV vs build cost check before paying for a full appraisal
+- **Insurance valuations** — Rebuild cost lookups for buildings insurance (use the dedicated `/rebuild-cost` query)
+- **Investor reports** — Pull cost ranges into automated investment summaries
+
+## Related endpoints
+
+- **[Investment calculators](./investment)** — Strategy modeling (BRRR/Flip) that consumes build cost as an input
+- **[Properties](./properties)** — The property listings you'd be costing up

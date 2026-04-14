@@ -27,7 +27,8 @@
               "authentication",
               "rate-limits",
               "errors",
-              "response-format"
+              "response-format",
+              "connect-with-ai"
             ]
           },
           {
@@ -36,6 +37,10 @@
               "endpoints/properties",
               "endpoints/spatial",
               "endpoints/market-data",
+              "endpoints/epc",
+              "endpoints/uprn",
+              "endpoints/area-aggregates",
+              "endpoints/build-cost",
               "endpoints/ai-chat",
               "endpoints/api-keys"
             ]

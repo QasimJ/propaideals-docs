@@ -1,0 +1,115 @@
+---
+title: UPRN lookup endpoint
+description: Resolve a Unique Property Reference Number (UPRN) to property metadata. Returns address, postcode, energy rating, construction era, and the linked Prop AI Deals property UUID if a match exists.
+---
+
+# UPRN lookup
+
+A **UPRN** (Unique Property Reference Number) is a 12-digit identifier maintained by Ordnance Survey that uniquely identifies every land and property record in Great Britain. UPRNs are stable across the lifetime of a property and are the canonical way to reference a specific address.
+
+This endpoint resolves a UPRN to whatever metadata Prop AI Deals has on file — typically EPC certificate data plus a linked live listing if the property is currently on market.
+
+**Required scope:** `epc:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Look up a UPRN
+
+```http
+GET /api/v1/uprn/{uprn}
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/uprn/100012345678 \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+uprn = 100012345678
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/uprn/{uprn}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+result = res.json()["data"]
+if result["matched"]:
+    print(f"{result['address']}, {result['postcode']}")
+    print(f"EPC: {result['energy_rating']}")
+```
+
+### Response (matched)
+
+```json
+{
+  "data": {
+    "uprn": 100012345678,
+    "matched": true,
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "address": "12 Example Road, Manchester",
+    "postcode": "M1 1AA",
+    "energy_rating": "C",
+    "construction_age_band": "1976-1982",
+    "source": "epc_register"
+  }
+}
+```
+
+### Response (no match)
+
+```json
+{
+  "data": {
+    "uprn": 999999999999,
+    "matched": false,
+    "property_id": null,
+    "address": null,
+    "postcode": null,
+    "energy_rating": null,
+    "construction_age_band": null,
+    "source": null
+  }
+}
+```
+
+The endpoint returns `200` even when no match exists — `matched: false` is the signal. This makes batch UPRN validation easier than handling 404s.
+
+## Field reference
+
+| Field | Type | Description |
+|---|---|---|
+| `uprn` | integer | The UPRN you queried (echoed back) |
+| `matched` | boolean | Whether we found a record for this UPRN |
+| `property_id` | UUID \| null | Internal Prop AI Deals property UUID (use with [properties endpoint](./properties)) |
+| `address` | string \| null | Best available address — from live listing if linked, else from EPC register |
+| `postcode` | string \| null | Postcode |
+| `energy_rating` | string \| null | EPC band `A`–`G` |
+| `construction_age_band` | string \| null | Era the property was built |
+| `source` | string \| null | Where the metadata came from (`epc_register`, `os_addressbase`, etc.) |
+
+## Use cases
+
+- **Conveyancing checks** — Validate a UPRN supplied by a buyer's solicitor against actual property metadata
+- **Mortgage origination** — Resolve a property reference to EPC for compliance checks
+- **Bulk address normalisation** — Run a list of UPRNs through and get clean addresses + postcodes
+- **Cross-referencing** — Match HM Land Registry sale records (which include UPRN since April 2025) to live listings
+
+## Match confidence
+
+UPRN matches in our database come from multiple sources with varying confidence:
+
+| Source | Confidence | Notes |
+|---|---|---|
+| `epc_register` | High | Direct match in HMG EPC register |
+| `os_addressbase` | High | Ordnance Survey AddressBase Premium |
+| `spatial_paon` | Medium | Spatial join + house number match |
+| `address_match` | Medium | Address string fuzzy match |
+
+Use `source` to decide how much to trust the match in critical workflows.
+
+## Related endpoints
+
+- **[EPC certificates](./epc)** — Get the full EPC record once you have the UPRN
+- **[Properties](./properties)** — Get the live listing details using `property_id`
