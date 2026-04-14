@@ -1,0 +1,125 @@
+---
+title: Flood risk endpoint
+description: Check whether a UK property or coordinate falls inside a flood risk zone. PostGIS spatial check against 144,000+ flood zone polygons sourced from EA flood map and SEPA.
+---
+
+# Flood risk
+
+Check whether a UK location is inside a flood risk zone. Backed by **144,000+ flood zone polygons** stored as PostGIS geometries, sourced from the Environment Agency flood map (England & Wales) and SEPA (Scotland).
+
+**Required scope:** `planning:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Check by coordinates
+
+```http
+GET /api/v1/flood-risk/coordinates?lat={lat}&lon={lon}
+```
+
+PostGIS `ST_Contains` check against the `flood_zones` table. If the point falls inside multiple overlapping zones, returns the highest-risk match.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/flood-risk/coordinates?lat=53.4808&lon=-2.2426" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/flood-risk/coordinates",
+    params={"lat": 53.4808, "lon": -2.2426},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+risk = res.json()["data"]
+if risk["in_flood_zone"]:
+    print(f"At risk: {risk['risk_level']} ({risk['zone_category']})")
+else:
+    print("Outside any flood zone")
+```
+
+### Response (in zone)
+
+```json
+{
+  "data": {
+    "lat": 53.4808,
+    "lon": -2.2426,
+    "in_flood_zone": true,
+    "risk_level": "high",
+    "zone_category": "3a",
+    "zone_type": "rivers",
+    "source": "ea_flood_map"
+  }
+}
+```
+
+### Response (no risk)
+
+```json
+{
+  "data": {
+    "lat": 53.4808,
+    "lon": -2.2426,
+    "in_flood_zone": false,
+    "risk_level": null,
+    "zone_category": null,
+    "zone_type": null,
+    "source": null
+  }
+}
+```
+
+The endpoint returns `200` even when the point isn't in any zone — `in_flood_zone: false` is the signal.
+
+## Check by property ID
+
+```http
+GET /api/v1/flood-risk/property/{property_id}
+```
+
+Looks up the property's stored coordinates and runs the same check. Honours the precomputed `is_flood_zone` flag if it's already set on the property row, falling back to the spatial query otherwise.
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/flood-risk/property/5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_..."
+```
+
+Returns the same `FloodRiskResponse` shape.
+
+## Risk levels
+
+| Level | Zone category | Annual probability | What it means |
+|---|---|---|---|
+| `high` | 3a, 3b | > 1.0% (rivers/sea) | Significant flood risk — insurance premiums materially higher, lender restrictions possible |
+| `medium` | 2 | 0.1–1.0% | Moderate risk — disclose on conveyancing |
+| `low` | 1 | < 0.1% | Low risk |
+| _(none)_ | — | — | Not in any mapped zone |
+
+## Use cases
+
+- **Conveyancing checks** — Pre-flag flood risk before instructing a search
+- **Mortgage underwriting** — Lenders can decline or surcharge high-risk properties
+- **Insurance scoring** — Quote adjustments based on flood zone overlap
+- **Investor due diligence** — Filter portfolio acquisitions by flood risk
+- **Refurb planning** — Avoid putting flood-vulnerable improvements in zone 3 properties
+
+## Coverage
+
+| Region | Coverage | Source |
+|---|---|---|
+| England | All flood zones 2 + 3 | EA flood map |
+| Wales | All flood zones | NRW flood map |
+| Scotland | All categories | SEPA flood maps |
+| Northern Ireland | Limited | DfI Rivers |
+
+Total: **144,237 polygon records** across all UK home nations.
+
+## Related endpoints
+
+- **[Heritage status](./heritage)** — Listed building & conservation area data (often correlated with flood risk)
+- **[Properties](./properties)** — Use the `is_flood_zone=false` filter to exclude flood-risk listings entirely
+- **[Spatial search](./spatial)** — Combine viewport queries with flood-risk filtering

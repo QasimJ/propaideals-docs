@@ -1,0 +1,94 @@
+---
+title: Demographics endpoint
+description: Population, household income, employment rate, crime rating, and ONS deprivation index for any UK postcode district. Sourced from ONS census, ONS deprivation index, and police.uk.
+---
+
+# Demographics
+
+Returns area-level demographic data for any UK postcode district (e.g. `M1`, `SW1`, `EH4`). Combines ONS census, ONS Index of Multiple Deprivation, and police.uk crime statistics into a single record per district. Refreshed quarterly.
+
+**Required scope:** `areas:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Get demographics for a district
+
+```http
+GET /api/v1/demographics/{postcode_district}
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/demographics/M1 \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/demographics/M1",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+demo = res.json()["data"]
+print(f"Population: {demo['population']:,}")
+print(f"Median income: £{demo['median_income']:,.0f}")
+print(f"Crime rating: {demo['crime_rating']}")
+print(f"Deprivation decile: {demo['deprivation_decile']}/10 (1 = most deprived)")
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "postcode_district": "M1",
+    "population": 28412,
+    "households": 14256,
+    "median_age": 28.4,
+    "median_income": 31250.50,
+    "employment_rate_pct": 76.20,
+    "crime_rate": 89.45,
+    "crime_rating": "High",
+    "deprivation_score": 42,
+    "deprivation_decile": 3,
+    "data_source": "ons_census_2021",
+    "data_date": "2024-12-15"
+  }
+}
+```
+
+### Field reference
+
+| Field | Type | Description |
+|---|---|---|
+| `postcode_district` | string | The district queried (echoed back) |
+| `population` | integer | Total population (ONS census) |
+| `households` | integer | Total households |
+| `median_age` | float | Median resident age |
+| `median_income` | float | Median household income (£) |
+| `employment_rate_pct` | float | % of working-age residents in employment |
+| `crime_rate` | float | Crimes per 1,000 population per year |
+| `crime_rating` | string | `Very Low` / `Low` / `Average` / `High` / `Very High` |
+| `deprivation_score` | integer | ONS IMD score (higher = more deprived) |
+| `deprivation_decile` | integer | 1 (most deprived 10%) – 10 (least deprived 10%) |
+| `data_source` | string | Source dataset identifier |
+| `data_date` | ISO date | When the data was last refreshed |
+
+## Use cases
+
+- **Investor area screening** — Combine median income + deprivation decile to find improving areas
+- **Target tenant matching** — Match the demographic profile to your rental stock (median age, income)
+- **Risk underwriting** — Crime rating and deprivation decile feed into BTL underwriting models
+- **Marketing segmentation** — Build campaigns around districts with specific demographics
+
+## Coverage
+
+742 UK postcode districts have demographic records loaded today. We're adding more from the ONS Census 2021 release as data becomes available. If a district returns `404`, email `api@propaideals.co.uk` and we'll prioritise loading it.
+
+## Related endpoints
+
+- **[Area aggregates (yields/rents/agents)](./area-aggregates)** — Investment data for the same areas
+- **[Heritage status](./heritage)** — Listed building & conservation area data
+- **[Flood risk](./flood-risk)** — Flood zone overlap by point or property

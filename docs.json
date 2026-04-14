@@ -40,6 +40,9 @@
               "endpoints/epc",
               "endpoints/uprn",
               "endpoints/area-aggregates",
+              "endpoints/demographics",
+              "endpoints/flood-risk",
+              "endpoints/heritage",
               "endpoints/build-cost",
               "endpoints/ai-chat",
               "endpoints/api-keys"

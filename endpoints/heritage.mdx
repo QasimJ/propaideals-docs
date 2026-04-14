@@ -1,0 +1,124 @@
+---
+title: Heritage endpoint
+description: Listed building and conservation area status for any UK property. Plus area-level aggregates so you can see how heritage-restricted a postcode outcode is at a glance.
+---
+
+# Heritage status
+
+Check whether a UK property is a **listed building** or sits inside a **conservation area** — both of which materially restrict what alterations are allowed without planning permission. Data is sourced from Historic England and local authority planning records.
+
+**Required scope:** `planning:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Get heritage status for a property
+
+```http
+GET /api/v1/heritage/property/{property_id}
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/heritage/property/5fa1b2c3-d4e5-6f78-9012-3456789abcde \
+  -H "Authorization: Bearer paid_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "is_listed_building": false,
+    "in_conservation_area": true,
+    "address": "12 Example Road, Manchester",
+    "postcode": "M1 1AA"
+  }
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `is_listed_building` | boolean | Property is on Historic England's National Heritage List (Grade I, II*, or II) |
+| `in_conservation_area` | boolean | Property sits within a designated conservation area |
+| `address` | string | Property address |
+| `postcode` | string | Postcode |
+
+## Heritage aggregates by area
+
+```http
+GET /api/v1/heritage/area/{outcode}
+```
+
+Returns counts of listed buildings and conservation properties in an outcode plus a small sample of each. Useful for **due diligence on heritage-heavy areas** where extension permissions are tightly restricted.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/heritage/area/SW1 \
+  -H "Authorization: Bearer paid_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "outcode": "SW1",
+    "listed_buildings_count": 287,
+    "conservation_count": 1842,
+    "sample_listed": [
+      {
+        "id": "5fa1b2c3-...",
+        "address": "12 Heritage Square, London",
+        "postcode": "SW1A 1AA",
+        "price_numeric": 4200000
+      }
+    ],
+    "sample_conservation": [
+      {
+        "id": "9c8d7e6f-...",
+        "address": "5 Conservation Way, London",
+        "postcode": "SW1A 2BB",
+        "price_numeric": 1850000
+      }
+    ]
+  }
+}
+```
+
+## Why this matters
+
+| Property status | Restrictions |
+|---|---|
+| **Grade I listed** | Almost no alterations without listed building consent. Repair like-for-like. Highest restriction. |
+| **Grade II* listed** | Major alterations need consent. Internal works often restricted too. |
+| **Grade II listed** | Most listed UK properties. Exterior changes need consent; some internal protected. |
+| **Conservation area** | Permitted development rights restricted. Article 4 directions may apply. Tree works need notice. |
+| **Both** | Worst case — listed AND in a conservation area means even repairs need approvals. |
+
+For investors, this affects:
+
+- **Refurb scope** — UPVC windows, render, extensions can be blocked
+- **Build cost** — Specialist contractors + consents add 30–60% to refurb budgets
+- **Resale value** — Premium for "tasteful restoration", penalty for unsympathetic works
+- **HMO conversion** — Often blocked or heavily restricted
+
+## Coverage
+
+We have heritage flags pre-computed on **5,193 listed building** records and **14,771 conservation area** records across our 2.1M+ live property dataset. Coverage is best in England (where Historic England data is most complete) and growing in Scotland (Historic Environment Scotland) and Wales (Cadw).
+
+## Use cases
+
+- **Pre-offer due diligence** — Don't waste solicitor time on listed properties you can't afford to refurb to spec
+- **HMO sourcing** — Filter out conservation areas where HMO conversion is blocked
+- **Refurb cost modelling** — Add a 30–60% premium to estimates when listed
+- **Insurance underwriting** — Listed buildings need specialist policies
+- **Auction prep** — Spot heritage restrictions before bidding
+
+## Related endpoints
+
+- **[Planning](./properties)** — `/api/v1/planning/{property_id}/heritage-status`, `/api/v1/planning/{property_id}/article4` for deeper checks
+- **[Demographics](./demographics)** — Area context for heritage-rich districts
+- **[Properties](./properties)** — Filter live listings by `is_listed_building` / `in_conservation_area`
