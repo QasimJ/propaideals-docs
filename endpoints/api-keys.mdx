@@ -204,9 +204,9 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
     "id": "starter",
     "name": "Starter",
     "monthly_price_pence": 9900,
-    "monthly_request_limit": 50000,
+    "monthly_request_limit": 20000,
     "rate_limit_per_second": 10,
-    "ai_chat_limit": 250,
+    "ai_chat_limit": 100,
     "batch_limit": 100,
     "scopes": [
       "properties:read",
@@ -215,16 +215,17 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
       "areas:read",
       "spatial:read",
       "planning:read",
-      "leads:read"
+      "leads:read",
+      "epc:read"
     ]
   },
   {
     "id": "professional",
     "name": "Professional",
     "monthly_price_pence": 29900,
-    "monthly_request_limit": 250000,
+    "monthly_request_limit": 100000,
     "rate_limit_per_second": 25,
-    "ai_chat_limit": 2500,
+    "ai_chat_limit": 1000,
     "batch_limit": 200,
     "scopes": [
       "properties:read",
@@ -234,16 +235,18 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
       "spatial:read",
       "planning:read",
       "leads:read",
-      "ai:chat"
+      "epc:read",
+      "ai:chat",
+      "build-cost:read"
     ]
   },
   {
     "id": "business",
     "name": "Business",
     "monthly_price_pence": 99900,
-    "monthly_request_limit": 1500000,
+    "monthly_request_limit": 400000,
     "rate_limit_per_second": 50,
-    "ai_chat_limit": 15000,
+    "ai_chat_limit": 4000,
     "batch_limit": 500,
     "scopes": [
       "properties:read",
@@ -253,7 +256,9 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
       "spatial:read",
       "planning:read",
       "leads:read",
-      "ai:chat"
+      "epc:read",
+      "ai:chat",
+      "build-cost:read"
     ]
   }
 ]

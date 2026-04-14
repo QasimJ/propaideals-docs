@@ -5,7 +5,7 @@
 Base URL: `https://api.propaideals.co.uk`
 Authentication: Bearer API keys (prefix `paid_`) sent in `Authorization` header
 All endpoints under `/api/v1/`. JSON responses wrapped in `{ data, meta }` envelope.
-Plans: Starter £99/mo (50K req, 10 req/s), Professional £299/mo (250K req, 25 req/s, AI chat + build cost), Business £999/mo (1.5M req, 50 req/s, AI chat + build cost). All tiers paid — no free tier. Sign up at https://propaideals.co.uk/developers.
+Plans: Starter £99/mo (20K req, 10 req/s, 100 AI chats, £0.00495/req), Professional £299/mo (100K req, 25 req/s, 1K AI chats, AI + build cost, £0.00299/req), Business £999/mo (400K req, 50 req/s, 4K AI chats, AI + build cost, £0.00250/req). All tiers paid — no free tier. Per-request cost is cheaper than every comparable competitor tier and rate limits are 20-25x higher. Sign up at https://propaideals.co.uk/developers.
 MCP Server: `https://docs.propaideals.co.uk/mcp` — connect Claude Code, Cursor, Claude Desktop, Continue, or any MCP-aware AI client to query our docs in real time. No setup required, public read-only access.
 
 ## Getting started

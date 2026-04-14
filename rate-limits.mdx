@@ -15,14 +15,16 @@ All limits are per **API key** (not per IP, not per user). If a user has multipl
 
 ## Plan comparison
 
-| Plan | Price (GBP/mo) | Requests / month | Per-second | AI chats / month | Batch limit |
-|---|---|---|---|---|---|
-| **Starter** | £99 | 50,000 | 10 req/s | 250 | 100 |
-| **Professional** | £299 | 250,000 | 25 req/s | 2,500 | 200 |
-| **Business** | £999 | 1,500,000 | 50 req/s | 15,000 | 500 |
-| **Enterprise** | Custom | Custom | Custom | Custom | Custom |
+| Plan | Price (GBP/mo) | Requests / month | £/request | Per-second | AI chats / month | Batch limit |
+|---|---|---|---|---|---|---|
+| **Starter** | £99 | 20,000 | £0.00495 | 10 req/s | 100 | 100 |
+| **Professional** | £299 | 100,000 | £0.00299 | 25 req/s | 1,000 | 200 |
+| **Business** | £999 | 400,000 | £0.00250 | 50 req/s | 4,000 | 500 |
+| **Enterprise** | Custom | Custom | — | Custom | Custom | Custom |
 
-**All tiers are paid — there is no free tier.** Every plan grants read access to properties, market data, investment calculators, spatial search, planning data, and lead generators. Professional and Business also include the `ai:chat` scope for conversational AI.
+**All tiers are paid — there is no free tier.** Every plan grants read access to properties, market data, investment calculators, spatial search, planning data, lead generators, EPC certificates, UPRN, demographics, flood risk, and heritage data. Professional and Business also include the `ai:chat` and `build-cost:read` scopes.
+
+> **Per-request value:** at every tier we're cheaper per request than the closest UK competitor AND give 20–25× higher per-second rate limits than equivalent tiers at PropertyData.
 
 **Enterprise** plans are custom-provisioned (negotiated limits, dedicated infrastructure, SLAs). Email `api@propaideals.co.uk` to discuss.
 
@@ -48,11 +50,11 @@ Sleep for `retry_after` seconds and retry. See [retry policy](./errors#recommend
 
 ### Monthly request quota — HARD cap
 
-The plan's `monthly_request_limit` is a **hard ceiling** (not a soft target). Example for Professional at 250,000 requests/month:
+The plan's `monthly_request_limit` is a **hard ceiling** (not a soft target). Example for Professional at 100,000 requests/month:
 
-- Request #249,999 → ✅ 200 OK, `X-Monthly-Usage: 249999`
-- Request #250,000 → ✅ 200 OK, `X-Monthly-Usage: 250000`
-- Request #250,001 → ❌ 429 `monthly_quota_exceeded`
+- Request #99,999 → ✅ 200 OK, `X-Monthly-Usage: 99999`
+- Request #100,000 → ✅ 200 OK, `X-Monthly-Usage: 100000`
+- Request #100,001 → ❌ 429 `monthly_quota_exceeded`
 
 Once you've consumed the full quota, **every subsequent request returns 429** until the calendar month rolls over or you upgrade your plan.
 
@@ -60,9 +62,9 @@ Once you've consumed the full quota, **every subsequent request returns 429** un
 {
   "error": {
     "code": "monthly_quota_exceeded",
-    "message": "Monthly request quota exceeded (250000/250000). Upgrade your plan or wait until the next billing period.",
-    "used": 250000,
-    "limit": 250000
+    "message": "Monthly request quota exceeded (100000/100000). Upgrade your plan or wait until the next billing period.",
+    "used": 100000,
+    "limit": 100000
   }
 }
 ```
@@ -82,9 +84,9 @@ When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Non-AI endpoints c
 {
   "error": {
     "code": "ai_chat_quota_exceeded",
-    "message": "AI chat quota exceeded (2500/2500). Upgrade your plan or wait until the next billing period.",
-    "used": 2500,
-    "limit": 2500
+    "message": "AI chat quota exceeded (1000/1000). Upgrade your plan or wait until the next billing period.",
+    "used": 1000,
+    "limit": 1000
   }
 }
 ```
@@ -114,7 +116,7 @@ X-RateLimit-Limit: 25           # Per-second cap for this key (matches your plan
 X-RateLimit-Remaining: 23       # Per-second budget left in this 1-second window
 X-Request-Cost: 1               # How much this request consumed (1 for most, 5 for AI)
 X-Monthly-Usage: 4321           # Requests used this billing period (after this call)
-X-Monthly-Limit: 250000         # Your plan's monthly hard cap
+X-Monthly-Limit: 100000         # Your plan's monthly hard cap
 ```
 
 The same data appears in the response envelope:
@@ -124,7 +126,7 @@ The same data appears in the response envelope:
   "meta": {
     "usage": {
       "monthly_used": 4321,
-      "monthly_limit": 250000,
+      "monthly_limit": 100000,
       "request_cost": 1
     }
   }
@@ -143,9 +145,9 @@ curl https://api.propaideals.co.uk/api/v1/api-billing/usage \
 ```json
 {
   "requests_used": 4321,
-  "requests_limit": 250000,
+  "requests_limit": 100000,
   "ai_chat_used": 87,
-  "ai_chat_limit": 2500,
+  "ai_chat_limit": 1000,
   "plan_tier": "professional",
   "plan_name": "Professional",
   "billing_period_start": "2026-04-01T00:00:00+00:00",
@@ -210,7 +212,7 @@ Use the search endpoints (`GET /api/v1/properties?area=...&limit=100`) instead o
 
 Log `meta.usage.monthly_used` on every response. Page yourself when usage crosses **80%** of your monthly limit so you can upgrade before hitting the hard cap.
 
-For Professional (250,000 requests/month), 80% = 200,000 requests. At 25 req/s sustained, that's ~2.2 hours. At 5 req/s sustained, that's 11 hours. Set your alerting accordingly.
+For Professional (100,000 requests/month), 80% = 80,000 requests. At 25 req/s sustained, that's ~53 minutes. At 5 req/s sustained, that's ~4.4 hours. Set your alerting accordingly.
 
 ### Handle `429` and `503` with exponential backoff
 
