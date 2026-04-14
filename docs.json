@@ -8,7 +8,7 @@
     "light": "#2563EB",
     "dark": "#0F4C81"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg",
@@ -43,6 +43,7 @@
               "endpoints/demographics",
               "endpoints/flood-risk",
               "endpoints/heritage",
+              "endpoints/points-of-interest",
               "endpoints/build-cost",
               "endpoints/ai-chat",
               "endpoints/api-keys"

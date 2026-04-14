@@ -1,0 +1,175 @@
+---
+title: Points of Interest
+description: Look up nearby airports, hospitals, and tourist attractions for any UK coordinate. Useful for serviced-accommodation demand modeling, area-quality scoring, and BTL targeting medical professionals or tourism hotspots.
+---
+
+# Points of Interest
+
+Three spatial endpoints that return the nearest UK airports, hospitals, or tourist attractions to any coordinate. Backed by a PostGIS `ST_DWithin` radius search over curated UK datasets.
+
+> **Required scope:** `areas:read` — included in all three plans (Starter, Professional, Business).
+
+## Nearby airports
+
+```http
+GET /api/v1/points-of-interest/airports
+```
+
+Returns commercial and regional UK airports within a radius. Defaults to a 50 km radius — most short-let investors target properties within ~1 hour of a major airport.
+
+### Query parameters
+
+| Param | Type | Default | Range | Description |
+|---|---|---|---|---|
+| `lat` | float | required | -90 to 90 | Latitude in WGS84 |
+| `lon` | float | required | -180 to 180 | Longitude in WGS84 |
+| `radius_km` | float | `50.0` | 1.0 - 200.0 | Search radius in kilometres |
+| `limit` | int | `10` | 1 - 50 | Maximum results |
+
+### Example
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/points-of-interest/airports?lat=51.47&lon=-0.45&radius_km=30" \
+  -H "Authorization: Bearer $PROPAI_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "category": "airports",
+    "lat": 51.47,
+    "lon": -0.45,
+    "radius_km": 30.0,
+    "count": 3,
+    "records": [
+      {
+        "name": "London Heathrow",
+        "city": "London",
+        "region": "Greater London",
+        "latitude": 51.4706,
+        "longitude": -0.4619,
+        "type": "international",
+        "distance_meters": 1180,
+        "extra": { "iata_code": "LHR", "icao_code": "EGLL" }
+      }
+    ]
+  },
+  "meta": { "request_id": "...", "timestamp": 1731.., "latency_ms": 34 }
+}
+```
+
+## Nearby hospitals
+
+```http
+GET /api/v1/points-of-interest/hospitals
+```
+
+Returns NHS and private hospitals within a radius. Defaults to 5 km — the typical catchment area for targeting BTL units to healthcare workers.
+
+### Query parameters
+
+| Param | Type | Default | Range |
+|---|---|---|---|
+| `lat` | float | required | -90 to 90 |
+| `lon` | float | required | -180 to 180 |
+| `radius_km` | float | `5.0` | 0.5 - 50.0 |
+| `limit` | int | `20` | 1 - 100 |
+
+### Example
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/points-of-interest/hospitals?lat=51.5074&lon=-0.1278&radius_km=3" \
+  -H "Authorization: Bearer $PROPAI_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "category": "hospitals",
+    "lat": 51.5074,
+    "lon": -0.1278,
+    "radius_km": 3.0,
+    "count": 8,
+    "records": [
+      {
+        "name": "University College Hospital",
+        "city": "London",
+        "region": "Greater London",
+        "latitude": 51.5246,
+        "longitude": -0.1357,
+        "type": "nhs_acute",
+        "distance_meters": 1850,
+        "extra": { "nhs_code": "RRV03" }
+      }
+    ]
+  }
+}
+```
+
+## Nearby tourist attractions
+
+```http
+GET /api/v1/points-of-interest/tourist-attractions
+```
+
+Returns tourist attractions (museums, historic sites, theme parks, beaches) within a radius. Each record exposes `annual_visitors` when known — a strong demand signal for serviced accommodation and short-let investors.
+
+### Query parameters
+
+| Param | Type | Default | Range |
+|---|---|---|---|
+| `lat` | float | required | -90 to 90 |
+| `lon` | float | required | -180 to 180 |
+| `radius_km` | float | `5.0` | 0.5 - 50.0 |
+| `limit` | int | `20` | 1 - 100 |
+
+### Example
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/points-of-interest/tourist-attractions?lat=51.5014&lon=-0.1419&radius_km=2" \
+  -H "Authorization: Bearer $PROPAI_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "category": "tourist-attractions",
+    "lat": 51.5014,
+    "lon": -0.1419,
+    "radius_km": 2.0,
+    "count": 12,
+    "records": [
+      {
+        "name": "The British Museum",
+        "city": "London",
+        "region": "Greater London",
+        "latitude": 51.5194,
+        "longitude": -0.1270,
+        "type": "museum",
+        "distance_meters": 2140,
+        "extra": { "annual_visitors": 4097253 }
+      }
+    ]
+  }
+}
+```
+
+## Response record fields
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Name of the POI |
+| `city` | string \| null | City |
+| `region` | string \| null | Region / county |
+| `latitude` | float | WGS84 latitude |
+| `longitude` | float | WGS84 longitude |
+| `type` | string \| null | Subtype (e.g. `international`, `nhs_acute`, `museum`) |
+| `distance_meters` | int | Straight-line distance from the query point |
+| `extra` | object | Category-specific extras (`iata_code`, `nhs_code`, `annual_visitors`, ...) |
+
+## Notes
+
+- Results are ordered by ascending `distance_meters`.
+- Coordinates are in WGS84 (EPSG:4326).
+- Data is curated from Ordnance Survey OpenData, NHS Digital, Historic England, and public tourism datasets.
+- All three endpoints cost **1 request** against your monthly quota.
