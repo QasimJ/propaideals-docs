@@ -118,6 +118,18 @@ properties = res.json()["data"]["properties"]
 | `retirement` | boolean | Retirement property |
 | `shared_ownership` | boolean | Shared ownership scheme |
 
+#### Specialty property types
+
+Use these for niche / non-standard listings (block sales, commercial use classes, conversions). All five are extracted from listing **title and key features only** — not body description — so a regular flat described as *"set within an apartment block"* will not be tagged as a `block_of_flats` sale, and a house described as *"opposite the local care home"* will not be tagged as `is_care_home`.
+
+| Param | Type | Description |
+|---|---|---|
+| `block_of_flats` | boolean | Entire block of flats / portfolio of flats for sale (not individual units within a block) |
+| `is_care_home` | boolean | Care home, nursing home, sheltered housing, or **C2 Use Class** listings (incl. warden-assisted, extra care) |
+| `is_former_pub` | boolean | Public house, former pub, pub conversion, or freehouse — useful for redevelopment / change-of-use opportunities |
+| `is_hotel_bb` | boolean | Hotel, B&B, guest house, or boarding house |
+| `mixed_use` | boolean | Mixed-use property (commercial ground floor + residential upper, shop with flat, live/work) |
+
 #### Investment filters
 
 | Param | Type | Description |

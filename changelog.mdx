@@ -7,6 +7,18 @@ description: Prop AI Deals API release notes, breaking changes, and deprecation 
 
 This page lists user-visible changes to the Prop AI Deals API. We follow [SemVer](https://semver.org/) at the API level — breaking changes are versioned (`/api/v2/`) and announced at least 90 days in advance.
 
+## 2026-04-29 — Specialty property type filters
+
+**New:**
+- `is_former_pub` boolean filter on `GET /api/v1/properties` — match public houses, former pubs, pub conversions, and freehouses (redevelopment / change-of-use opportunities)
+- `is_care_home` extended to cover **C2 Use Class** listings — patterns now include `sheltered housing`, `sheltered accommodation`, `c2 use class`, `warden assisted`, `extra care`
+
+**Changed:**
+- `block_of_flats`, `is_care_home`, `is_hotel_bb`, `mixed_use`, and `is_former_pub` are now extracted from listing **title and key features only** — not body description. Regular flats described as *"set within an apartment block"* and houses described as *"opposite the care home"* are no longer mis-tagged. Active inventory has been re-extracted.
+
+**Fixed:**
+- Cut `block_of_flats` false positives from ~74% to baseline (5,630 → 1,455 properties tagged) by tightening patterns and dropping weak signals (`apartment block`, `flat block`, `entire block`)
+
 ## 2026-04-14 — Public API beta launch
 
 **New:**
