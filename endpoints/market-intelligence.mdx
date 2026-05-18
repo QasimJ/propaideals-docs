@@ -1,0 +1,112 @@
+---
+title: Market intelligence endpoints
+description: District-level market metrics segmented by property type and bedroom band. Pull "3-bed terraced in SE15" figures instead of district-wide averages that blend studios with 5-bed detacheds. Required scope areas:read.
+---
+
+# Market intelligence
+
+Market intelligence endpoints expose aggregated metrics per UK postcode district — average sale prices, rental yields, days on market, deal scores — refreshed daily at 04:00–04:30 UTC. The flagship surface for investor research is the **segmented metrics** endpoint, which slices each district by property type and bedroom band so the figures match the asset you're evaluating.
+
+**Required scope:** `areas:read`
+**Cost:** 1 request per call
+
+## Segmented district metrics
+
+```http
+GET /api/v1/market-intelligence/districts/{district}/segments
+```
+
+Returns market metrics for a postcode district keyed on **property type group** and **bedroom band**. Without filters, returns one row per segment present in the district (one row per type × beds combination). With `property_type_group` and/or `bedrooms` query params, returns only the matching segment row(s).
+
+Backed by `mv_postcode_district_metrics_by_segment` — refreshed daily at 04:30 UTC.
+
+### Path parameters
+
+| Param | Type | Notes |
+|---|---|---|
+| `district` | string | The outcode portion of a UK postcode (e.g. `SE15`, `M1`, `EH4`). Case-insensitive. |
+
+### Query parameters
+
+| Param | Type | Description |
+|---|---|---|
+| `property_type_group` | string | One of `flat`, `terraced`, `semi-detached`, `detached`. Bungalows are folded into `detached` to match the underlying normaliser. Omit to return every group present. |
+| `bedrooms` | integer (1–20) | Subject bedroom count. The MV bands `5+` bedrooms into a single bucket — values above 5 are clamped server-side. Omit to return every bedroom band. |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/market-intelligence/districts/SE15/segments?property_type_group=terraced&bedrooms=3" \
+  -H "Authorization: Bearer paid_..."
+```
+
+### Response
+
+```json
+{
+  "postcode_district": "SE15",
+  "property_type_group": "terraced",
+  "bedroom_band": 3,
+  "segments": [
+    {
+      "postcode_district": "SE15",
+      "property_type_group": "terraced",
+      "bedroom_band": 3,
+      "active_property_count": 28,
+      "total_property_count": 142,
+      "avg_price": 685000,
+      "median_price": 695000,
+      "avg_yield": 4.21,
+      "avg_days_on_market": 64,
+      "avg_rent_pcm": 2410,
+      "new_listings_30d": 11,
+      "stc_count": 4,
+      "computed_at": "2026-05-26T04:31:00Z"
+    }
+  ]
+}
+```
+
+### Field reference
+
+| Field | Source population | Notes |
+|---|---|---|
+| `avg_price` | Sale listings only (`listing_type='sale'`) | Mean asking price across active sale listings in the segment. |
+| `median_price` | Sale listings only | Median asking price — the figure to quote when defending a number to a client. |
+| `avg_rent_pcm` | Rent listings only (`listing_type='rent'`) | Mean asking rent (£/month) on live rental listings in the segment. |
+| `avg_yield` | Sale listings only | Mean back-calculated gross yield. Values outside 0–30% are excluded as outliers. |
+| `avg_days_on_market` | Sale listings only | Mean DOM at the time of MV refresh. |
+| `active_property_count` | All listings | Count of properties with `status='active'`. |
+| `total_property_count` | All listings | Count of properties matched into the segment (active + non-active). Drives the `HAVING COUNT(*) >= 3` threshold. |
+| `new_listings_30d` | Sale listings only | Sale listings created in the trailing 30 days. |
+| `stc_count` | All listings | Properties currently `status='under_offer'`. |
+| `bedroom_band` | n/a | Subject bedroom count, clamped to `5` for 5+. |
+
+### Empty segments
+
+A segment row is only present when at least three matching properties exist in the source. Combinations below that threshold are omitted entirely — the API does not return a stub row with null metrics. If your call returns `segments: []`, widen the bedroom or type filter, or check the parent district detail endpoint to see what's available.
+
+### Subject vs. all-segments mode
+
+Two main use cases:
+
+- **Subject context:** pass `property_type_group` + `bedrooms` to get the single row matching a specific property. Used by the Prop AI Deals property page to render "Like-for-like in {outcode}".
+- **District landscape:** omit both filters to get every segment present in the district. Useful for comparing how different bedroom counts price across property types in the same area.
+
+### Caveats
+
+- The MV is refreshed daily — a property that listed yesterday will not move the medians until 04:30 UTC tomorrow.
+- `bedroom_band = 5` aggregates every 5+ bedroom property in the segment. For high-end markets where 6-bed vs 8-bed materially differ, fall back to the [Properties endpoint](./properties) to enumerate.
+- `avg_yield` uses the back-calculated yield on sale listings (the projected yield if the asset were tenanted). It is **not** a measure of realised rental returns.
+
+## Use cases
+
+- **Like-for-like area context on a property page** — Pass the subject's `property_type_group` + `bedrooms` to surface "3-bed terraced in SE15: median £695k · 4.21% yield · 64 days on market" alongside the property listing itself.
+- **Type-bracket comparison** — Pull the whole district (no filters) to chart how `flat` vs `terraced` vs `detached` price within the same bedroom band.
+- **Bedroom-band scoring** — Aggregate by `property_type_group='flat'` across all bedroom bands to surface the rent-per-bed sweet spot in a specific outcode.
+
+## Related endpoints
+
+- **[Area aggregates](./area-aggregates)** — Outcode-level yield / rent / agent aggregates from the live-listings repository (refreshed continuously). Use for fresher but unsegmented figures.
+- **[Market data](./market-data)** — Sold-price history and on-street comparables for a specific property.
+- **[Properties](./properties)** — Drill into the underlying listings that contribute to a segment.
