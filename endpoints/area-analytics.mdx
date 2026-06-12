@@ -1,0 +1,543 @@
+---
+title: Area analytics endpoints
+description: Area intelligence lookups (amenities, transport, schools, walkability), postcode-level market analytics, and area investor pack PDF generation for any UK location.
+---
+
+# Area analytics
+
+Location-level intelligence for screening areas before you screen properties. Three families of endpoints: **area intelligence** (`/api/v1/area`) for point-based lookups of amenities, transport, schools and walkability; **area analytics** (`/api/v1/area-analytics`) for postcode-level market aggregates (prices, trends, yields, BMV mix, stock turnover); and **area pack** (`/api/v1/area-pack`) for a generated investor report PDF.
+
+**Required scope:** `areas:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+<Note>
+The `/api/v1/area` endpoints are available to every API plan. The `/api/v1/area-analytics` and `/api/v1/area-pack` endpoints carry an additional gate enforced in the API itself: the platform account linked to your API key must be on a **Pro or Founder** subscription. Other accounts receive `402 Payment Required` with an upgrade message.
+</Note>
+
+## Get nearby amenities
+
+```http
+GET /api/v1/area/amenities
+```
+
+Amenities (shops, leisure, healthcare, etc.) within a radius of a point, sorted by distance.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/area/amenities?latitude=53.4808&longitude=-2.2426&radius_km=2&limit=50" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area/amenities",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"latitude": 53.4808, "longitude": -2.2426, "radius_km": 2.0},
+)
+for a in res.json()["amenities"]:
+    print(f"{a['name']} ({a['category']}) — {a['distance_km']} km")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `latitude` | float | Yes | Centre point latitude (-90 to 90) |
+| `longitude` | float | Yes | Centre point longitude (-180 to 180) |
+| `radius_km` | float | No | Search radius in km (0.1–10, default 2.0) |
+| `category` | string | No | Filter to one amenity category |
+| `limit` | integer | No | Max results (1–200, default 50) |
+
+### Response
+
+```json
+{
+  "location": { "latitude": 53.4808, "longitude": -2.2426 },
+  "radius_km": 2.0,
+  "amenities": [
+    {
+      "id": "b3f1c9a2-...",
+      "name": "Tesco Express",
+      "category": "supermarket",
+      "subcategory": "convenience",
+      "address": "12 High Street, Manchester",
+      "latitude": 53.4821,
+      "longitude": -2.2401,
+      "distance_km": 0.24
+    }
+  ],
+  "count": 1,
+  "category": null
+}
+```
+
+## Get nearby transport links
+
+```http
+GET /api/v1/area/transport
+```
+
+Train, tube, bus and tram links within a radius of a point, sorted by distance (max 50 results).
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/area/transport?latitude=53.4808&longitude=-2.2426&radius_km=1.5&transport_type=train" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area/transport",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"latitude": 53.4808, "longitude": -2.2426, "transport_type": "train"},
+)
+for t in res.json()["transport_links"]:
+    print(f"{t['name']} ({t['transport_type']}) — {t['distance_km']} km")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `latitude` | float | Yes | Centre point latitude (-90 to 90) |
+| `longitude` | float | Yes | Centre point longitude (-180 to 180) |
+| `radius_km` | float | No | Search radius in km (0.1–5, default 1.5) |
+| `transport_type` | string | No | Filter: `train`, `tube`, `bus`, `tram` |
+
+### Response
+
+```json
+{
+  "location": { "latitude": 53.4808, "longitude": -2.2426 },
+  "radius_km": 1.5,
+  "transport_links": [
+    {
+      "id": "7e2d4f10-...",
+      "name": "Manchester Piccadilly",
+      "transport_type": "train",
+      "lines": ["Northern", "TransPennine Express"],
+      "latitude": 53.4774,
+      "longitude": -2.2309,
+      "distance_km": 0.86
+    }
+  ],
+  "count": 1,
+  "transport_type": "train"
+}
+```
+
+## Get nearby schools
+
+```http
+GET /api/v1/area/schools
+```
+
+Schools within a radius of a point, ordered by Ofsted rating then distance (max 50 results).
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/area/schools?latitude=53.4808&longitude=-2.2426&radius_km=3&school_type=primary" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area/schools",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"latitude": 53.4808, "longitude": -2.2426, "school_type": "primary"},
+)
+for s in res.json()["schools"]:
+    print(f"{s['name']} — {s['ofsted_label']} ({s['distance_km']} km)")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `latitude` | float | Yes | Centre point latitude (-90 to 90) |
+| `longitude` | float | Yes | Centre point longitude (-180 to 180) |
+| `radius_km` | float | No | Search radius in km (0.5–10, default 3.0) |
+| `school_type` | string | No | `primary`, `secondary`, `sixth_form`, `special`, `all` |
+| `min_rating` | integer | No | Ofsted rating filter (1 = Outstanding, 4 = Inadequate) |
+
+### Response
+
+```json
+{
+  "location": { "latitude": 53.4808, "longitude": -2.2426 },
+  "radius_km": 3.0,
+  "schools": [
+    {
+      "id": "a91c5e77-...",
+      "name": "St Mary's Primary School",
+      "school_type": "primary",
+      "ofsted_rating": 1,
+      "ofsted_label": "Outstanding",
+      "address": "Church Road, Manchester",
+      "latitude": 53.4852,
+      "longitude": -2.2510,
+      "distance_km": 0.71
+    }
+  ],
+  "count": 1,
+  "filters": { "school_type": "primary", "min_rating": null }
+}
+```
+
+## Get area demographics (by postcode)
+
+```http
+GET /api/v1/area/demographics/{area}
+```
+
+Demographic snapshot for the postcode district containing the supplied postcode (e.g. `M1 4BT` resolves to district `M1`), including a housing tenure breakdown. Returns `404` if no demographic record exists for the district. For the richer ONS dataset (crime rating, deprivation index), see **[Demographics](./demographics)**.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/area/demographics/M1%204BT \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area/demographics/M1 4BT",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+demo = res.json()
+print(f"Population: {demo['population']:,}")
+print(f"Average income: £{demo['average_income']:,.0f}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `area` | string | Yes | UK postcode (full or district); resolved to the postcode district |
+
+### Response
+
+```json
+{
+  "postcode": "M1",
+  "population": 28412,
+  "median_age": 28.4,
+  "household_count": 14256,
+  "average_income": 31250.50,
+  "employment_rate": 76.20,
+  "tenure": {
+    "owner_occupied": 4120,
+    "private_rented": 8330,
+    "social_rented": 1806
+  },
+  "data_available": true
+}
+```
+
+## Get walkability score
+
+```http
+GET /api/v1/area/walkability
+```
+
+Walkability score (0–100) for a point, computed from nearby amenity density and bus access.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/area/walkability?latitude=53.4808&longitude=-2.2426" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area/walkability",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"latitude": 53.4808, "longitude": -2.2426},
+)
+data = res.json()
+print(f"{data['walkability_score']}/100 — {data['rating']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `latitude` | float | Yes | Point latitude (-90 to 90) |
+| `longitude` | float | Yes | Point longitude (-180 to 180) |
+
+### Response
+
+```json
+{
+  "location": { "latitude": 53.4808, "longitude": -2.2426 },
+  "walkability_score": 88,
+  "rating": "Very Walkable",
+  "nearby_amenities": 34,
+  "nearby_transport": 4,
+  "breakdown": {
+    "amenities_score": 50,
+    "transport_score": 18,
+    "infrastructure_score": 20
+  }
+}
+```
+
+`rating` is one of `Walker's Paradise` (≥90), `Very Walkable` (≥70), `Somewhat Walkable` (≥50), `Car-Dependent`.
+
+## Compare locations
+
+```http
+POST /api/v1/area/compare-locations
+```
+
+Score 2–5 locations on transport, schools and amenities and identify the strongest.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/area/compare-locations \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '[
+    {"name": "City Centre", "latitude": 53.4808, "longitude": -2.2426},
+    {"name": "Didsbury", "latitude": 53.4185, "longitude": -2.2316}
+  ]'
+```
+
+```python
+import requests
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/area/compare-locations",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json=[
+        {"name": "City Centre", "latitude": 53.4808, "longitude": -2.2426},
+        {"name": "Didsbury", "latitude": 53.4185, "longitude": -2.2316},
+    ],
+)
+print(res.json()["best_location"])
+```
+
+The request body is a JSON **array** of 2–5 location objects:
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `latitude` | float | Yes | Location latitude |
+| `longitude` | float | Yes | Location longitude |
+| `name` | string | No | Label echoed in the response (defaults to `Location N`) |
+
+### Response
+
+```json
+{
+  "locations": [
+    {
+      "name": "City Centre",
+      "location": { "latitude": 53.4808, "longitude": -2.2426 },
+      "scores": {
+        "transport": 85.0,
+        "schools": 64.0,
+        "amenities": 78.5,
+        "overall": 75.8
+      }
+    },
+    {
+      "name": "Didsbury",
+      "location": { "latitude": 53.4185, "longitude": -2.2316 },
+      "scores": {
+        "transport": 60.0,
+        "schools": 86.0,
+        "amenities": 62.0,
+        "overall": 69.3
+      }
+    }
+  ],
+  "best_location": "City Centre",
+  "comparison_count": 2
+}
+```
+
+## Get postcode analytics
+
+```http
+GET /api/v1/area-analytics/{postcode}
+```
+
+Postcode-level market aggregates for charts and reports: price by bedroom band and property type, price trend, days on market, sold-vs-asking ratios, rental distribution and gross yield, BMV mix, stock turnover, tenure/EPC/council-tax mix, planning and investor activity.
+
+**Plan gate:** the platform account linked to your key must be on **Pro or Founder** — otherwise `402 Payment Required`.
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/area-analytics/M14BT?property_type=flat" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area-analytics/M14BT",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"property_type": "flat"},
+)
+data = res.json()
+print(f"Sample size: {data['sample_size']} ({data['confidence']} confidence)")
+print(f"Median rent: £{data['rent_distribution']['median_pcm']}/mo")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `postcode` | string | Yes | Full UK postcode, with or without space (e.g. `M14BT` or `M1 4BT`). Invalid lengths return `400` |
+| `property_type` | string | No | Filter every signal to one type (e.g. `flat`, `semi-detached`, `Detached House`); portal/Land Registry variants are normalised server-side |
+
+### Response
+
+```json
+{
+  "postcode": "M1 4BT",
+  "sample_size": 142,
+  "confidence": "high",
+  "generated_at": "2026-06-12T10:30:00Z",
+  "cache_hit": false,
+  "by_bedroom": [
+    { "bedrooms": 2, "median_price": 215000, "mean_price": 224500, "median_psqft": 310, "sample_size": 64 }
+  ],
+  "by_property_type": [
+    { "property_type": "Flat", "median_psqft": 305, "median_price": 198000, "sample_size": 88 }
+  ],
+  "price_trend": [
+    { "month": "2026-05-01", "median_price": 212500, "sale_count": 9 }
+  ],
+  "days_on_market": [
+    { "bucket": "0-30", "count": 21 },
+    { "bucket": "31-60", "count": 14 }
+  ],
+  "sold_vs_asking": { "median_ratio": 0.97, "p10_ratio": 0.89, "p90_ratio": 1.02, "sample_size": 58 },
+  "transaction_volume": [
+    { "month": "2026-05-01", "median_price": 212500, "sale_count": 9 }
+  ],
+  "tier_mix": { "gold": 12, "silver": 31, "bronze": 47, "supporting": 52 },
+  "tenure_mix": { "freehold": 38, "leasehold": 96, "other": 8 },
+  "epc_mix": { "a": 1, "b": 14, "c": 52, "d": 48, "e": 17, "f": 4, "g": 1, "unknown": 5 },
+  "rent_distribution": {
+    "median_pcm": 1150,
+    "p10_pcm": 850,
+    "p90_pcm": 1495,
+    "sample_size": 73,
+    "median_gross_yield_pct": 6.4
+  },
+  "bmv_distribution": {
+    "over_20pct": 3, "pct_15_to_20": 5, "pct_10_to_15": 11,
+    "pct_5_to_10": 19, "pct_0_to_5": 32, "above_market": 26, "sample_size": 96
+  },
+  "stock_turnover": { "active_listings": 41, "annual_sales": 102, "months_of_supply": 4.8 },
+  "new_vs_reduced": { "new_30d": 12, "reduced_30d": 7, "new_90d": 33, "reduced_90d": 18 },
+  "investor_activity": { "non_standard_pct": 8.5, "flip_pct": 3.1 },
+  "planning_activity": { "approvals_12mo": 14, "rejections_12mo": 3, "pending": 6 },
+  "council_tax_mix": {
+    "band_a": 22, "band_b": 41, "band_c": 38, "band_d": 19,
+    "band_e": 7, "band_f": 2, "band_g": 1, "band_h": 0,
+    "avg_band_d_charge_gbp": 1980
+  }
+}
+```
+
+### Field reference (top level)
+
+| Field | Type | Description |
+|---|---|---|
+| `postcode` | string | Normalised postcode queried |
+| `sample_size` | integer | Comparable sales backing the aggregates |
+| `confidence` | string | `high` / `medium` / `low` based on sample size |
+| `generated_at` | ISO 8601 | When the response was computed |
+| `cache_hit` | boolean | Whether the result came from cache |
+| `by_bedroom` | array | Median/mean price and £/sqft per bedroom count |
+| `by_property_type` | array | Median price and £/sqft per property type |
+| `price_trend` / `transaction_volume` | array | Monthly median price + sale count series |
+| `days_on_market` | array | Listing counts in `0-30` / `31-60` / `61-90` / `91-180` / `180+` day buckets |
+| `sold_vs_asking` | object | Median, p10 and p90 sold-price-to-asking-price ratios |
+| `tier_mix` | object | Comparable confidence tiers (gold/silver/bronze/supporting) |
+| `tenure_mix` / `epc_mix` / `council_tax_mix` | object | Stock composition counts |
+| `rent_distribution` | object | Median/p10/p90 rent (£ pcm) + median gross yield % |
+| `bmv_distribution` | object | Active listings bucketed by below-market-value % |
+| `stock_turnover` | object | Active listings, annual sales, months of supply |
+| `new_vs_reduced` | object | New vs price-reduced listings, 30 and 90 days |
+| `investor_activity` | object | % non-standard transactions and % likely flips |
+| `planning_activity` | object | Planning approvals/rejections (12 months) + pending |
+
+## Generate an area investor pack (PDF)
+
+```http
+POST /api/v1/area-pack/{postcode}/generate
+```
+
+Generates a postcode-level investor report and streams it back as a PDF (`application/pdf` with a `Content-Disposition: attachment` header). Report metadata is returned in custom `X-Area-Pack-*` response headers.
+
+**Plan gate:** every report tier (`lite`, `full`, `branded`) requires the linked platform account to be on **Pro or Founder** — otherwise `402 Payment Required`. An unknown `tier` value returns `400`.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/area-pack/M14BT/generate \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{"postcode": "M1 4BT", "tier": "full"}' \
+  --output area-pack-m1.pdf
+```
+
+```python
+import requests
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/area-pack/M14BT/generate",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={"postcode": "M1 4BT", "tier": "full"},
+)
+with open("area-pack-m1.pdf", "wb") as f:
+    f.write(res.content)
+print(f"Sample size: {res.headers['X-Area-Pack-Sample-Size']}")
+print(f"Confidence: {res.headers['X-Area-Pack-Confidence']}")
+```
+
+Path parameter:
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `postcode` | string | Yes | Full UK postcode. The URL postcode is canonical and overrides the body's `postcode` |
+
+Request body:
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `postcode` | string | Yes | UK postcode, with or without space (5–8 chars) |
+| `tier` | string | No | `lite` (default), `full`, or `branded` |
+| `branding` | object | No | Custom branding override; only used when `tier=branded`. Omit to use your saved branding |
+
+### Response
+
+The body is the raw PDF bytes. Metadata headers:
+
+| Header | Description |
+|---|---|
+| `Content-Disposition` | `attachment; filename="..."` |
+| `X-Area-Pack-Tier` | Tier the report was generated at |
+| `X-Area-Pack-Sample-Size` | Comparable sales backing the report |
+| `X-Area-Pack-Confidence` | `high` / `medium` / `low` |
+| `X-Area-Pack-Generation-Ms` | Server-side generation time in milliseconds |
+
+## Scheduled area reports
+
+`/api/v1/area-report-subscriptions` provides CRUD for scheduled email delivery of area reports (`POST` to create with `postcode`, `tier`, `cadence` of `weekly`/`monthly` and a `delivery_email`; `GET` to list active subscriptions; `DELETE /{subscription_id}` to deactivate). It is reachable over API-key auth with the same Pro/Founder plan gate as the area pack, but it is primarily a dashboard feature — reports are delivered by email on a schedule rather than returned over the API.
+
+## Related endpoints
+
+- **[Area aggregates (yields/rents/agents)](./area-aggregates)** — Yield and rent aggregates for the same areas
+- **[Demographics](./demographics)** — ONS census, deprivation index and crime rating by district
+- **[Market intelligence](./market-intelligence)** — Wider market signals and trends

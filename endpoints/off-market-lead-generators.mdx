@@ -1,0 +1,401 @@
+---
+title: Off-market lead generators endpoint
+description: Area-based scanners for off-market properties — motivated sellers classified HOT/WARM/STANDARD/LOW by ownership duration, equity gained, motivation score, and yield, with company-ownership and distress signals.
+---
+
+# Off-market lead generators
+
+An off-market lead generator is a saved, area-based scanner (outcodes or a drawn polygon) that surfaces properties **not currently listed for sale** but showing seller-motivation signals: long ownership duration, equity gained since last sale, high motivation score, serial-investor ownership, or negative equity. Each matched property carries a lead classification — `hot`, `warm`, `standard`, or `low` — plus enrichment badges for company-owned, distressed-company, and silently-pulled (recently delisted) properties.
+
+The workflow is: create a lead generator over your target area, then query its `/properties` endpoint with filters and sorting to pull ranked leads. The `/counts` endpoint gives the classification breakdown for the area.
+
+**Required scope:** `leads:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+<Note>
+The number of lead generators you can hold at once is capped by your plan. Creating one beyond the cap returns `403` — delete an existing generator first. Each generator is tied to the account that created it.
+</Note>
+
+## List your lead generators
+
+```http
+GET /api/v1/off-market-lead-generators
+```
+
+Returns all active off-market lead generators for the authenticated account, plus your plan limit and remaining headroom.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/off-market-lead-generators \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/off-market-lead-generators",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+body = res.json()
+print(f"{body['count']} generators, {body['remaining']} slots remaining")
+```
+
+### Response
+
+```json
+{
+  "lead_generators": [
+    {
+      "id": "8c1f6a2e-3b4d-4e5f-9a0b-1c2d3e4f5a6b",
+      "name": "Manchester city centre",
+      "selected_outcodes": ["M1", "M4"],
+      "polygon_wkt": null,
+      "search_criteria": {
+        "min_ownership_years": 10,
+        "min_motivation_score": 60
+      },
+      "map_center_lat": 53.4808,
+      "map_center_lng": -2.2426,
+      "map_zoom": 13.0,
+      "alert_enabled": false,
+      "alert_id": null,
+      "last_checked_at": "2026-06-10T09:14:02Z",
+      "new_since_last_check": 4,
+      "classification_counts": null,
+      "is_active": true,
+      "created_at": "2026-05-02T11:30:00Z",
+      "updated_at": "2026-06-10T09:14:02Z"
+    }
+  ],
+  "count": 1,
+  "limit": 10,
+  "remaining": 9
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `lead_generators` | array | Your active lead generators (fields per object as above) |
+| `count` | integer | Number of generators returned |
+| `limit` | integer | Maximum allowed on your plan |
+| `remaining` | integer | How many more you can create |
+
+## Create a lead generator
+
+```http
+POST /api/v1/off-market-lead-generators
+```
+
+Either `selected_outcodes` or `polygon_wkt` must be provided (a `400` is returned if both are missing). Returns `201` with the created generator.
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/off-market-lead-generators \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Manchester city centre",
+    "selected_outcodes": ["M1", "M4"],
+    "search_criteria": {
+      "min_ownership_years": 10,
+      "min_motivation_score": 60
+    }
+  }'
+```
+
+```python
+import requests
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/off-market-lead-generators",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={
+        "name": "Manchester city centre",
+        "selected_outcodes": ["M1", "M4"],
+        "search_criteria": {"min_ownership_years": 10},
+    },
+)
+lg = res.json()
+print(f"Created lead generator {lg['id']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Name for the generator (1–100 chars) |
+| `selected_outcodes` | string[] | One of these | Outcode strings, e.g. `["EH1", "EH2"]` (normalised to uppercase) |
+| `polygon_wkt` | string | One of these | WKT geometry for a custom drawn area |
+| `search_criteria` | object | No | Default off-market filter criteria (ownership years, motivation, yield, etc.) applied to every `/properties` call |
+| `map_center_lat` | float | No | Saved map centre latitude (−90 to 90) |
+| `map_center_lng` | float | No | Saved map centre longitude (−180 to 180) |
+| `map_zoom` | float | No | Saved map zoom level (1–22) |
+| `alert_enabled` | boolean | No | Enable alert notifications (default `false`) |
+
+### Response
+
+Same object shape as a single entry in the list response above (`201 Created`).
+
+## Get a lead generator
+
+```http
+GET /api/v1/off-market-lead-generators/{lg_id}
+```
+
+Returns a single lead generator by UUID, including its classification counts.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/off-market-lead-generators/8c1f6a2e-3b4d-4e5f-9a0b-1c2d3e4f5a6b \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/off-market-lead-generators/{lg_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+lg = res.json()
+print(f"{lg['name']}: {lg['classification_counts']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `lg_id` | UUID (path) | Yes | The lead generator ID. A non-UUID returns `400`; an unknown ID returns `404` |
+
+### Response
+
+Same object shape as the list response, with `classification_counts` populated:
+
+```json
+{
+  "id": "8c1f6a2e-3b4d-4e5f-9a0b-1c2d3e4f5a6b",
+  "name": "Manchester city centre",
+  "selected_outcodes": ["M1", "M4"],
+  "classification_counts": {
+    "hot": 18,
+    "warm": 64,
+    "standard": 211,
+    "low": 95
+  },
+  "is_active": true,
+  "created_at": "2026-05-02T11:30:00Z"
+}
+```
+
+## Search off-market properties
+
+```http
+GET /api/v1/off-market-lead-generators/{lg_id}/properties
+```
+
+The core search endpoint. Returns properties within the generator's area matching its saved `search_criteria`, with any query parameters below applied as per-request overrides. Results are paginated (max 100 per page).
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/off-market-lead-generators/8c1f6a2e-3b4d-4e5f-9a0b-1c2d3e4f5a6b/properties?classification=hot&sort_by=motivation_score&min_ownership_years=15&limit=20" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/off-market-lead-generators/{lg_id}/properties",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={
+        "classification": "hot",
+        "sort_by": "motivation_score",
+        "min_ownership_years": 15,
+        "limit": 20,
+    },
+)
+body = res.json()
+for prop in body["properties"]:
+    print(f"{prop['full_address']} — owned {prop['years_owned']}y, "
+          f"motivation {prop['motivation_score']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `lg_id` | UUID (path) | Yes | The lead generator ID |
+| `classification` | string | No | Single classification filter: `hot`, `warm`, `standard`, `low` |
+| `sort_by` | string | No | `motivation_score`, `ownership_duration`, `gross_yield`, `equity_gained`, `transaction_count`, `newest`, `oldest`, `price_asc`, `price_desc`, `estimate_asc`, `estimate_desc` |
+| `page` | integer | No | Page number (default 1) |
+| `limit` | integer | No | Results per page (1–100, default 20) |
+| `min_ownership_years` | integer | No | Minimum years owned |
+| `min_motivation_score` | float | No | Minimum motivation score |
+| `min_yield` | float | No | Minimum gross yield (%) |
+| `serial_investment_only` | boolean | No | Only properties with multiple historic sales (serial investors) |
+| `underwater_only` | boolean | No | Only properties estimated below their last sold price |
+| `min_price` | integer | No | Minimum last sold price (£) |
+| `max_price` | integer | No | Maximum last sold price (£) |
+| `min_bedrooms` | integer | No | Minimum bedrooms |
+| `max_bedrooms` | integer | No | Maximum bedrooms |
+| `property_types` | string | No | Comma-separated property types |
+| `lead_classifications` | string | No | Comma-separated classifications, e.g. `hot,warm` |
+
+### Response
+
+```json
+{
+  "properties": [
+    {
+      "id": "4f3a2b1c-9d8e-4a7b-8c6d-5e4f3a2b1c0d",
+      "full_address": "12 Example Street, Manchester, M1 4AB",
+      "postcode": "M1 4AB",
+      "outcode": "M1",
+      "property_type": "Terraced",
+      "bedrooms": 3,
+      "bathrooms": 1,
+      "last_sold_date": "2008-03-14",
+      "last_sold_price": 124000.0,
+      "years_owned": 18,
+      "sale_estimate_current": 215000.0,
+      "equity_gain_pct": 73.4,
+      "rent_estimate_current": 1150.0,
+      "gross_yield_pct": 6.4,
+      "motivation_score": 82.0,
+      "lead_classification": "hot",
+      "historic_sales_count": 1,
+      "is_serial_investment": false,
+      "is_underwater": false,
+      "latitude": 53.4794,
+      "longitude": -2.2453,
+      "rm_tenure": "Freehold",
+      "rm_price_trajectory": null,
+      "is_company_owned": true,
+      "company_name": "Example Holdings Ltd",
+      "company_status": "active",
+      "is_distressed_company": false,
+      "silent_pull_tier": "recent",
+      "thumbnail_image_url": "https://..."
+    }
+  ],
+  "total": 18,
+  "page": 1,
+  "limit": 20,
+  "has_more": false
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | Off-market property record ID |
+| `full_address` / `postcode` / `outcode` | string | Address fields |
+| `property_type` / `bedrooms` / `bathrooms` | mixed | Basic attributes |
+| `last_sold_date` | ISO date | Date of last recorded sale |
+| `last_sold_price` | float | Last sold price (£) |
+| `years_owned` | integer | Years since the last sale |
+| `sale_estimate_current` | float | Current estimated sale value (£) |
+| `equity_gain_pct` | float | % gain between last sold price and current estimate |
+| `rent_estimate_current` | float | Estimated monthly rent (£) |
+| `gross_yield_pct` | float | Estimated gross yield (%) |
+| `motivation_score` | float | Composite seller-motivation score |
+| `lead_classification` | string | `hot` / `warm` / `standard` / `low` |
+| `historic_sales_count` | integer | Number of recorded historic sales |
+| `is_serial_investment` | boolean | Owner has bought/sold repeatedly |
+| `is_underwater` | boolean | Current estimate below last sold price |
+| `latitude` / `longitude` | float | Coordinates |
+| `rm_tenure` | string | Tenure where known (e.g. `Freehold`) |
+| `rm_price_trajectory` | string | Price trajectory signal where known |
+| `is_company_owned` | boolean | Present when matched to a company-owned title |
+| `company_name` / `company_status` | string | Owning company details (when company-owned) |
+| `is_distressed_company` | boolean | Owning company shows distress signals (when company-owned) |
+| `silent_pull_tier` | string | Present when the property was recently delisted without selling |
+| `thumbnail_image_url` | string | Listing image where available |
+| `total` / `page` / `limit` / `has_more` | mixed | Pagination metadata |
+
+<Note>
+The company-ownership and silent-pull fields are best-effort enrichments — they are only present on rows where a match was found. Under heavy load the search degrades gracefully: you may receive an empty page with `"degraded": true` rather than an error; retry shortly.
+</Note>
+
+## Get classification counts
+
+```http
+GET /api/v1/off-market-lead-generators/{lg_id}/counts
+```
+
+Returns the property count breakdown by lead classification for the generator's area — useful for sizing an area before pulling pages of leads.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/off-market-lead-generators/8c1f6a2e-3b4d-4e5f-9a0b-1c2d3e4f5a6b/counts \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/off-market-lead-generators/{lg_id}/counts",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+counts = res.json()
+print(f"HOT leads: {counts['hot']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `lg_id` | UUID (path) | Yes | The lead generator ID |
+
+### Response
+
+```json
+{
+  "hot": 18,
+  "warm": 64,
+  "standard": 211,
+  "low": 95
+}
+```
+
+## Update or delete a lead generator
+
+```http
+PUT /api/v1/off-market-lead-generators/{lg_id}
+DELETE /api/v1/off-market-lead-generators/{lg_id}
+```
+
+`PUT` accepts the same fields as create — all optional, only provided fields are changed (a body with no fields returns `400`). `DELETE` soft-deletes the generator (returns `204 No Content`) and frees a slot against your plan cap.
+
+### Request
+
+```bash
+curl -X PUT https://api.propaideals.co.uk/api/v1/off-market-lead-generators/8c1f6a2e-3b4d-4e5f-9a0b-1c2d3e4f5a6b \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{"search_criteria": {"min_yield": 7.0}}'
+```
+
+```python
+import requests
+
+requests.delete(
+    f"https://api.propaideals.co.uk/api/v1/off-market-lead-generators/{lg_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+```
+
+### Response
+
+`PUT` returns the updated lead generator object (same shape as create). `DELETE` returns `204` with no body.
+
+## Use cases
+
+- **Direct-to-vendor sourcing** — Pull `hot` leads with long ownership and high equity, then run letter or door-knock campaigns
+- **BTL deal origination** — Filter by `min_yield` to find off-market stock that pencils as a rental before it ever lists
+- **Company-owned targeting** — Surface `is_company_owned` / `is_distressed_company` titles for portfolio acquisition approaches
+- **Failed-listing follow-up** — `silent_pull_tier` flags properties recently withdrawn without selling — motivated vendors with a known asking-price anchor
+
+## Related endpoints
+
+- **[Lead generators](./lead-generators)** — On-market scanners over live listings with the same saved-search model
+- **[Properties](./properties)** — Search and retrieve live on-market property records

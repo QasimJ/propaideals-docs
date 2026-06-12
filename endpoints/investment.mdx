@@ -1,0 +1,599 @@
+---
+title: Investment analysis endpoints
+description: Buy-to-let metrics, HMO/BRRR/Flip/SA strategy calculators, strategy comparison, stamp duty, mortgage maths, and saved calculations for any UK property.
+---
+
+# Investment analysis
+
+Run full investment underwriting against any of our 2.1M+ UK properties, or in standalone mode with your own numbers. Covers buy-to-let metrics (yield, cash flow, ROI, payback), four specialist strategy calculators (HMO, BRRR, Flip, Serviced Accommodation), side-by-side strategy comparison, stamp duty across all three UK tax systems, and a saved-calculations store. Rental estimates are derived from our market data tables (refreshed continuously from live listings) when you don't supply rent yourself.
+
+**Required scope:** `investment:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Calculate investment metrics for a property
+
+```http
+POST /api/v1/investment/calculate/{property_id}
+```
+
+Comprehensive buy-to-let underwriting for a specific property: stamp duty, acquisition costs, mortgage payment, rental income (estimated from local market data if not supplied), yields, cash flow, ROI and payback period. Results are cached, so repeat calls with the same parameters return faster.
+
+### Body parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `purchase_price` | float | No | Override price (defaults to the property's listing price) |
+| `deposit_percentage` | float | No | Deposit % (5–100, default `25`) |
+| `mortgage_rate` | float | No | Annual interest rate % (0–20, default `5.5`) |
+| `mortgage_term_years` | integer | No | Term in years (1–40, default `25`) |
+| `monthly_rent` | float | No | Expected monthly rent (estimated from market data if omitted) |
+| `is_additional_property` | boolean | No | Affects stamp duty surcharge (default `true`) |
+| `refurbishment_costs` | float | No | Refurbishment budget (default `0`) |
+| `other_costs` | float | No | Any other acquisition costs (default `0`) |
+| `ground_rent_annual` | float | No | Annual ground rent (default `0`) |
+| `service_charge_annual` | float | No | Annual service charge (default `0`) |
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/investment/calculate/4f9c1a2e-... \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deposit_percentage": 25,
+    "mortgage_rate": 5.5,
+    "mortgage_term_years": 25,
+    "is_additional_property": true
+  }'
+```
+
+```python
+import requests
+
+res = requests.post(
+    f"https://api.propaideals.co.uk/api/v1/investment/calculate/{property_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={"deposit_percentage": 25, "mortgage_rate": 5.5},
+)
+calc = res.json()["calculations"]
+print(f"Gross yield: {calc['gross_yield']:.1f}%")
+print(f"Monthly cash flow: £{calc['monthly_cash_flow']:,.0f}")
+```
+
+### Response
+
+```json
+{
+  "property_id": "4f9c1a2e-...",
+  "calculations": {
+    "purchase_price": 150000.0,
+    "stamp_duty": 4500.0,
+    "legal_fees": 1500.0,
+    "survey_fees": 500.0,
+    "refurbishment_costs": 0,
+    "sourcing_fee": 0,
+    "total_investment": 44000.0,
+    "initial_investment": 44000.0,
+    "monthly_rent": 1100.0,
+    "annual_rent": 13200.0,
+    "monthly_expenses": 275.0,
+    "annual_expenses": 3300.0,
+    "gross_yield": 8.8,
+    "net_yield": 6.6,
+    "monthly_cash_flow": 134.14,
+    "annual_cash_flow": 1609.68,
+    "roi_percentage": 3.66,
+    "payback_period_years": 27.3,
+    "deposit_required": 37500.0,
+    "loan_amount": 112500.0,
+    "monthly_mortgage": 690.86,
+    "cash_on_cash_return": 3.66,
+    "calculated_at": "2026-06-12T10:15:00"
+  },
+  "cached": false,
+  "calculation_time_ms": 142.5
+}
+```
+
+When `cached` is `true` the payload also includes `cache_hit_time_ms` instead of `calculation_time_ms`.
+
+## Strategy calculators (HMO / BRRR / Flip / SA)
+
+Four specialist calculators share the same pattern: a property-specific variant that loads the listing price from our database, and a `standalone` variant where you supply the purchase price yourself.
+
+```http
+POST /api/v1/investment/calculate-hmo/{property_id}
+POST /api/v1/investment/calculate-hmo/standalone
+POST /api/v1/investment/calculate-brrr/{property_id}
+POST /api/v1/investment/calculate-brrr/standalone
+POST /api/v1/investment/calculate-flip/{property_id}
+POST /api/v1/investment/calculate-flip/standalone
+POST /api/v1/investment/calculate-sa/{property_id}
+POST /api/v1/investment/calculate-sa/standalone
+```
+
+| Strategy | Key body params | Headline response fields |
+|---|---|---|
+| **HMO** | `rooms[]` (min 3, each `{room_type, monthly_rent}`), `occupancy_rate`, `utilities_monthly`, `cleaning_monthly`, `hmo_license_cost`, `management_fee_percentage` | `metrics.gross_yield_percentage`, `net_yield_percentage`, `monthly_cashflow`, `roi_percentage`, `total_room_rent`, `average_rent_per_room`, plus `compliance_notes[]` |
+| **BRRR** | `refurbishment_costs` (itemised dict), `after_repair_value` (must exceed purchase price), `refinance_ltv`, `bridge_ltv`, `bridge_finance_rate`, `bridge_finance_months`, `monthly_rent` | `metrics.cash_left_in_deal`, `equity_released`, `refinance_amount`, `roce_percentage`, `capital_efficiency_percentage`, `bridge_finance_cost` |
+| **Flip** | `purchase_price` (required), `renovation_costs` (itemised dict), `expected_sale_price`, `holding_period_months`, `bridge_finance_rate`, `agent_fee_percentage`, `location` (standalone) | `metrics.net_profit`, `profit_on_cost_percentage`, `annualized_return_percentage`, `total_costs`, `stamp_duty`, `tax_system_name` (SDLT/LBTT/LTT), plus `tax_notes[]` |
+| **SA** | `nightly_rate`, `occupancy_rate`, `platform_fee_percentage`, `cleaning_cost_per_booking`, `average_stay_nights`, optional seasonal model (`use_seasonal_model` + `peak/shoulder/offpeak_occupancy`) | `metrics.revpan`, `occupancy_adjusted_revenue`, `bookings_per_year`, `net_revenue`, plus `comparison_with_btl` and `licensing_notes[]` |
+
+All four also accept the shared mortgage parameters (`deposit_percentage`, `mortgage_rate`, `mortgage_term_years`, `interest_only`) and an optional `sourcing_fee`. Validation errors (e.g. BRRR `after_repair_value` not exceeding purchase price) return `400`; an unknown `property_id` returns `404`.
+
+### Request (HMO example)
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/investment/calculate-hmo/4f9c1a2e-... \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "purchase_price": 250000,
+    "deposit_percentage": 25,
+    "mortgage_rate": 5.5,
+    "rooms": [
+      {"room_type": "ensuite", "monthly_rent": 650},
+      {"room_type": "double", "monthly_rent": 550},
+      {"room_type": "double", "monthly_rent": 550},
+      {"room_type": "single", "monthly_rent": 450}
+    ],
+    "occupancy_rate": 85,
+    "utilities_monthly": 200,
+    "cleaning_monthly": 150,
+    "hmo_license_cost": 500,
+    "management_fee_percentage": 12
+  }'
+```
+
+```python
+import requests
+
+res = requests.post(
+    f"https://api.propaideals.co.uk/api/v1/investment/calculate-hmo/{property_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={
+        "purchase_price": 250000,
+        "rooms": [
+            {"room_type": "ensuite", "monthly_rent": 650},
+            {"room_type": "double", "monthly_rent": 550},
+            {"room_type": "double", "monthly_rent": 550},
+            {"room_type": "single", "monthly_rent": 450},
+        ],
+        "occupancy_rate": 85,
+        "utilities_monthly": 200,
+        "cleaning_monthly": 150,
+    },
+)
+metrics = res.json()["metrics"]
+print(f"Net yield: {metrics['net_yield_percentage']}%")
+print(f"Monthly cashflow: £{metrics['monthly_cashflow']}")
+```
+
+### Response (HMO, abridged)
+
+```json
+{
+  "success": true,
+  "metrics": {
+    "gross_yield_percentage": "10.56",
+    "net_yield_percentage": "7.10",
+    "monthly_cashflow": "612.40",
+    "annual_cashflow": "7348.80",
+    "roi_percentage": "9.42",
+    "payback_period_years": "10.6",
+    "total_investment": "78000.00",
+    "total_room_rent": "2200.00",
+    "occupancy_adjusted_rent": "1870.00",
+    "utilities_cost_monthly": "200.00",
+    "cleaning_cost_monthly": "150.00",
+    "hmo_license_cost_monthly": "41.67",
+    "enhanced_insurance_cost_monthly": "87.50",
+    "management_fee_monthly": "224.40",
+    "room_count": 4,
+    "average_rent_per_room": "550.00",
+    "monthly_mortgage": "1151.43",
+    "net_cashflow_monthly": "612.40"
+  },
+  "compliance_notes": [
+    "HMO licensing varies by UK region (Scotland: 3+ unrelated, England/Wales: typically 5+ from 2+ households)",
+    "Fire safety compliance (alarms, doors, emergency lighting) required (all UK regions)"
+  ],
+  "warnings": [],
+  "calculated_at": "2026-06-12T10:15:00"
+}
+```
+
+BRRR, Flip and SA responses follow the same `{success, metrics, warnings, calculated_at}` envelope with the strategy-specific `metrics` fields from the table above (Flip adds `tax_notes[]`, SA adds `comparison_with_btl` and `licensing_notes[]`). Numeric metrics are serialised as decimal strings.
+
+## Compare strategies
+
+```http
+POST /api/v1/investment/compare-strategies/{property_id}
+```
+
+Runs multiple strategy calculations in parallel for one property and recommends the strategy with the highest ROI.
+
+### Body parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `strategies` | string[] | Yes | 2–5 of `BTL`, `HMO`, `BRRR`, `FLIP`, `SA` |
+| `hmo_params` | object | Conditional | Required when `HMO` is selected (HMO body, see above) |
+| `brrr_params` | object | Conditional | Required when `BRRR` is selected |
+| `flip_params` | object | Conditional | Required when `FLIP` is selected |
+| `sa_params` | object | Conditional | Required when `SA` is selected |
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/investment/compare-strategies/4f9c1a2e-... \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "strategies": ["HMO", "SA"],
+    "hmo_params": { "...": "HMO body" },
+    "sa_params": { "...": "SA body" }
+  }'
+```
+
+```python
+import requests
+
+res = requests.post(
+    f"https://api.propaideals.co.uk/api/v1/investment/compare-strategies/{property_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={"strategies": ["HMO", "SA"], "hmo_params": hmo_body, "sa_params": sa_body},
+)
+comparison = res.json()["comparison"]
+print(f"Recommended: {comparison['recommended_strategy']}")
+print(comparison["recommendation_reason"])
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "comparison": {
+    "btl": null,
+    "hmo": { "gross_yield_percentage": "10.56", "roi_percentage": "9.42", "...": "full HMO metrics" },
+    "brrr": null,
+    "flip": null,
+    "sa": { "gross_yield_percentage": "12.10", "roi_percentage": "11.85", "...": "full SA metrics" },
+    "recommended_strategy": "SA",
+    "recommendation_reason": "SA provides highest ROI (11.85%) with net yield of 8.20%"
+  },
+  "property_id": "4f9c1a2e-...",
+  "calculated_at": "2026-06-12T10:15:00"
+}
+```
+
+## Stamp duty
+
+```http
+POST /api/v1/investment/stamp-duty
+```
+
+Stamp duty for a purchase price, with the additional-property surcharge applied by default (the typical investor case).
+
+### Body parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `price` | float | Yes | Property purchase price (must be > 0) |
+| `is_additional_property` | boolean | No | Apply the additional-property surcharge (default `true`) |
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/investment/stamp-duty \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{"price": 350000, "is_additional_property": true}'
+```
+
+```python
+import requests
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/investment/stamp-duty",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={"price": 350000, "is_additional_property": True},
+)
+duty = res.json()
+print(f"Stamp duty: £{duty['stamp_duty']:,.0f} ({duty['effective_rate']:.2f}%)")
+```
+
+### Response
+
+```json
+{
+  "purchase_price": 350000,
+  "stamp_duty": 15500.0,
+  "is_additional_property": true,
+  "effective_rate": 4.43,
+  "breakdown": [
+    { "threshold": 250000, "rate": 3, "amount": 7500 },
+    { "threshold": 100000, "rate": 8, "amount": 8000 }
+  ]
+}
+```
+
+## Quick investment estimate
+
+```http
+GET /api/v1/investment/calculator/quick-estimate
+```
+
+A back-of-envelope estimate without a specific property — useful for budgeting before you've found a deal.
+
+### Query parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `price` | integer | Yes | Property price (> 0) |
+| `bedrooms` | integer | Yes | Number of bedrooms (1–10) |
+| `area` | string | Yes | Area name (echoed back in the response) |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/investment/calculator/quick-estimate?price=200000&bedrooms=3&area=Leeds" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/investment/calculator/quick-estimate",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"price": 200000, "bedrooms": 3, "area": "Leeds"},
+)
+print(res.json()["estimate"])
+```
+
+### Response
+
+```json
+{
+  "estimate": {
+    "purchase_price": 200000.0,
+    "monthly_rent": 1000.0,
+    "gross_yield": 6.0,
+    "net_yield": 4.5,
+    "monthly_cash_flow": 85.20,
+    "roi_percentage": 1.74,
+    "...": "same calculation fields as /calculate/{property_id}"
+  },
+  "area": "Leeds",
+  "bedrooms": 3
+}
+```
+
+If the full calculation cannot run, a simplified `estimate` is returned (`purchase_price`, `estimated_monthly_rent`, `estimated_gross_yield`, `area`, `bedrooms`) with a `note` explaining it's a rough estimate.
+
+## Mortgage calculator
+
+```http
+GET /api/v1/investment/mortgage-calculator
+```
+
+Simple repayment-mortgage maths: monthly payment, total payments and total interest.
+
+### Query parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `loan_amount` | float | Yes | Loan amount (> 0) |
+| `interest_rate` | float | Yes | Annual interest rate % (0–20) |
+| `term_years` | integer | Yes | Loan term in years (1–40) |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/investment/mortgage-calculator?loan_amount=150000&interest_rate=5.5&term_years=25" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/investment/mortgage-calculator",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"loan_amount": 150000, "interest_rate": 5.5, "term_years": 25},
+)
+print(f"Monthly payment: £{res.json()['monthly_payment']:,.2f}")
+```
+
+### Response
+
+```json
+{
+  "loan_amount": 150000.0,
+  "interest_rate": 5.5,
+  "term_years": 25,
+  "monthly_payment": 921.13,
+  "total_payments": 276337.96,
+  "total_interest": 126337.96
+}
+```
+
+## Find high-yield properties
+
+```http
+GET /api/v1/investment/high-yield
+```
+
+Returns live properties meeting a minimum gross-yield threshold, sorted by yield.
+
+### Query parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `min_yield` | float | No | Minimum gross yield % (0–20, default `6.0`) |
+| `max_price` | integer | No | Maximum property price |
+| `limit` | integer | No | Max results (1–100, default `20`) |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/investment/high-yield?min_yield=8&max_price=200000&limit=10" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/investment/high-yield",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"min_yield": 8, "max_price": 200000, "limit": 10},
+)
+for prop in res.json()["properties"]:
+    print(prop["title"], prop["gross_yield"])
+```
+
+### Response
+
+```json
+{
+  "properties": [
+    {
+      "property_id": "4f9c1a2e-...",
+      "title": "3 bed terraced house for sale",
+      "address": "Example Street, Bradford BD4",
+      "price_numeric": 110000.0,
+      "bedrooms": 3,
+      "gross_yield": 9.8,
+      "monthly_rent": 900.0
+    }
+  ],
+  "count": 10,
+  "criteria": { "min_yield": 8.0, "max_price": 200000 }
+}
+```
+
+## ROI scenarios
+
+```http
+GET /api/v1/investment/property/{property_id}/roi-scenarios
+```
+
+Three pre-modelled scenarios for one property — best case (4.5% rate, no refurb), worst case (7.0% rate, £10k refurb + £5k other costs) and most likely (5.5% rate, £5k refurb) — each containing the full calculation payload from `/calculate/{property_id}`. Cached for 2 hours.
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/investment/property/4f9c1a2e-.../roi-scenarios \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/investment/property/{property_id}/roi-scenarios",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+for name, scenario in res.json()["scenarios"].items():
+    print(name, scenario["monthly_cash_flow"])
+```
+
+### Response
+
+```json
+{
+  "property_id": "4f9c1a2e-...",
+  "scenarios": {
+    "best_case": { "gross_yield": 8.8, "monthly_cash_flow": 245.10, "...": "full calculation fields" },
+    "worst_case": { "gross_yield": 8.8, "monthly_cash_flow": -38.50, "...": "full calculation fields" },
+    "most_likely": { "gross_yield": 8.8, "monthly_cash_flow": 134.14, "...": "full calculation fields" }
+  }
+}
+```
+
+## Calculations (saved calculations)
+
+CRUD store for persisting calculator runs against your account — useful for keeping underwriting alongside a property and re-importing it later.
+
+```http
+POST   /api/v1/calculations            # Save a calculation
+GET    /api/v1/calculations            # List saved calculations
+GET    /api/v1/calculations/{calc_id}  # Get one calculation
+PUT    /api/v1/calculations/{calc_id}  # Update name / notes
+DELETE /api/v1/calculations/{calc_id}  # Delete a calculation
+```
+
+### Save — body parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `calculator_type` | string | Yes | One of `rental-yield`, `mortgage`, `stamp-duty`, `roi`, `cashflow`, `btl`, `hmo`, `brrr`, `flip`, `sa` |
+| `name` | string | Yes | Calculation name (1–100 chars) |
+| `inputs` | object | Yes | The inputs you ran the calculation with (free-form) |
+| `outputs` | object | Yes | The calculated outputs (free-form) |
+| `notes` | string | No | Optional notes (max 1,000 chars) |
+| `property_id` | string | No | Property ID to link the calculation to |
+
+### List — query parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | string | No | Filter to calculations linked to a property |
+| `calculator_type` | string | No | Filter by calculator type |
+| `limit` | integer | No | Max results (default `50`, cap `100`) |
+| `offset` | integer | No | Pagination offset (default `0`) |
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/calculations \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "calculator_type": "btl",
+    "name": "BD4 terrace - base case",
+    "inputs": {"purchase_price": 110000, "monthly_rent": 900},
+    "outputs": {"gross_yield": 9.8, "monthly_cash_flow": 134.14},
+    "property_id": "4f9c1a2e-..."
+  }'
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/calculations",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"calculator_type": "btl", "limit": 20},
+)
+for calc in res.json()["calculations"]:
+    print(calc["name"], calc["created_at"])
+```
+
+### Response (save / get)
+
+```json
+{
+  "id": "9a3b7c1d-...",
+  "calculator_type": "btl",
+  "name": "BD4 terrace - base case",
+  "inputs": { "purchase_price": 110000, "monthly_rent": 900 },
+  "outputs": { "gross_yield": 9.8, "monthly_cash_flow": 134.14 },
+  "notes": null,
+  "property_id": "4f9c1a2e-...",
+  "created_at": "2026-06-12 10:15:00",
+  "updated_at": "2026-06-12 10:15:00"
+}
+```
+
+The list endpoint wraps results as `{"calculations": [...], "total": 20}`. `DELETE` returns `{"success": true, "message": "Calculation deleted"}`. All saved-calculation endpoints are scoped to the authenticated key's account — requesting another account's calculation returns `404`.
+
+## Related endpoints
+
+- **[Properties](./properties)** — Search and retrieve the property records these calculators run against
+- **[Market data](./market-data)** — Sold history, comparables, and rental market data feeding the estimates
+- **[Area aggregates](./area-aggregates)** — Area-level yields, rents and agent stats for screening

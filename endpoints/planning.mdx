@@ -1,0 +1,480 @@
+---
+title: Planning endpoint
+description: Nearby planning applications, conservation area and listed building status, and Article 4 direction checks for any UK postcode or property.
+---
+
+# Planning applications
+
+Returns planning intelligence for UK properties: nearby planning applications, conservation area and listed building (heritage) status, and Article 4 direction checks. Application data is sourced from PlanIt (England, Wales, Northern Ireland) and the Scotland Spatial Hub (Scottish postcodes — routing is automatic), with heritage and Article 4 data from the national Planning Data API. Results are queried live against the upstream sources; geometry, paginated, and conservation boundary responses are cached for up to 4 hours.
+
+**Required scope:** `planning:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+## Search planning applications by postcode
+
+Search nearby planning applications for any UK postcode — no property ID needed. The postcode is geocoded, then applications within the radius are returned with summary statistics.
+
+```http
+GET /api/v1/planning/search
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/planning/search?postcode=M1%204BT&radius_km=0.5" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/planning/search",
+    params={"postcode": "M1 4BT", "radius_km": 0.5},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+data = res.json()
+print(f"{data['summary']['total_count']} applications within {data['radius_km']}km")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `postcode` | string | Yes | Full UK postcode (e.g. `M1 4BT`). Invalid format returns `400`; a postcode that cannot be geocoded returns `422` |
+| `radius_km` | float | No | Search radius in km, `0.1`–`2.0` (default `0.5`) |
+
+### Response
+
+```json
+{
+  "postcode": "M1 4BT",
+  "latitude": 53.4773,
+  "longitude": -2.2349,
+  "radius_km": 0.5,
+  "applications": [
+    {
+      "reference": "23/00482/FUL",
+      "address": "12 Granby Row, Manchester M1 4BT",
+      "description": "Change of use from office to 8no. residential apartments",
+      "app_type": "Full Planning",
+      "status": "approved",
+      "status_color": "green",
+      "date_received": "2023-04-12",
+      "date_decided": "2023-07-03",
+      "decision": "Application Permitted",
+      "distance_meters": 84.2,
+      "authority_name": "Manchester City Council",
+      "url": "https://pa.manchester.gov.uk/online-applications/...",
+      "source": "planit",
+      "lat": 53.4775,
+      "lng": -2.2352
+    }
+  ],
+  "summary": {
+    "total_count": 14,
+    "pending_count": 3,
+    "approved_count": 9,
+    "refused_count": 2,
+    "same_street_count": 4
+  },
+  "source": "planit",
+  "error_message": null
+}
+```
+
+`status` is normalised to `pending` / `approved` / `refused` / `withdrawn` / `other`, and `source` is `planit` or `scotland_spatial_hub`. If planning data is temporarily unavailable the endpoint still returns `200` with an empty `applications` list and `error_message` set.
+
+## Get planning applications for a property
+
+Nearby planning applications for a property already in the platform, using its stored coordinates. Same response item shape and summary as the postcode search.
+
+```http
+GET /api/v1/planning/{property_id}/applications
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/applications?radius_km=0.5" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/applications",
+    params={"radius_km": 0.5},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+apps = res.json()["applications"]
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property is missing postcode or coordinate data |
+| `radius_km` | float | No | Search radius in km, `0.1`–`2.0` (default `0.5`) |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "postcode": "M1 4BT",
+  "applications": [
+    {
+      "reference": "23/00482/FUL",
+      "address": "12 Granby Row, Manchester M1 4BT",
+      "description": "Change of use from office to 8no. residential apartments",
+      "app_type": "Full Planning",
+      "status": "approved",
+      "status_color": "green",
+      "date_received": "2023-04-12",
+      "date_decided": "2023-07-03",
+      "decision": "Application Permitted",
+      "distance_meters": 84.2,
+      "authority_name": "Manchester City Council",
+      "url": "https://pa.manchester.gov.uk/online-applications/...",
+      "source": "planit",
+      "lat": 53.4775,
+      "lng": -2.2352
+    }
+  ],
+  "summary": {
+    "total_count": 14,
+    "pending_count": 3,
+    "approved_count": 9,
+    "refused_count": 2,
+    "same_street_count": 4
+  },
+  "source": "planit",
+  "error_message": null
+}
+```
+
+## Get heritage status for a property
+
+Checks whether a property sits in a conservation area or is a listed building, with a combined restriction summary.
+
+```http
+GET /api/v1/planning/{property_id}/heritage-status
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/heritage-status \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/heritage-status",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+heritage = res.json()
+print(f"Restriction level: {heritage['restrictions']['level']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property has no postcode |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "postcode": "EH3 6SS",
+  "in_conservation_area": true,
+  "conservation_area": {
+    "entity": 12345,
+    "name": "Edinburgh New Town",
+    "designation_date": "1970-01-01"
+  },
+  "is_listed_building": false,
+  "listed_buildings": [],
+  "restrictions": {
+    "requires_planning_permission": true,
+    "level": "medium",
+    "has_conservation_area": true,
+    "has_listed_building": false,
+    "has_article4": false
+  }
+}
+```
+
+`restrictions.level` is `none`, `medium` (conservation area), or `high` (listed building). `restrictions.has_article4` is always `false` here — use the dedicated Article 4 endpoint below.
+
+## Get Article 4 direction status
+
+Checks whether an Article 4 direction (removal of permitted development rights — commonly used to restrict HMO conversions) applies at the property's postcode.
+
+```http
+GET /api/v1/planning/{property_id}/article4-status
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/article4-status \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/article4-status",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+if res.json()["has_article4_restrictions"]:
+    print("Article 4 direction applies — HMO conversion likely needs planning permission")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property has no postcode |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "postcode": "EH3 6SS",
+  "has_article4_restrictions": true,
+  "article4_direction": {
+    "entity": 54321,
+    "name": "Edinburgh HMO Article 4",
+    "designation_date": "2016-01-01"
+  }
+}
+```
+
+## Get nearby applications (Planning Data API)
+
+A postcode-based application lookup against the national Planning Data API. For most use cases prefer `/{property_id}/applications` above, which uses coordinates and covers Scotland.
+
+```http
+GET /api/v1/planning/{property_id}/nearby-applications
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/nearby-applications?radius_miles=0.5" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/nearby-applications",
+    params={"radius_miles": 0.5},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+print(f"{res.json()['count']} applications found")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property has no postcode |
+| `radius_miles` | float | No | Search radius in miles, `0.1`–`5.0` (default `0.5`) |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "postcode": "EH3 6SS",
+  "radius_miles": 0.5,
+  "count": 3,
+  "applications": [
+    {
+      "entity": 98765,
+      "reference": "23/00002/FUL",
+      "description": "Proposed extension",
+      "decision_date": "2024-03-15",
+      "organisation_entity": 109
+    }
+  ]
+}
+```
+
+## Get applications by geometry
+
+Coordinate-based application search (more precise than postcode matching), with optional GeoJSON output for mapping. Cached for 4 hours.
+
+```http
+GET /api/v1/planning/{property_id}/applications-geometry
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/applications-geometry?radius_miles=0.5&format=geojson" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/applications-geometry",
+    params={"radius_miles": 0.5, "format": "geojson"},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+geo = res.json()["data"]
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property has no coordinates |
+| `radius_miles` | float | No | Search radius in miles, `0.1`–`5.0` (default `0.5`) |
+| `format` | string | No | `json` (default) or `geojson` |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "latitude": 53.4773,
+  "longitude": -2.2349,
+  "radius_miles": 0.5,
+  "format": "geojson",
+  "data": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": { "type": "Point", "coordinates": [-2.2352, 53.4775] },
+        "properties": {
+          "reference": "23/00482/FUL",
+          "description": "Change of use from office to 8no. residential apartments"
+        }
+      }
+    ]
+  }
+}
+```
+
+## Get all applications (paginated)
+
+Retrieves a larger result set via multiple upstream paginated requests — useful for dense urban areas with more than 100 applications. Cached for 4 hours.
+
+```http
+GET /api/v1/planning/{property_id}/applications-paginated
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/applications-paginated?max_results=500" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/applications-paginated",
+    params={"max_results": 500},
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+print(f"{res.json()['count']} applications retrieved")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property has no postcode |
+| `max_results` | integer | No | Maximum applications to retrieve, `100`–`1000` (default `500`) |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "postcode": "M1 4BT",
+  "max_results": 500,
+  "count": 327,
+  "applications": [
+    {
+      "entity": 98765,
+      "reference": "23/00482/FUL",
+      "description": "Change of use from office to 8no. residential apartments",
+      "decision_date": "2023-07-03",
+      "organisation_entity": 109
+    }
+  ]
+}
+```
+
+## Get conservation area boundaries (GeoJSON)
+
+Conservation area boundaries around the property as a GeoJSON FeatureCollection with MULTIPOLYGON geometry — ready for map overlays. Cached for 4 hours.
+
+```http
+GET /api/v1/planning/{property_id}/conservation-geojson
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/planning/123e4567-e89b-12d3-a456-426614174000/conservation-geojson \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/planning/{property_id}/conservation-geojson",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+feature_collection = res.json()["geojson"]
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `property_id` | UUID (path) | Yes | Property UUID. `404` if not found; `400` if the property has no postcode |
+
+### Response
+
+```json
+{
+  "property_id": "123e4567-e89b-12d3-a456-426614174000",
+  "postcode": "EH3 6SS",
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [[[[-3.2055, 55.9559], [-3.2031, 55.9571], [-3.2008, 55.9554], [-3.2055, 55.9559]]]]
+        },
+        "properties": {
+          "entity": 12345,
+          "name": "Edinburgh New Town"
+        }
+      }
+    ]
+  }
+}
+```
+
+## Use cases
+
+- **HMO due diligence** — Check Article 4 directions before underwriting an HMO conversion
+- **Refurbishment risk** — Conservation area or listed status changes what works need permission
+- **Development signals** — Nearby pending applications indicate area investment momentum
+- **Map overlays** — GeoJSON boundaries and application points for portfolio mapping tools
+
+## Related endpoints
+
+- **[Flood risk](./flood-risk)** — Flood zone overlap by point or property
+- **[Heritage status](./heritage)** — Listed building & conservation area data by property or outcode
+- **[Properties](./properties)** — Look up property UUIDs to feed into these endpoints

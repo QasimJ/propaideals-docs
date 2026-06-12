@@ -73,14 +73,15 @@ Each plan grants a set of scopes. The middleware checks the request path against
 
 | Scope | Endpoint prefix | What it grants |
 |---|---|---|
-| `properties:read` | `/api/v1/properties` | Listing search and detail |
-| `market-data:read` | `/api/v1/market-data` | Sold history, comparables |
-| `rentals:read` | `/api/v1/rentals` | Rental estimates, yields |
-| `investment:read` | `/api/v1/investment`, `/api/v1/calculations`, `/api/v1/evaluations` | Calculators and deal scoring |
-| `areas:read` | `/api/v1/areas`, `/api/v1/districts`, `/api/v1/market-intelligence` | Area-level analytics |
+| `properties:read` | `/api/v1/properties`, `/api/v1/media` | Listing search, detail, and the property image proxy |
+| `market-data:read` | `/api/v1/market-data` | Sold history, comparables, valuations |
+| `investment:read` | `/api/v1/investment`, `/api/v1/calculations` | Investment calculators and strategy comparison |
+| `areas:read` | `/api/v1/area`, `/api/v1/area-analytics`, `/api/v1/area-pack`, `/api/v1/area-report-subscriptions`, `/api/v1/market-intelligence`, `/api/v1/yields`, `/api/v1/rents`, `/api/v1/demographics`, `/api/v1/points-of-interest`, `/api/v1/agents-list` | Area-level analytics, yields, rents, demographics, POIs, estate agents |
 | `spatial:read` | `/api/v1/spatial` | Viewport / polygon / radius search |
-| `planning:read` | `/api/v1/planning` | Planning applications |
-| `leads:read` | `/api/v1/leads`, `/api/v1/off-market` | Off-market and motivated-seller signals |
+| `planning:read` | `/api/v1/planning`, `/api/v1/flood-risk`, `/api/v1/heritage` | Planning applications, flood risk, heritage constraints |
+| `leads:read` | `/api/v1/lead-generators`, `/api/v1/off-market-lead-generators` | Lead generators and off-market signals |
+| `epc:read` | `/api/v1/epc`, `/api/v1/uprn` | EPC certificates and UPRN lookups |
+| `build-cost:read` | `/api/v1/build-cost` | Build cost estimates (Spon's 2026) |
 | `ai:chat` | `/api/v1/ultimate-ai` | Conversational AI (cost: 5 per request) |
 
 Requests to a path your key doesn't have scope for return:

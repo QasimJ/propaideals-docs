@@ -1,0 +1,482 @@
+---
+title: Lead generators endpoint
+description: Create and run saved investment scanners — BMV, high-yield, motivated sellers, auctions and more — over 2.1M+ live UK listings, with match previews, status counts and CSV export.
+---
+
+# Lead generators
+
+Lead generators are saved investment scanners: an area (a set of outcodes or a drawn polygon) plus filter criteria (price, beds, yield, BMV, 60+ keyword flags such as `probate` or `needs_modernisation`), persisted server-side and queryable on demand. They run against 2.1M+ live UK listings refreshed daily, so the same scanner returns new deals each time you poll it. Typical integration: create a scanner once, then page through `/{lg_id}/properties` (or pull the CSV export) on a schedule.
+
+**Required scope:** `leads:read`
+**Cost:** 1 request per call
+**Available on:** Starter, Professional, Business
+
+<Note>
+Scanner endpoints are plan-gated on the underlying account: the number of scanners you can hold is limited by subscription tier, and a free-tier account returns `403`. Requests over a `paid_*` API key are authorised as the key owner's account.
+</Note>
+
+## List lead generators
+
+Returns all active lead generators for the authenticated account, with plan limit and remaining headroom.
+
+```http
+GET /api/v1/lead-generators
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/lead-generators \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/lead-generators",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+body = res.json()
+print(f"{body['count']} scanners, {body['remaining']} remaining of {body['limit']}")
+```
+
+No parameters.
+
+### Response
+
+```json
+{
+  "lead_generators": [
+    {
+      "id": "0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e",
+      "name": "Manchester BMV flats",
+      "selected_outcodes": ["M1", "M4", "M14"],
+      "polygon_wkt": null,
+      "search_criteria": {
+        "max_price": 200000,
+        "min_bedrooms": 2,
+        "bmv_only": true
+      },
+      "map_center_lat": 53.4808,
+      "map_center_lng": -2.2426,
+      "map_zoom": 12,
+      "alert_enabled": false,
+      "alert_id": null,
+      "last_checked_at": "2026-06-10T08:15:00Z",
+      "new_since_last_check": 14,
+      "status_counts": null,
+      "is_active": true,
+      "created_at": "2026-05-01T10:00:00Z",
+      "updated_at": "2026-06-10T08:15:00Z"
+    }
+  ],
+  "count": 1,
+  "limit": 50,
+  "remaining": 49
+}
+```
+
+## Preview match counts
+
+Fast COUNT preview for a scanner-in-the-making — see the rough size of the result set for a given area + criteria before saving. Where the chosen playbook has stored tiers, a gold/silver/bronze breakdown is included. Soft-fails (never errors): a failed count returns `status: "timeout"` with `total: 0`.
+
+```http
+POST /api/v1/lead-generators/preview
+```
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/lead-generators/preview \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "selected_outcodes": ["LS1", "LS2", "LS6"],
+    "search_criteria": {"max_price": 150000, "min_yield": 7}
+  }'
+```
+
+```python
+import requests
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/lead-generators/preview",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={
+        "selected_outcodes": ["LS1", "LS2", "LS6"],
+        "search_criteria": {"max_price": 150000, "min_yield": 7},
+    },
+)
+preview = res.json()
+print(f"{preview['total']} matches ({preview['area_total']} in area before filters)")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `selected_outcodes` | string[] | No* | Outcode strings, e.g. `["EH1", "EH2"]` (uppercased automatically) |
+| `polygon_wkt` | string | No* | WKT geometry for a custom drawn area |
+| `search_criteria` | object | No | Filter criteria, same shape as the create endpoint |
+
+*At least one of `selected_outcodes` or `polygon_wkt` should be set — with neither, the endpoint returns an empty preview (`status: "empty"`) without querying.
+
+### Response
+
+```json
+{
+  "total": 312,
+  "area_total": 4870,
+  "tier_breakdown": {
+    "gold": 12,
+    "silver": 84,
+    "bronze": 216
+  },
+  "playbook": "hmo_conversion",
+  "has_tier_data": true,
+  "status": "ok"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `total` | integer | Properties matching area + all criteria |
+| `area_total` | integer | Properties in the area before your criteria — if `total` is 0 but this is non-zero, your filters are too strict |
+| `tier_breakdown` | object \| null | Gold/silver/bronze counts when the chosen playbook has stored tiers; null otherwise |
+| `playbook` | string \| null | The playbook slug, if one was set in criteria |
+| `has_tier_data` | boolean | True when `tier_breakdown` is populated |
+| `status` | string | `ok` (honest count) / `capped` (`total` is a soft cap, real value higher) / `timeout` (count took too long — narrow the search) / `empty` (no area selected) |
+
+## Create a lead generator
+
+Persists a new scanner. Either `selected_outcodes` or `polygon_wkt` must be provided. Plan-based scanner count limits apply — exceeding them returns `403`.
+
+```http
+POST /api/v1/lead-generators
+```
+
+### Request
+
+```bash
+curl -X POST https://api.propaideals.co.uk/api/v1/lead-generators \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Leeds high-yield terraces",
+    "selected_outcodes": ["LS1", "LS2", "LS6"],
+    "search_criteria": {"max_price": 150000, "min_yield": 7}
+  }'
+```
+
+```python
+import requests
+
+res = requests.post(
+    "https://api.propaideals.co.uk/api/v1/lead-generators",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={
+        "name": "Leeds high-yield terraces",
+        "selected_outcodes": ["LS1", "LS2", "LS6"],
+        "search_criteria": {"max_price": 150000, "min_yield": 7},
+    },
+)
+scanner = res.json()
+print(f"Created scanner {scanner['id']}")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Scanner name, 1–100 characters |
+| `selected_outcodes` | string[] | No* | Outcode strings, e.g. `["EH1", "EH2"]` |
+| `polygon_wkt` | string | No* | WKT geometry for a custom drawn area |
+| `search_criteria` | object | No | Filter criteria (price, beds, type, yield, BMV, keyword flags, etc.) |
+| `map_center_lat` | float | No | Map centre latitude (−90 to 90) |
+| `map_center_lng` | float | No | Map centre longitude (−180 to 180) |
+| `map_zoom` | float | No | Map zoom level (1–22) |
+| `alert_enabled` | boolean | No | Enable alert notifications (default `false`) |
+
+*One of `selected_outcodes` or `polygon_wkt` is required — providing neither returns `400`.
+
+### Response
+
+Returns `201 Created` with the full lead generator object — same shape as a single item in the list response above.
+
+## Get a lead generator
+
+```http
+GET /api/v1/lead-generators/{lg_id}
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/lead-generators/0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/lead-generators/{lg_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+scanner = res.json()
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `lg_id` | UUID | Yes | Lead generator ID (path). Non-UUID values return `400`; unknown IDs return `404` |
+
+### Response
+
+The full lead generator object — same shape as a single item in the list response above.
+
+## Update a lead generator
+
+Only the fields you provide are changed.
+
+```http
+PUT /api/v1/lead-generators/{lg_id}
+```
+
+### Request
+
+```bash
+curl -X PUT https://api.propaideals.co.uk/api/v1/lead-generators/0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e \
+  -H "Authorization: Bearer paid_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Leeds yields 8%+", "search_criteria": {"min_yield": 8}}'
+```
+
+```python
+import requests
+
+res = requests.put(
+    f"https://api.propaideals.co.uk/api/v1/lead-generators/{lg_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={"name": "Leeds yields 8%+", "search_criteria": {"min_yield": 8}},
+)
+```
+
+Accepts the same fields as the create endpoint, all optional. Sending an empty body returns `400`.
+
+### Response
+
+The updated lead generator object.
+
+## Delete a lead generator
+
+Soft-deletes the scanner (sets it inactive). Returns `204 No Content`.
+
+```http
+DELETE /api/v1/lead-generators/{lg_id}
+```
+
+### Request
+
+```bash
+curl -X DELETE https://api.propaideals.co.uk/api/v1/lead-generators/0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+requests.delete(
+    f"https://api.propaideals.co.uk/api/v1/lead-generators/{lg_id}",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+```
+
+## Get matching properties
+
+The workhorse endpoint: paginated properties matching the scanner's area + saved criteria. Every filter below can also be passed as a query param to **override or narrow the saved criteria** for that request only. Results are cached for 15 minutes per unique filter combination.
+
+```http
+GET /api/v1/lead-generators/{lg_id}/properties
+```
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/lead-generators/0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e/properties?sort_by=best_bmv&page=1&limit=20&chain_free=true" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/lead-generators/{lg_id}/properties",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"sort_by": "best_bmv", "page": 1, "limit": 20, "chain_free": "true"},
+)
+body = res.json()
+for prop in body["properties"]:
+    print(f"{prop['address']} — {prop['price']} — BMV {prop['bmv_discount_percentage']}%")
+```
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `lg_id` | UUID | Yes | Lead generator ID (path) |
+| `status` | string | No | Status category or comma-separated list (OR'd): `active`, `available`, `back_on_market`, `reduced`, `back_and_reduced`, `sold_stc`, `under_offer`, `sold`, `withdrawn`, `removed` |
+| `sort_by` | string | No | `newest`, `oldest`, `price_asc`, `price_desc`, `highest_yield`, `best_bmv`, `best_investment`, `best_btl`, `best_hmo`, `best_brrr`, `best_flip`, `best_sa`, `best_r2r`, `bedroom_potential`, `most_motivated`, `recently_reduced`, `best_match` |
+| `page` | integer | No | Page number, ≥ 1 (default 1) |
+| `limit` | integer | No | Results per page, 1–100 (default 20) |
+| `min_price` / `max_price` | integer | No | Price bounds (£) |
+| `min_bedrooms` / `max_bedrooms` | integer | No | Bedroom bounds |
+| `bedrooms` | string | No | Comma-separated exact bedroom counts, e.g. `2,3` |
+| `property_types` | string | No | Comma-separated property types |
+| `min_yield` / `max_yield` | float | No | Estimated rental yield bounds (%) |
+| `bmv_only` | boolean | No | Below-market-value properties only |
+| `bmv_threshold` | float | No | Minimum BMV discount (%) |
+| `is_auction` | boolean | No | Auction properties only |
+| `auction_date_from` / `auction_date_to` | string | No | ISO date/datetime auction-date window (implies `is_auction=true`) |
+| `auction_unsold` | boolean | No | Post-auction unsold: auction date passed, listing still active/withdrawn |
+| `price_reduced` | boolean | No | Price-reduced listings only |
+| `min_days_on_market` / `max_days_on_market` | integer | No | Days-on-market bounds |
+| `epc_ratings` | string | No | Comma-separated EPC ratings, e.g. `D,E,F` |
+| `min_floor_area_sqft` / `max_floor_area_sqft` | float | No | Floor area bounds (sq ft) |
+| `agent_name` | string | No | Filter by estate agent name |
+| `exclude_new_builds` / `exclude_auction` / `exclude_retirement_homes` / `exclude_shared_ownership` | boolean | No | Exclusion toggles |
+| `property_category` | string | No | `residential` or `commercial` |
+| `ownership_type` | string | No | `company`, `private_landlord`, `owner_occupied` |
+| `playbook` | string | No | Playbook eligibility slug, e.g. `plot_subdivision`, `hmo_conversion` |
+| Keyword flags | boolean | No | Any of 60+ boolean keyword params, passed as `?flag=true`. Transaction: `chain_free`, `cash_buyer_only`, `quick_sale`, `motivated_seller`, `repossessed`, `probate`, `is_portfolio`, `is_empty_property`. Condition: `needs_modernisation`, `development_potential`, `stpp`, `planning_granted`, `japanese_knotweed`, `structural_issues`, `damp_issues`. Tenure: `freehold`, `leasehold`, `share_of_freehold`, `shared_ownership`, `short_lease`, `long_lease`. Investment: `tenanted`, `hmo_potential`, `hmo_licensed`, `investment_only`, `article4_area`, `affordable_housing`. Type/features/era/planning flags also accepted, e.g. `ex_local_authority`, `is_bungalow`, `has_garage`, `has_annexe`, `is_victorian`, `in_conservation_area`, `is_listed_building`, `has_outline_planning`, `is_greenbelt` |
+
+### Response
+
+```json
+{
+  "properties": [
+    {
+      "id": "7f2b9c1d-3e4a-4b5c-8d9e-0f1a2b3c4d5e",
+      "external_id": "145210334",
+      "source": "rightmove",
+      "title": "3 bedroom terraced house for sale",
+      "address": "14 Harehills Lane, Leeds",
+      "postcode": "LS8 5DR",
+      "area": "Leeds",
+      "price": "£135,000",
+      "price_numeric": 135000,
+      "bedrooms": 3,
+      "bathrooms": 1,
+      "property_type": "Terraced",
+      "status": "active",
+      "url": "https://www.rightmove.co.uk/properties/145210334",
+      "is_auction": false,
+      "first_seen": "2026-06-02T07:40:11",
+      "last_updated": "2026-06-11T06:05:43",
+      "images": ["https://media.rightmove.co.uk/..."],
+      "thumbnail_url": "https://media.rightmove.co.uk/...",
+      "latitude": 53.8211,
+      "longitude": -1.5104,
+      "days_on_market": 9,
+      "bmv_discount_percentage": 12.4,
+      "bmv_market_average": 154000,
+      "bmv_comparable_count": 18,
+      "estimated_rental_yield": 7.8,
+      "energy_rating": "D",
+      "floor_area_sqft": 904.0,
+      "listing_type": "sale",
+      "back_on_market": false,
+      "price_reduction_count": 1,
+      "previous_price_numeric": 142500.0,
+      "price_changed_date": "2026-06-08T00:00:00",
+      "agent_name": "Example Estates",
+      "chain_free": true,
+      "needs_modernisation": true,
+      "deal_score": 78.0,
+      "is_hot_deal": true,
+      "best_strategy": "btl",
+      "best_strategy_score": 81.0,
+      "estimated_rental_income": 875,
+      "is_dismissed": false
+    }
+  ],
+  "total": 312,
+  "page": 1,
+  "limit": 20,
+  "has_more": true
+}
+```
+
+Each property object also carries the full set of keyword booleans (`probate`, `repossessed`, `tenanted`, `hmo_potential`, …), per-strategy scores (`btl_score`, `hmo_score`, `flip_score`, `brrr_score`, `sa_score`, `r2r_score`, `motivation_score`), BMV metadata (`bmv_market_tier`, `bmv_confidence_level`, `bmv_data_source`), `bedroom_potential_score` / `bedroom_potential_tier`, `cash_flow`, `condition_tier` and `price_per_sqft`. Null when not yet enriched.
+
+## Get status counts
+
+Property count breakdown by status category for a scanner's area. Accepts the same filter query params as `/{lg_id}/properties` (excluding `status` itself) so counts stay aligned with a filtered result list.
+
+```http
+GET /api/v1/lead-generators/{lg_id}/counts
+```
+
+### Request
+
+```bash
+curl https://api.propaideals.co.uk/api/v1/lead-generators/0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e/counts \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/lead-generators/{lg_id}/counts",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+)
+counts = res.json()
+print(f"Available: {counts['available']}, Reduced: {counts['reduced']}")
+```
+
+### Response
+
+```json
+{
+  "available": 248,
+  "back_on_market": 17,
+  "reduced": 36,
+  "back_and_reduced": 5,
+  "sold_stc": 41,
+  "sold": 12,
+  "removed": 9
+}
+```
+
+## Export properties as CSV
+
+Streams a CSV of properties matching the scanner. Accepts the same filter / `sort_by` / `status` query params as `/{lg_id}/properties`. Capped at 10,000 rows, Excel-compatible (UTF-8 with BOM). The `X-Export-Row-Count` response header carries the row count.
+
+```http
+GET /api/v1/lead-generators/{lg_id}/export
+```
+
+### Request
+
+```bash
+curl -o leads.csv "https://api.propaideals.co.uk/api/v1/lead-generators/0c1f7a3e-8b2d-4f5a-9e6c-1d2a3b4c5d6e/export?sort_by=best_bmv&status=active" \
+  -H "Authorization: Bearer paid_..."
+```
+
+```python
+import requests
+
+res = requests.get(
+    f"https://api.propaideals.co.uk/api/v1/lead-generators/{lg_id}/export",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"sort_by": "best_bmv", "status": "active"},
+)
+print(f"Rows: {res.headers['X-Export-Row-Count']}")
+with open("leads.csv", "wb") as f:
+    f.write(res.content)
+```
+
+### Response
+
+`text/csv` stream with a `Content-Disposition: attachment` header. Columns mirror the property fields returned by `/{lg_id}/properties`.
+
+## Related endpoints
+
+- **[Off-market lead generators](./off-market-lead-generators)** — Off-market and distressed-stock scanners
+- **[Properties](./properties)** — Full property search and detail
+- **[Investment](./investment)** — Yield, BMV and strategy calculations
