@@ -5,13 +5,13 @@ description: Per-second rate limits, monthly request quotas, AI chat quotas, and
 
 # Rate limits
 
-The Prop AI Deals API enforces three types of limits on every `paid_*` key:
+The Prop AI Deals API enforces three types of limits on every `paid_*` request:
 
 1. **Per-second rate limit** — Sliding-window counter, rejects with `429` when exceeded
 2. **Monthly request quota** — **Hard cap** at the plan's `monthly_request_limit`. No soft/hard split, no 2× tolerance. Once you hit the cap, requests are blocked until the next billing period.
 3. **AI chat quota** — Separate quota for AI endpoints (which also cost 5× normal requests against your monthly quota)
 
-All limits are per **API key** (not per IP, not per user). If a user has multiple keys, each gets its own quota.
+All limits are per **account** (not per IP, not per key). Your subscription buys one shared pool: every API key you create draws from the **same** per-second rate limit, monthly request quota, and AI chat quota. Creating more keys does **not** increase your limits.
 
 ## Plan comparison
 
@@ -34,7 +34,7 @@ Live plan details: `GET https://api.propaideals.co.uk/api/v1/api-billing/plans`
 
 ### Per-second rate limit
 
-Sliding-window counter per key in Redis. If you exceed it, the request fails immediately with `429 rate_limit_exceeded`:
+Sliding-window counter per account in Redis (shared across all your keys). If you exceed it, the request fails immediately with `429 rate_limit_exceeded`:
 
 ```json
 {
@@ -112,8 +112,8 @@ During high concurrent traffic, the API server may return `503 Service temporari
 Every successful response includes these headers so you can budget without polling separately:
 
 ```
-X-RateLimit-Limit: 25           # Per-second cap for this key (matches your plan)
-X-RateLimit-Remaining: 23       # Per-second budget left in this 1-second window
+X-RateLimit-Limit: 25           # Per-second cap for your account (matches your plan)
+X-RateLimit-Remaining: 23       # Per-second budget left in this 1-second window (account-wide)
 X-Request-Cost: 1               # How much this request consumed (1 for most, 5 for AI)
 X-Monthly-Usage: 4321           # Requests used this billing period (after this call)
 X-Monthly-Limit: 100000         # Your plan's monthly hard cap
@@ -220,6 +220,6 @@ Both `429 rate_limit_exceeded` (per-second) and `503 Service temporarily busy` (
 
 See [Errors › Recommended retry policy](./errors#recommended-retry-policy) for a copy-paste retry helper.
 
-### Run separate keys per environment
+### Use separate keys per environment
 
-Production, staging, and CI should each have their own key. That way a runaway script in CI can't burn through your production quota. You can have up to 5 active keys per user account.
+Give production, staging, and CI each their own key so you can revoke or rotate one without disrupting the others, and tell traffic apart in `GET /api/v1/api-billing/logs` and `/usage/daily`. **Note:** all keys on your account share one quota pool — separate keys improve hygiene and attribution, they do **not** raise your limits, so a runaway CI script still draws down the same monthly quota. Add a client-side throttle to non-production keys if that's a concern. You can have up to 5 active keys per account.
