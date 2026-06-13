@@ -1,0 +1,59 @@
+---
+title: OpenAPI spec & Postman collection
+description: Download the machine-readable OpenAPI 3.1 spec and a ready-to-import Postman collection for the Prop AI Deals API. Generate typed clients, explore every public endpoint, and start making authenticated requests in seconds.
+---
+
+# OpenAPI spec & Postman collection
+
+The complete public API is published as a machine-readable **OpenAPI 3.1**
+spec and a ready-to-import **Postman** collection. Both cover every endpoint a
+`paid_*` key can reach — properties, spatial search, market data, investment
+analysis, area intelligence, planning, lead generators, EPC/UPRN, build cost,
+and AI chat — and are generated directly from the live API, so they never drift
+from production.
+
+| Artifact | Format | Download |
+|---|---|---|
+| OpenAPI spec | OpenAPI 3.1 (JSON) | [`openapi.json`](https://docs.propaideals.co.uk/openapi.json) |
+| Postman collection | Postman v2.1 (JSON) | [`postman_collection.json`](https://docs.propaideals.co.uk/postman_collection.json) |
+
+## Use the Postman collection
+
+1. In Postman, **Import** → drop in `postman_collection.json` (or paste the URL
+   above).
+2. Open the collection's **Variables** tab and set `api_key` to your key from
+   the dashboard (**Developers → API**). It looks like `paid_…`.
+3. `baseUrl` already defaults to `https://api.propaideals.co.uk`. Leave it
+   unless you're testing against another host.
+4. Pick any request and hit **Send**. Bearer auth is configured at the
+   collection level, so every request inherits your key automatically.
+
+Requests are grouped into folders by capability, with path and query
+parameters pre-wired and a JSON body skeleton on every write endpoint.
+
+## Generate a typed client
+
+Point any OpenAPI generator at the spec URL:
+
+```bash
+# openapi-generator (Java) — TypeScript client, for example
+openapi-generator-cli generate \
+  -i https://docs.propaideals.co.uk/openapi.json \
+  -g typescript-fetch \
+  -o ./propaideals-client
+
+# or Speakeasy / openapi-typescript / your tool of choice
+npx openapi-typescript https://docs.propaideals.co.uk/openapi.json \
+  -o ./propaideals-api.d.ts
+```
+
+Authentication is a single HTTP bearer scheme (`bearerAuth`) — supply your
+`paid_*` key as `Authorization: Bearer paid_...` on every request. See
+[Authentication](./authentication) for scopes and key management, and
+[Rate limits](./rate-limits) for per-plan quotas.
+
+<Note>
+The spec and collection are regenerated from the running API and kept in sync
+with these docs. If you spot a mismatch, it's a bug — email
+[info@propaideals.co.uk](mailto:info@propaideals.co.uk).
+</Note>

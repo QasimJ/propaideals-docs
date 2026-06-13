@@ -57,7 +57,7 @@
           },
           {
             "group": "Resources",
-            "pages": ["changelog"]
+            "pages": ["openapi-postman", "changelog"]
           }
         ]
       }

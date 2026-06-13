@@ -113,16 +113,16 @@ AI chat endpoints (`/api/v1/ultimate-ai/*`) have a separate monthly quota that's
 {
   "error": {
     "code": "ai_chat_quota_exceeded",
-    "message": "AI chat quota exceeded (2500/2500). Upgrade your plan or wait until the next billing period.",
-    "used": 2500,
-    "limit": 2500
+    "message": "AI chat quota exceeded (100/100). Upgrade your plan or wait until the next billing period.",
+    "used": 100,
+    "limit": 100
   }
 }
 ```
 
-Starter plans do not include AI chat at all — they receive `403 insufficient_scope` on AI endpoints instead.
+Every paid tier includes AI chat: Starter 100/month, Professional 1,000/month, Business 4,000/month.
 
-**Fix:** Upgrade to Professional (2,500 AI chats/month) or Business (15,000 AI chats/month). Non-AI endpoints continue to work normally until your main monthly quota is also exhausted.
+**Fix:** Upgrade for a higher AI chat quota, or wait until the first of next month when usage counters reset. Non-AI endpoints continue to work normally until your main monthly quota is also exhausted.
 
 ### `endpoint_not_in_public_api` — 403
 

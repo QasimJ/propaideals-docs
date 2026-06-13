@@ -22,7 +22,7 @@ All limits are per **API key** (not per IP, not per user). If a user has multipl
 | **Business** | £999 | 400,000 | £0.00250 | 50 req/s | 4,000 | 500 |
 | **Enterprise** | Custom | Custom | — | Custom | Custom | Custom |
 
-**All tiers are paid — there is no free tier.** Every plan grants read access to properties, market data, investment calculators, spatial search, planning data, lead generators, EPC certificates, UPRN, demographics, flood risk, and heritage data. Professional and Business also include the `ai:chat` and `build-cost:read` scopes.
+**All tiers are paid — there is no free tier.** Every plan grants read access to properties, market data, investment calculators, spatial search, planning data, lead generators, EPC certificates, UPRN, demographics, flood risk, and heritage data, plus the `ai:chat` scope (the AI chat quota scales by tier — see the table above). Professional and Business additionally include `build-cost:read`.
 
 > **Per-request value:** at every tier we're cheaper per request than the closest UK competitor AND give 20–25× higher per-second rate limits than equivalent tiers at PropertyData.
 
@@ -91,7 +91,7 @@ When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Non-AI endpoints c
 }
 ```
 
-**Starter plans do not include AI chat** — the `ai:chat` scope is only granted to Professional and Business. Sending a `paid_*` Starter key to `/api/v1/ultimate-ai/chat` returns `403 insufficient_scope`.
+**Every paid plan includes AI chat** — Starter 100 chats/month, Professional 1,000, Business 4,000. When the AI quota is exhausted the AI endpoints return `429 ai_chat_quota_exceeded`; all other endpoints keep working until the main monthly request quota is also used up.
 
 ### Service-level backpressure (`503`)
 
