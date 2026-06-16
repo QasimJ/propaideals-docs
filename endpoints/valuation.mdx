@@ -1,0 +1,120 @@
+---
+title: Valuation endpoint
+description: Automated postcode-level sale and rent valuation with a confidence band for any UK postcode. Returns sale and rent estimates, gross yield, and the area average. Required scope market-data:read.
+---
+
+# Valuation
+
+The valuation endpoint returns an automated, postcode-level sale and rent valuation for any UK postcode. It combines comparable sale prices, rental comparables, and area averages to produce a central estimate, a lower/upper confidence band, and an indicative gross yield.
+
+**Required scope:** `market-data:read`
+**Cost:** 2 requests per call
+
+## Get a postcode valuation
+
+```http
+GET /api/v1/valuation
+```
+
+Returns a sale and rent valuation for the supplied postcode. Narrow the estimate by passing `bedrooms` and `type`. Returns `404` if there is insufficient data for the postcode.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `postcode` | string | — | **Required.** Full UK postcode, e.g. `M1 4BT` |
+| `bedrooms` | integer | — | Optional. Filter comparables to a bedroom count (`0`–`10`) |
+| `type` | string | — | Optional. Property type, e.g. `flat`, `terraced`, `semi-detached`, `detached` |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/valuation?postcode=M1%204BT&bedrooms=2&type=flat" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/valuation",
+    params={"postcode": "M1 4BT", "bedrooms": 2, "type": "flat"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+valuation = res.json()["data"]
+```
+
+```javascript
+const params = new URLSearchParams({ postcode: "M1 4BT", bedrooms: "2", type: "flat" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/valuation?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "postcode": "M1 4BT",
+    "sale_estimate": 215000,
+    "sale_lower": 198000,
+    "sale_upper": 232000,
+    "rent_estimate": 1150,
+    "gross_yield_pct": 6.42,
+    "confidence": "high",
+    "area_average": 209500,
+    "source": "comparables"
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 2,
+      "monthly_used": 4821,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `postcode` | string | The postcode the valuation was computed for |
+| `sale_estimate` | integer | Central sale valuation in £ |
+| `sale_lower` | integer | Lower bound of the sale confidence band in £ |
+| `sale_upper` | integer | Upper bound of the sale confidence band in £ |
+| `rent_estimate` | integer | Estimated monthly rent in £ |
+| `gross_yield_pct` | number | Gross yield from `rent_estimate × 12 / sale_estimate` |
+| `confidence` | string | `high`, `medium`, or `low` — driven by comparable count and spread |
+| `area_average` | integer | Average sale price across the postcode in £ |
+| `source` | string | Origin of the estimate, e.g. `comparables` |
+
+### Confidence band
+
+The `confidence` value reflects how many comparables backed the estimate and how tightly they clustered. A `high` band typically spans ±8 % around `sale_estimate`; a `low` band widens as the comparable set thins. Treat `low` valuations as indicative only.
+
+## Common patterns
+
+### Skip valuations below your confidence threshold
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/valuation",
+    params={"postcode": "M1 4BT", "bedrooms": 2},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+if res["confidence"] in ("high", "medium"):
+    print(f"Estimate £{res['sale_estimate']:,} at {res['gross_yield_pct']}% gross yield")
+```

@@ -1,0 +1,97 @@
+---
+title: Sold prices endpoint
+description: Aggregate sold-price statistics for a UK postcode or outcode from HM Land Registry Price Paid Data. Returns average, median, and interquartile realised prices over a configurable lookback window. Required scope market-data:read.
+---
+
+# Sold prices
+
+Returns aggregate **sold-price** statistics for a UK postcode or outcode, sourced from **HM Land Registry Price Paid Data** (~5M transactions, 1995–present). Unlike [asking prices](./prices), these are realised transaction values, so they are the firmer basis for a valuation.
+
+**Required scope:** `market-data:read` · **Cost:** 1 request
+
+```http
+GET /api/v1/sold-prices
+```
+
+Authenticate with a paid API key (`Authorization: Bearer paid_your_key`). The endpoint also accepts a logged-in Clerk session when called from the dashboard. Anonymous requests are rejected.
+
+## Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `postcode` | string | — | **Required.** Full postcode or outcode, e.g. `M1` or `M1 4WP`. |
+| `type` | string | — | Optional. Property-type substring, e.g. `flat`, `terraced`, `detached`. |
+| `max_age_months` | integer | `24` | Optional. Only include sales within the last N months. Range `3`–`120`. |
+
+<Note>
+There is no `bedrooms` filter on this endpoint — HM Land Registry Price Paid Data does not record bedroom counts. To filter by bedrooms, use the [asking prices endpoint](./prices) or the [comparables endpoint](./comparables).
+</Note>
+
+## Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/sold-prices?postcode=M1&type=flat&max_age_months=36" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/sold-prices",
+    params={"postcode": "M1", "type": "flat", "max_age_months": 36},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+sold = res.json()["data"]
+print(f"Median sold price: £{sold['median_price']:,} (n={sold['sample_size']})")
+```
+
+```javascript
+const res = await fetch(
+  "https://api.propaideals.co.uk/api/v1/sold-prices?postcode=M1&type=flat&max_age_months=36",
+  { headers: { Authorization: "Bearer paid_your_key" } }
+);
+const { data } = await res.json();
+console.log(`Median sold price: £${data.median_price.toLocaleString()}`);
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "basis": "sold",
+    "sample_size": 312,
+    "average_price": 208900,
+    "median_price": 198500,
+    "p25_price": 165000,
+    "p75_price": 242000,
+    "property_type": "flat"
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 1433,
+      "monthly_limit": 20000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `area` | string | The postcode or outcode the aggregate was computed for. |
+| `basis` | string | Always `sold` for this endpoint (HM Land Registry transactions). |
+| `sample_size` | integer | Number of sold transactions in the aggregate. |
+| `average_price` | number | Mean sold price in £. |
+| `median_price` | number | Median sold price in £. |
+| `p25_price` | number | 25th-percentile sold price in £. |
+| `p75_price` | number | 75th-percentile sold price in £. |
+| `property_type` | string \| null | Echoes the `type` filter, or `null` if not supplied. |
+
+<Note>
+Land Registry data lags completion by several weeks, so the most recent month or two may be under-represented. Narrow `max_age_months` for a current snapshot or widen it for a more stable median on low-volume outcodes.
+</Note>

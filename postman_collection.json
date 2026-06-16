@@ -5563,6 +5563,118 @@
     {
       "item": [
         {
+          "name": "Get Asking Prices",
+          "request": {
+            "description": "Asking-price aggregate for an outcode from active sale listings.\n\nReturns count + mean/median/p25/p75 of asking prices, optionally filtered\nby bedroom count and property type.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "prices"
+              ],
+              "query": [
+                {
+                  "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "bedrooms",
+                  "value": ""
+                },
+                {
+                  "description": "Property type substring filter",
+                  "disabled": true,
+                  "key": "type",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/prices?postcode="
+            }
+          }
+        },
+        {
+          "name": "Get Comparables",
+          "request": {
+            "description": "Return ranked comparable sales near a postcode.\n\nAdapts the unified comparables ranking core. Each comparable carries the\nsame confidence tier / transaction-category / flip signals the rest of\nthe platform uses.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "comparables"
+              ],
+              "query": [
+                {
+                  "description": "Full postcode",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "bedrooms",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "type",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "radius_miles",
+                  "value": "0.5"
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/comparables?postcode="
+            }
+          }
+        },
+        {
           "name": "Get Comprehensive History",
           "request": {
             "description": "Get comprehensive property sold history using PostGIS radius search.\n\nCombines data from:\n- zoopla_properties (historic_sales JSONB with 398k+ records)\n- rightmove_sold_prices (493k+ sold price records)\n\nUses PostGIS GIST indexes for fast spatial queries (<50ms typical).\nExcludes properties on the same street if exclude_street_name is provided.\n\nArgs:\n    property_id: Target property UUID\n    radius_miles: Search radius (0.1-5.0 miles)\n    match_bedrooms: Filter by matching bedroom count\n    match_property_type: Filter by matching property type\n    limit: Maximum results (1-200)\n    exclude_street_name: Normalized street name to exclude\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive history response with nearby properties (OTHER streets)",
@@ -5675,6 +5787,44 @@
           }
         },
         {
+          "name": "Get Deal Score",
+          "request": {
+            "description": "Get Deal Score",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deal-score"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/deal-score?property_id="
+            }
+          }
+        },
+        {
           "name": "Get Enhanced Comparables",
           "request": {
             "description": "Get enhanced comparables including sold, live listings, and database properties.\n\nReturns comprehensive comparable properties from multiple sources:\n1. Zoopla sold properties (similarProperties from market_data)\n2. Zoopla live listings (similarListingsV2 from market_data)\n3. Zoopla sold properties (from zoopla_properties table via PostGIS)\n4. Rightmove sold properties (from rightmove_sold_prices table via PostGIS)\n5. Our database properties (optional)\n\nAll sources are merged, deduplicated by full address, and returned as raw data.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum comparables to return (default 100, max 100)\n    radius_miles: Search radius in miles (default 3.0, max 5.0)\n    include_database: Include our database properties\n    listing_type: Filter by sale or rent\n    current_user: Optional authenticated user\n\nReturns:\n    Categorized comparables with summary statistics\n\nRaises:\n    HTTPException: 404 if property not found\n    HTTPException: 500 if database error",
@@ -5752,6 +5902,44 @@
           }
         },
         {
+          "name": "Get Motivation Score",
+          "request": {
+            "description": "Get Motivation Score",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "motivation-score"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/motivation-score?property_id="
+            }
+          }
+        },
+        {
           "name": "Get Nearby Listings",
           "request": {
             "description": "Get nearby active property listings (for sale or rental) from properties table.\n\nUses PostGIS bounding box pre-filter for fast spatial queries on 750K+ properties.\n\nArgs:\n    property_id: Property UUID to search around\n    listing_type: 'sale' or 'rent'\n    limit: Maximum properties to return\n    radius_miles: Search radius in miles (default 0.5)\n\nReturns:\n    Dictionary with nearby listings, summary stats, and total count.",
@@ -5807,6 +5995,44 @@
                   "value": "<property_id>"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Get Playbook Tiers",
+          "request": {
+            "description": "Get Playbook Tiers",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "playbook-tiers"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/playbook-tiers?property_id="
             }
           }
         },
@@ -6022,6 +6248,44 @@
           }
         },
         {
+          "name": "Get Property Pack",
+          "request": {
+            "description": "Bundle (cost 10): valuation + deal score + motivation + sold history +\nrental estimate + playbook tiers + strategy scores in one call. Convenience\nover composing the atomic endpoints; each slice is best-effort.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "property-pack"
+              ],
+              "query": [
+                {
+                  "description": "Internal property UUID",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/property-pack?property_id="
+            }
+          }
+        },
+        {
           "name": "Get R2R Market Data",
           "request": {
             "description": "Get R2R (Rent-to-Rent) market data for investment analysis.\n\nProvides real market data for rental properties including:\n- Rental comparables from zoopla_properties (3.4M records)\n- Area average rents from market_data_rental by postcode/bedrooms\n- HMO room rates from propertydata_market_rentals\n- Calculated SA (Serviced Accommodation) projections\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius for comparables (100-2000m)\n    current_user: Optional authenticated user\n\nReturns:\n    R2R market data including rental comparables, area averages, and HMO rates",
@@ -6140,6 +6404,82 @@
           }
         },
         {
+          "name": "Get Rental Estimate",
+          "request": {
+            "description": "Estimate the monthly rent for a property from nearby rental comparables.\n\nUses the median of comparable rents within ~1km (±1 bedroom) and, when the\nproperty has a sale price, derives an implied gross yield.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rental-estimate"
+              ],
+              "query": [
+                {
+                  "description": "Internal property UUID",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/rental-estimate?property_id="
+            }
+          }
+        },
+        {
+          "name": "Get Sold History",
+          "request": {
+            "description": "Return the matched sold transaction history for a property.\n\nLooks up the property's identity (UPRN, coords, address) then runs the\nmulti-source sold-history matcher (UPRN exact > PostGIS spatial > Land\nRegistry spatial + address).",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sold-history"
+              ],
+              "query": [
+                {
+                  "description": "Internal property UUID",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/sold-history?property_id="
+            }
+          }
+        },
+        {
           "name": "Get Sold On Street",
           "request": {
             "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries zoopla_properties (1.74M) and rightmove_sold_prices (1.62M) directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of sources consulted (zoopla_postgis, rightmove_postgis)",
@@ -6207,6 +6547,106 @@
                   "value": "<property_id>"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Get Sold Prices",
+          "request": {
+            "description": "Sold-price aggregate for an outcode from HM Land Registry transactions.\n\nReturns count + mean/median/p25/p75 of sold prices over the last\n`max_age_months` months. Land Registry has no bedroom data, so there is\nno bedrooms filter.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sold-prices"
+              ],
+              "query": [
+                {
+                  "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "Property type substring filter",
+                  "disabled": true,
+                  "key": "type",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "max_age_months",
+                  "value": "24"
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/sold-prices?postcode="
+            }
+          }
+        },
+        {
+          "name": "Get Valuation",
+          "request": {
+            "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nAdapts ValuationService.get_valuation_by_postcode. Returns 404 when no\nvaluation data exists for the postcode.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "valuation"
+              ],
+              "query": [
+                {
+                  "description": "Full postcode",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "bedrooms",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "type",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/valuation?postcode="
             }
           }
         }
@@ -7351,6 +7791,39 @@
           }
         },
         {
+          "name": "Get Refurb Scan Quota",
+          "request": {
+            "description": "Return the caller's monthly AI refurb-scan quota.\n\nLets the standalone calculator show '3 of 50 used - 47 left' and\ngate the upload button before the first scan. Requires sign-in.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "investment",
+                "refurb-scan-quota"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/investment/refurb-scan-quota"
+            }
+          }
+        },
+        {
           "name": "Get Roi Scenarios",
           "request": {
             "description": "Get multiple ROI scenarios for a property.\n\nCalculates best case, worst case, and most likely scenarios.",
@@ -7389,6 +7862,44 @@
                   "value": "<property_id>"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Get Strategy Scores",
+          "request": {
+            "description": "Get Strategy Scores",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy-scores"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": false,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/strategy-scores?property_id="
             }
           }
         },
@@ -7595,6 +8106,31 @@
                 "refurb-estimate"
               ],
               "raw": "{{baseUrl}}/api/v1/investment/refurb-estimate"
+            }
+          }
+        },
+        {
+          "name": "Post Refurb Estimate From Images",
+          "request": {
+            "description": "AI refurb estimate from user-uploaded photos (standalone calculator).\n\nPro/Founder only - consumes ONE of the user's monthly refurb-vision\nallowance (15/month), the SAME counter as the property-page scan.\nImages are sent inline to the model as base64 data URIs and are NOT\nstored. HTTP 402 when the monthly quota is exhausted; 403 when the\ntier has no scan allowance; 401 when not signed in.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "investment",
+                "refurb-estimate-from-images"
+              ],
+              "raw": "{{baseUrl}}/api/v1/investment/refurb-estimate-from-images"
             }
           }
         },
@@ -8130,6 +8666,44 @@
           }
         },
         {
+          "name": "Get Area Summary",
+          "request": {
+            "description": "Bundle (cost 10): asking prices + sold prices + demand + growth for an\narea in one call. Each slice is best-effort.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "area-summary"
+              ],
+              "query": [
+                {
+                  "description": "Full postcode or outcode",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/area-summary?postcode="
+            }
+          }
+        },
+        {
           "name": "Get Area Yields",
           "request": {
             "description": "Aggregate gross rental yields for a postcode outcode.\n\nComputes mean, median, p25 and p75 across all sale listings in the\noutcode that have a non-null `estimated_rental_yield`. Useful for\ninvestor area-screening.",
@@ -8167,6 +8741,44 @@
                   "value": "<outcode>"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Get Demand",
+          "request": {
+            "description": "Market demand / turnover for an outcode.\n\nCompares active sale listings against properties marked sold/under-offer\nin the last 90 days to derive a turnover ratio + a seller/buyer/balanced\nrating, plus average days-on-market for live listings.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "demand"
+              ],
+              "query": [
+                {
+                  "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/demand?postcode="
             }
           }
         },
@@ -8518,6 +9130,44 @@
                   "value": "<postcode_district>"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Get Growth",
+          "request": {
+            "description": "Year-on-year capital growth for an outcode from Land Registry medians.\n\nCompares the median sold price of the last 12 months against the prior 12\nmonths to compute a YoY growth percentage.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "growth"
+              ],
+              "query": [
+                {
+                  "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/growth?postcode="
             }
           }
         },

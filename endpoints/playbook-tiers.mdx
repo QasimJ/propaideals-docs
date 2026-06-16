@@ -1,0 +1,123 @@
+---
+title: Playbook tiers endpoint
+description: Gold/silver/bronze tier classifications across 20 acquisition playbooks (BRRR, HMO conversion, serviced accommodation, motivated seller, PD conversion, and more) for a UK property. Required scope market-data:read.
+---
+
+# Playbook tiers
+
+The playbook tiers endpoint returns how strongly a property fits each of our acquisition playbooks. Each matched playbook is graded `gold`, `silver`, or `bronze`; playbooks the property does not qualify for are omitted. Use it to spot which strategies a property unlocks at a glance.
+
+**Required scope:** `market-data:read`
+**Cost:** 1 request per call
+
+## Get playbook tiers for a property
+
+```http
+GET /api/v1/playbook-tiers
+```
+
+Returns the tier for each playbook the property matches. Only playbooks with a non-null tier are included in the response.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string (UUID) | — | **Required.** The property's UUID |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/playbook-tiers?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/playbook-tiers",
+    params={"property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+tiers = res.json()["data"]["tiers"]
+```
+
+```javascript
+const params = new URLSearchParams({ property_id: "5fa1b2c3-d4e5-6f78-9012-3456789abcde" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/playbook-tiers?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "tiers": {
+      "brrr_candidate": "gold",
+      "hmo_conversion": "silver",
+      "recently_reduced": "gold",
+      "motivated_seller": "bronze",
+      "epc_below_c": "silver",
+      "btl_candidate": "gold"
+    }
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 4826,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Tier values
+
+| Value | Meaning |
+|---|---|
+| `gold` | Strong fit — the property is a prime candidate for this playbook |
+| `silver` | Good fit — worth investigating |
+| `bronze` | Marginal fit — a possible angle |
+| `excluded` | Explicitly ruled out for this playbook |
+
+Only non-null tiers are returned. A playbook absent from `tiers` was not matched at all.
+
+### Available playbook slugs
+
+| Slug | Slug | Slug |
+|---|---|---|
+| `brrr_candidate` | `hmo_conversion` | `serviced_accommodation` |
+| `recently_reduced` | `back_on_market` | `stale_listing` |
+| `motivated_seller` | `tenanted_submarket` | `cash_buyer_only` |
+| `epc_below_c` | `btl_candidate` | `flip_candidate` |
+| `auction_deal` | `probate_sale` | `rent_to_rent` |
+| `brownfield_adjacency` | `pd_conversion` | `plot_subdivision` |
+| `lease_extension` | `house_to_flats` | |
+
+## Common patterns
+
+### List the gold-tier playbooks a property unlocks
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/playbook-tiers",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+gold = [slug for slug, tier in res["tiers"].items() if tier == "gold"]
+print(f"Gold playbooks: {', '.join(gold)}")
+```

@@ -1,0 +1,118 @@
+---
+title: Strategy scores endpoint
+description: Machine-learning fit scores per investment strategy (BTL, HMO, flip, BRRR, SA, R2R) for a UK property, plus the best-fit strategy. Required scope investment:read.
+---
+
+# Strategy scores
+
+The strategy scores endpoint returns machine-learning fit scores for a property across each major UK investment strategy — buy-to-let, HMO, flip, BRRR, serviced accommodation, and rent-to-rent — along with an overall score and the best-fit strategy. Use it to route a property to the strategy it suits best before you underwrite it in detail.
+
+**Required scope:** `investment:read`
+**Cost:** 2 requests per call
+
+## Get strategy scores for a property
+
+```http
+GET /api/v1/strategy-scores
+```
+
+Returns per-strategy fit scores and the best-fit strategy for a single property, identified by its UUID.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string (UUID) | — | **Required.** The property's UUID |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/strategy-scores?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/strategy-scores",
+    params={"property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+scores = res.json()["data"]
+```
+
+```javascript
+const params = new URLSearchParams({ property_id: "5fa1b2c3-d4e5-6f78-9012-3456789abcde" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/strategy-scores?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "scores": {
+      "overall": 74,
+      "btl": 81,
+      "hmo": 68,
+      "flip": 55,
+      "brrr": 72,
+      "sa": 49,
+      "r2r": 38
+    },
+    "best_strategy": "btl",
+    "best_strategy_score": 81
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 2,
+      "monthly_used": 4825,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | string | The property's UUID |
+| `scores.overall` | integer | Blended fit score across all strategies, `0`–`100` |
+| `scores.btl` | integer | Buy-to-let fit score |
+| `scores.hmo` | integer | HMO fit score |
+| `scores.flip` | integer | Flip fit score |
+| `scores.brrr` | integer | Buy, refurbish, refinance, rent fit score |
+| `scores.sa` | integer | Serviced accommodation fit score |
+| `scores.r2r` | integer | Rent-to-rent fit score |
+| `best_strategy` | string | The strategy with the highest fit score |
+| `best_strategy_score` | integer | The score of `best_strategy` |
+
+## Common patterns
+
+### Route a property to its best-fit strategy
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/strategy-scores",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+if res["best_strategy_score"] >= 70:
+    print(f"Underwrite as {res['best_strategy'].upper()} (fit {res['best_strategy_score']}/100)")
+```

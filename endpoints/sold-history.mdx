@@ -1,0 +1,103 @@
+---
+title: Sold history endpoint
+description: Historical sale records for a specific property, matched against HM Land Registry via UPRN, PostGIS spatial matching, and building-number heuristics, with a match-confidence score. Required scope market-data:read.
+---
+
+# Sold history
+
+Returns the historical sale records for a specific property, identified by its internal property UUID. Records are matched against **HM Land Registry Price Paid Data** using a three-priority strategy, and the response carries a `match_confidence` score so you know how reliable the match is.
+
+**Required scope:** `market-data:read` · **Cost:** 1 request
+
+```http
+GET /api/v1/sold-history
+```
+
+Authenticate with a paid API key (`Authorization: Bearer paid_your_key`). The endpoint also accepts a logged-in Clerk session when called from the dashboard. Anonymous requests are rejected.
+
+## Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string | — | **Required.** Internal property UUID, as returned by the properties endpoints. |
+
+## Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/sold-history?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+property_id = "5fa1b2c3-d4e5-6f78-9012-3456789abcde"
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/sold-history",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+history = res.json()["data"]
+print(f"{len(history['sold_history'])} records, confidence {history['match_confidence']}")
+```
+
+```javascript
+const propertyId = "5fa1b2c3-d4e5-6f78-9012-3456789abcde";
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/sold-history?property_id=${propertyId}`,
+  { headers: { Authorization: "Bearer paid_your_key" } }
+);
+const { data } = await res.json();
+console.log(`${data.sold_history.length} records, confidence ${data.match_confidence}`);
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "sold_history": [
+      { "price": 285000, "date": "2018-06-15", "tenure": "F", "new_build": false },
+      { "price": 192000, "date": "2010-09-22", "tenure": "F", "new_build": false },
+      { "price": 145000, "date": "2003-04-11", "tenure": "F", "new_build": false }
+    ],
+    "sources_used": ["land_registry", "zoopla"],
+    "match_confidence": 95,
+    "is_building_estimate": false,
+    "estimate_note": null
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 1436,
+      "monthly_limit": 20000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | string | The property UUID that was queried. |
+| `sold_history` | array | Sale records, most recent first. Each carries `price` (£), `date`, and where available `tenure` and `new_build`. |
+| `sources_used` | array | Data sources that contributed records, e.g. `land_registry`, `zoopla`. |
+| `match_confidence` | integer | Confidence the records belong to this property, `0`–`100`. |
+| `is_building_estimate` | boolean | `true` when records are a building-level estimate rather than a unit-exact match (common for flats in a block). |
+| `estimate_note` | string \| null | Explanation when `is_building_estimate` is `true`, otherwise `null`. |
+
+### Match confidence tiers
+
+Records are matched in priority order, and the tier sets the ceiling for `match_confidence`:
+
+| Priority | Method | Confidence |
+|---|---|---|
+| 1 | **UPRN exact match** — the property's UPRN matches the transaction record | Highest |
+| 2 | **PostGIS spatial match** — within ~25 m, with building-number agreement | High |
+| 3 | **Land Registry building-number match** — address-string / PAON matching | Moderate |
+
+<Note>
+For flats sharing a UPRN-less block, an exact unit match is often impossible. In that case `is_building_estimate` is `true`, `match_confidence` is lower, and `estimate_note` explains the basis. Treat building estimates as directional, not unit-precise.
+</Note>

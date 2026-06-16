@@ -56,6 +56,25 @@
             ]
           },
           {
+            "group": "Granular endpoints",
+            "pages": [
+              "endpoints/prices",
+              "endpoints/sold-prices",
+              "endpoints/demand",
+              "endpoints/growth",
+              "endpoints/valuation",
+              "endpoints/comparables",
+              "endpoints/sold-history",
+              "endpoints/rental-estimate",
+              "endpoints/deal-score",
+              "endpoints/strategy-scores",
+              "endpoints/playbook-tiers",
+              "endpoints/motivation-score",
+              "endpoints/property-pack",
+              "endpoints/area-summary"
+            ]
+          },
+          {
             "group": "Resources",
             "pages": ["openapi-postman", "changelog"]
           }

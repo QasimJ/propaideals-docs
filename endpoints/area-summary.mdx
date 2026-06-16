@@ -1,0 +1,139 @@
+---
+title: Area summary endpoint
+description: One-call bundle returning asking prices, sold prices, demand, and growth for a UK postcode. Best-effort per slice. Required scope areas:read.
+---
+
+# Area summary
+
+The area summary endpoint is a convenience bundle: a single call that returns the full area picture for a postcode — asking prices, sold prices, demand, and growth — in one response. Each slice is the same object the corresponding atomic area endpoint returns.
+
+**Required scope:** `areas:read`
+**Cost:** 10 requests per call
+
+<Note>
+The summary costs **10 requests**. It is cheaper and simpler than calling the four atomic area endpoints separately **only when you need most of the slices**. If you want just one slice, call the atomic endpoint directly.
+</Note>
+
+## Get an area summary
+
+```http
+GET /api/v1/area-summary
+```
+
+Returns every area slice for a postcode in one response. The summary is **best-effort**: if a slice cannot be computed, it is returned as `null` and the summary still returns `200`.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `postcode` | string | — | **Required.** UK postcode, e.g. `M1 4BT` |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/area-summary?postcode=M1%204BT" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area-summary",
+    params={"postcode": "M1 4BT"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+summary = res.json()["data"]
+```
+
+```javascript
+const params = new URLSearchParams({ postcode: "M1 4BT" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/area-summary?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "asking_prices": {
+      "median_asking_price": 232000,
+      "average_asking_price": 248500,
+      "listings_count": 412,
+      "by_property_type": {
+        "flat": 195000,
+        "terraced": 268000,
+        "semi_detached": 312000
+      }
+    },
+    "sold_prices": {
+      "median_sold_price": 215000,
+      "average_sold_price": 221400,
+      "transactions_12m": 487,
+      "median_price_per_sqft": 301
+    },
+    "demand": {
+      "demand_index": 72,
+      "avg_days_on_market": 38,
+      "stock_turnover_pct": 64.5,
+      "demand_label": "high"
+    },
+    "growth": {
+      "1yr_change_pct": 5.6,
+      "3yr_change_pct": 23.7,
+      "5yr_change_pct": 40.8,
+      "annualised_5yr_pct": 7.1
+    }
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 10,
+      "monthly_used": 4847,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `area` | string | The outcode the summary was computed for |
+| `asking_prices` | object \| null | Same shape as the area `/prices` endpoint |
+| `sold_prices` | object \| null | Same shape as the area `/sold-prices` endpoint |
+| `demand` | object \| null | Same shape as the area `/demand` endpoint |
+| `growth` | object \| null | Same shape as the area `/growth` endpoint |
+
+Any slice that cannot be computed is returned as `null`. The summary does not fail because one slice is unavailable.
+
+## Common patterns
+
+### Compare asking against sold to gauge negotiation room
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/area-summary",
+    params={"postcode": "M1 4BT"},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+asking = res.get("asking_prices")
+sold = res.get("sold_prices")
+if asking and sold:
+    gap = (asking["median_asking_price"] - sold["median_sold_price"]) / sold["median_sold_price"] * 100
+    print(f"Asking sits {gap:.1f}% above sold — room to negotiate")
+```

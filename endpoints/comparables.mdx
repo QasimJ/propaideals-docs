@@ -1,0 +1,178 @@
+---
+title: Comparables endpoint
+description: Ranked sold comparables for a UK postcode, with similarity scores, confidence tiers, and flags for non-standard or flip transactions. Sourced from HM Land Registry via PostGIS spatial matching. Required scope market-data:read.
+---
+
+# Comparables
+
+Returns ranked sold comparables around a UK postcode, sourced from **HM Land Registry Price Paid Data** and matched via PostGIS spatial search. Each comparable carries a `similarity_score`, a `confidence_tier`, and flags that surface distressed or flip transactions, so you can build a defensible valuation rather than a flat list of nearby sales.
+
+**Required scope:** `market-data:read` · **Cost:** 1 request
+
+```http
+GET /api/v1/comparables
+```
+
+Authenticate with a paid API key (`Authorization: Bearer paid_your_key`). The endpoint also accepts a logged-in Clerk session when called from the dashboard. Anonymous requests are rejected.
+
+## Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `postcode` | string | — | **Required.** Full postcode or outcode, e.g. `M1` or `M1 4WP`. |
+| `bedrooms` | integer | — | Optional. Restrict to a bedroom count, `0`–`10`. |
+| `type` | string | — | Optional. Property-type substring, e.g. `flat`, `terraced`, `detached`. |
+| `radius_miles` | float | `0.5` | Optional. Search radius from the postcode centroid. Range `0.1`–`5.0`. |
+| `limit` | integer | `20` | Optional. Maximum comparables to return. Range `1`–`50`. |
+
+## Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/comparables?postcode=M1%204WP&bedrooms=2&type=flat&radius_miles=0.5&limit=20" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/comparables",
+    params={
+        "postcode": "M1 4WP",
+        "bedrooms": 2,
+        "type": "flat",
+        "radius_miles": 0.5,
+        "limit": 20,
+    },
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+data = res.json()["data"]
+for c in data["comparables"]:
+    print(f"{c['address']}: £{c['price']:,} ({c['confidence_tier']})")
+```
+
+```javascript
+const params = new URLSearchParams({
+  postcode: "M1 4WP",
+  bedrooms: "2",
+  type: "flat",
+  radius_miles: "0.5",
+  limit: "20",
+});
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/comparables?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } }
+);
+const { data } = await res.json();
+data.comparables.forEach((c) =>
+  console.log(`${c.address}: £${c.price.toLocaleString()} (${c.confidence_tier})`)
+);
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "postcode": "M1 4WP",
+    "count": 2,
+    "comparables": [
+      {
+        "address": "14 Example Court, Manchester, M1 4WP",
+        "price": 215000,
+        "sale_date": "2025-11-22",
+        "property_type": "flat",
+        "bedrooms": 2,
+        "distance_miles": 0.08,
+        "similarity_score": 94,
+        "confidence_tier": "gold",
+        "transaction_category": "standard",
+        "is_likely_flip": false,
+        "floor_area_sqft": 712,
+        "price_per_bedroom": 107500,
+        "tenure": "leasehold",
+        "energy_rating": "C",
+        "latitude": 53.4751,
+        "longitude": -2.2301
+      },
+      {
+        "address": "9 Sample House, Manchester, M1 4WT",
+        "price": 168000,
+        "sale_date": "2025-07-03",
+        "property_type": "flat",
+        "bedrooms": 2,
+        "distance_miles": 0.31,
+        "similarity_score": 61,
+        "confidence_tier": "bronze",
+        "transaction_category": "non_standard",
+        "is_likely_flip": true,
+        "floor_area_sqft": 688,
+        "price_per_bedroom": 84000,
+        "tenure": "leasehold",
+        "energy_rating": "D",
+        "latitude": 53.4769,
+        "longitude": -2.2358
+      }
+    ]
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 1438,
+      "monthly_limit": 20000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `postcode` | string | The postcode the search was run for. |
+| `count` | integer | Number of comparables returned. |
+| `comparables` | array | Ranked comparable sales (see per-item fields below). |
+
+Each item in `comparables`:
+
+| Field | Type | Description |
+|---|---|---|
+| `address` | string | Full address of the comparable. |
+| `price` | number | Sold price in £. |
+| `sale_date` | string | Transaction date (`YYYY-MM-DD`). |
+| `property_type` | string | Property type, e.g. `flat`, `terraced`. |
+| `bedrooms` | integer \| null | Bedroom count where known. |
+| `distance_miles` | number | Distance from the search postcode. |
+| `similarity_score` | integer | Composite similarity to the search criteria, `0`–`100`. |
+| `confidence_tier` | string | `gold`, `silver`, `bronze`, `supporting`, or `excluded`. |
+| `transaction_category` | string | `standard` or `non_standard`. |
+| `is_likely_flip` | boolean | `true` when the same address re-sold within ~3 years for a large uplift. |
+| `floor_area_sqft` | number \| null | Floor area in square feet where known. |
+| `price_per_bedroom` | number \| null | `price / bedrooms`, in £. |
+| `tenure` | string \| null | `freehold` or `leasehold`. |
+| `energy_rating` | string \| null | EPC band, A–G. |
+| `latitude` | number | Latitude (WGS84). |
+| `longitude` | number | Longitude (WGS84). |
+
+### Confidence tiers
+
+The `confidence_tier` ranks how directly comparable each sale is, combining similarity, distance, and recency:
+
+| Tier | Meaning |
+|---|---|
+| `gold` | Closest matches — same area, type, and size; safe to anchor on. |
+| `silver` | Strong matches with minor differences. |
+| `bronze` | Looser matches; useful context, weight with care. |
+| `supporting` | Peripheral evidence only. |
+| `excluded` | Filtered from the headline valuation (kept for transparency). |
+
+### Distressed and flip flags
+
+Two flags help you discount sales that do not reflect open-market value:
+
+- **`transaction_category: "non_standard"`** marks sales recorded under HM Land Registry PPD category B — repossessions, right-to-buy, auction, and family transfers. These often sit below open-market value.
+- **`is_likely_flip: true`** marks an address that re-sold within roughly three years for a large uplift, which can inflate an apparent local price level.
+
+<Note>
+For a robust valuation, lean on `gold` and `silver` comparables and exclude or down-weight rows flagged `non_standard` or `is_likely_flip`. Widen `radius_miles` only if the closer tiers return too few rows.
+</Note>

@@ -1,0 +1,89 @@
+---
+title: Rental estimate endpoint
+description: Estimated monthly rent for a specific property, derived from the median of nearby rental comparables, with an implied gross yield against the listed sale price. Required scope market-data:read.
+---
+
+# Rental estimate
+
+Returns an estimated monthly rent (PCM) for a specific property, taken as the median of nearby rental comparables, together with an implied gross yield. Use it to size income for a buy-to-let appraisal without running a full comparables pull.
+
+**Required scope:** `market-data:read` · **Cost:** 1 request
+
+```http
+GET /api/v1/rental-estimate
+```
+
+Authenticate with a paid API key (`Authorization: Bearer paid_your_key`). The endpoint also accepts a logged-in Clerk session when called from the dashboard. Anonymous requests are rejected.
+
+## Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string | — | **Required.** Internal property UUID, as returned by the properties endpoints. |
+
+## Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/rental-estimate?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+property_id = "5fa1b2c3-d4e5-6f78-9012-3456789abcde"
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/rental-estimate",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+est = res.json()["data"]
+print(f"Est. rent £{est['rent_estimate_pcm']:,}/mo, gross yield {est['implied_gross_yield_pct']}%")
+```
+
+```javascript
+const propertyId = "5fa1b2c3-d4e5-6f78-9012-3456789abcde";
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/rental-estimate?property_id=${propertyId}`,
+  { headers: { Authorization: "Bearer paid_your_key" } }
+);
+const { data } = await res.json();
+console.log(`Est. rent £${data.rent_estimate_pcm.toLocaleString()}/mo`);
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "rent_estimate_pcm": 1250,
+    "sample_size": 23,
+    "implied_gross_yield_pct": 6.4
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 1437,
+      "monthly_limit": 20000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | string | The property UUID that was queried. |
+| `rent_estimate_pcm` | number | Estimated monthly rent in £, the median of nearby rental comparables. |
+| `sample_size` | integer | Number of rental comparables behind the estimate. |
+| `implied_gross_yield_pct` | number \| null | Annualised gross yield against the property's listed sale price, or `null` when no sale price is available. |
+
+### How the estimate is built
+
+The estimate is the **median** of nearby rental comparables, matched within roughly **1 km** and within **±1 bedroom** of the subject property. The implied gross yield is `(rent_estimate_pcm × 12) / listed_sale_price × 100`, using the property's listed sale price when one is available — when it is not, `implied_gross_yield_pct` is `null`.
+
+<Note>
+A small `sample_size` (below ~10) widens the error band on the estimate. For a fuller picture of the comparable set behind the figure, use the [comparables endpoint](./comparables).
+</Note>

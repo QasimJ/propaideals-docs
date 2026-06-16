@@ -1,0 +1,97 @@
+---
+title: Demand endpoint
+description: Market-demand signals for a UK postcode or outcode — a seller/balanced/buyer rating derived from active listings, recent sales, days on market, and turnover ratio. Required scope areas:read.
+---
+
+# Demand
+
+Returns market-demand signals for a UK postcode or outcode: a headline `demand_rating`, the count of active listings, sales in the last 90 days, average days on market, and the turnover ratio. Use it to judge whether an area currently favours sellers or buyers before pricing a deal.
+
+**Required scope:** `areas:read` · **Cost:** 1 request
+
+```http
+GET /api/v1/demand
+```
+
+Authenticate with a paid API key (`Authorization: Bearer paid_your_key`). The endpoint also accepts a logged-in Clerk session when called from the dashboard. Anonymous requests are rejected.
+
+## Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `postcode` | string | — | **Required.** Full postcode or outcode, e.g. `M1` or `M1 4WP`. |
+
+## Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/demand?postcode=M1" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/demand",
+    params={"postcode": "M1"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+demand = res.json()["data"]
+print(f"{demand['area']}: {demand['demand_rating']} market")
+```
+
+```javascript
+const res = await fetch(
+  "https://api.propaideals.co.uk/api/v1/demand?postcode=M1",
+  { headers: { Authorization: "Bearer paid_your_key" } }
+);
+const { data } = await res.json();
+console.log(`${data.area}: ${data.demand_rating} market`);
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "demand_rating": "seller",
+    "active_listings": 96,
+    "sold_last_90d": 152,
+    "avg_days_on_market": 41,
+    "turnover_ratio": 1.58
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 1434,
+      "monthly_limit": 20000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `area` | string | The postcode or outcode the signals were computed for. |
+| `demand_rating` | string | `seller`, `balanced`, or `buyer` — see below. |
+| `active_listings` | integer | Properties currently listed for sale in the area. |
+| `sold_last_90d` | integer | Transactions completed in the last 90 days. |
+| `avg_days_on_market` | integer | Mean days active listings have been on the market. |
+| `turnover_ratio` | number | `sold_last_90d / active_listings`. |
+
+### How the rating is derived
+
+The `turnover_ratio` is `sold_last_90d` divided by `active_listings`. A high ratio means stock is clearing faster than it is being replenished, which points to a seller's market:
+
+| `turnover_ratio` | `demand_rating` | Interpretation |
+|---|---|---|
+| `>= 1.5` | `seller` | More than enough buyers; stock clears quickly. |
+| `0.5`–`1.5` | `balanced` | Supply and demand roughly matched. |
+| `<= 0.5` | `buyer` | Stock is accumulating; buyers have leverage. |
+
+<Note>
+On thin outcodes a single quarter of unusual sales volume can swing the ratio. Cross-check `active_listings` and `sold_last_90d` directly before acting on the headline rating.
+</Note>

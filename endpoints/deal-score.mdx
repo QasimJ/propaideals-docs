@@ -1,0 +1,118 @@
+---
+title: Deal score endpoint
+description: Proprietary composite deal score (0–100) for a UK property, with hot-deal flag, predicted price-reduction likelihood, weighted factor breakdown, and hidden opportunities. Required scope market-data:read.
+---
+
+# Deal score
+
+The deal score endpoint returns Prop AI Deals' proprietary composite score for a property. The score blends below-market-value signals, yield, demand, listing freshness, and price history into a single `0`–`100` number, alongside a hot-deal flag, a predicted reduction likelihood, the weighted factor breakdown, and any hidden opportunities detected on the listing.
+
+**Required scope:** `market-data:read`
+**Cost:** 2 requests per call
+
+## Get the deal score for a property
+
+```http
+GET /api/v1/deal-score
+```
+
+Returns the composite deal score and supporting signals for a single property, identified by its UUID.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string (UUID) | — | **Required.** The property's UUID |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/deal-score?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/deal-score",
+    params={"property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+score = res.json()["data"]
+```
+
+```javascript
+const params = new URLSearchParams({ property_id: "5fa1b2c3-d4e5-6f78-9012-3456789abcde" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/deal-score?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "deal_score": 82,
+    "is_hot_deal": true,
+    "predicted_reduction_likelihood": 0.34,
+    "factors": {
+      "bmv_discount": { "weight": 0.35, "score": 88, "value": "12.4% below area average" },
+      "gross_yield": { "weight": 0.25, "score": 79, "value": "6.8%" },
+      "demand": { "weight": 0.20, "score": 71, "value": "high search interest" },
+      "listing_freshness": { "weight": 0.10, "score": 64, "value": "listed 41 days" },
+      "price_history": { "weight": 0.10, "score": 90, "value": "1 reduction (−5%)" }
+    },
+    "hidden_opportunities": {
+      "epc_below_c": true,
+      "lease_extension_candidate": false,
+      "pd_conversion_potential": true
+    }
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 2,
+      "monthly_used": 4823,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | string | The property's UUID |
+| `deal_score` | integer | Composite deal score, `0`–`100` (higher is a stronger deal) |
+| `is_hot_deal` | boolean | `true` when the score clears the hot-deal threshold |
+| `predicted_reduction_likelihood` | number | Probability (`0`–`1`) of a future price reduction |
+| `factors` | object | Weighted factor breakdown; each entry has a `weight`, `score`, and human-readable `value` |
+| `hidden_opportunities` | object | Boolean flags for opportunities surfaced on the listing |
+
+## Common patterns
+
+### Filter a pipeline to hot deals only
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/deal-score",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+if res["is_hot_deal"] and res["deal_score"] >= 80:
+    print(f"Hot deal at {res['deal_score']}/100 — {res['predicted_reduction_likelihood']:.0%} reduction likelihood")
+```

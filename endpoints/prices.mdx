@@ -1,0 +1,95 @@
+---
+title: Asking prices endpoint
+description: Aggregate asking-price statistics for a UK postcode or outcode, sourced from active listings. Returns average, median, and interquartile prices, optionally filtered by bedrooms and property type. Required scope market-data:read.
+---
+
+# Asking prices
+
+Returns aggregate **asking-price** statistics for active listings in a UK postcode or outcode. Use it to anchor a valuation against what comparable stock is currently being marketed at, before you look at what has actually sold (see the [sold prices endpoint](./sold-prices)).
+
+**Required scope:** `market-data:read` · **Cost:** 1 request
+
+```http
+GET /api/v1/prices
+```
+
+Authenticate with a paid API key (`Authorization: Bearer paid_your_key`). The endpoint also accepts a logged-in Clerk session when called from the dashboard. Anonymous requests are rejected.
+
+## Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `postcode` | string | — | **Required.** Full postcode or outcode, e.g. `M1` or `M1 4WP`. |
+| `bedrooms` | integer | — | Optional. Restrict to a bedroom count, `0`–`10`. |
+| `type` | string | — | Optional. Property-type substring, e.g. `flat`, `terraced`, `detached`. |
+
+## Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/prices?postcode=M1&bedrooms=2&type=flat" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/prices",
+    params={"postcode": "M1", "bedrooms": 2, "type": "flat"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+prices = res.json()["data"]
+print(f"Median asking price: £{prices['median_price']:,}")
+```
+
+```javascript
+const res = await fetch(
+  "https://api.propaideals.co.uk/api/v1/prices?postcode=M1&bedrooms=2&type=flat",
+  { headers: { Authorization: "Bearer paid_your_key" } }
+);
+const { data } = await res.json();
+console.log(`Median asking price: £${data.median_price.toLocaleString()}`);
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "area": "M1",
+    "basis": "asking",
+    "sample_size": 184,
+    "average_price": 232450,
+    "median_price": 219995,
+    "p25_price": 185000,
+    "p75_price": 265000,
+    "bedrooms": 2,
+    "property_type": "flat"
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 1432,
+      "monthly_limit": 20000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `area` | string | The postcode or outcode the aggregate was computed for. |
+| `basis` | string | Always `asking` for this endpoint (active listings, not sold). |
+| `sample_size` | integer | Number of active listings in the aggregate. |
+| `average_price` | number | Mean asking price in £. |
+| `median_price` | number | Median asking price in £. |
+| `p25_price` | number | 25th-percentile asking price in £. |
+| `p75_price` | number | 75th-percentile asking price in £. |
+| `bedrooms` | integer \| null | Echoes the `bedrooms` filter, or `null` if not supplied. |
+| `property_type` | string \| null | Echoes the `type` filter, or `null` if not supplied. |
+
+<Note>
+Asking prices reflect what sellers are marketing at, not what buyers pay. For realised values, pair this with the [sold prices endpoint](./sold-prices), which uses HM Land Registry data. Small samples (`sample_size` below ~20) are noisier — widen to the outcode if the full postcode returns few listings.
+</Note>

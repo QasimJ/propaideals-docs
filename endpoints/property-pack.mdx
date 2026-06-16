@@ -1,0 +1,165 @@
+---
+title: Property pack endpoint
+description: One-call bundle returning valuation, deal score, motivation, sold history, rental estimate, playbook tiers, and strategy scores for a UK property. Best-effort per slice. Required scope market-data:read.
+---
+
+# Property pack
+
+The property pack endpoint is a convenience bundle: a single call that returns the full analysis for one property — valuation, deal score, motivation, sold history, rental estimate, playbook tiers, and strategy scores — in one response. Each slice is the same object the corresponding atomic endpoint returns.
+
+**Required scope:** `market-data:read`
+**Cost:** 10 requests per call
+
+<Note>
+The pack costs **10 requests**. It is cheaper and simpler than calling the seven atomic endpoints separately **only when you need most of the slices**. If you want just one or two slices, call the atomic endpoints — they cost 1–2 requests each.
+</Note>
+
+## Get a property pack
+
+```http
+GET /api/v1/property-pack
+```
+
+Returns every analysis slice for a single property in one response. The pack is **best-effort**: if a slice cannot be computed, it is returned as `null` and the pack still returns `200`. Returns `404` only if the property itself does not exist.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string (UUID) | — | **Required.** The property's UUID |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/property-pack?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/property-pack",
+    params={"property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+pack = res.json()["data"]
+```
+
+```javascript
+const params = new URLSearchParams({ property_id: "5fa1b2c3-d4e5-6f78-9012-3456789abcde" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/property-pack?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "valuation": {
+      "postcode": "M1 4BT",
+      "sale_estimate": 215000,
+      "sale_lower": 198000,
+      "sale_upper": 232000,
+      "rent_estimate": 1150,
+      "gross_yield_pct": 6.42,
+      "confidence": "high",
+      "area_average": 209500,
+      "source": "comparables"
+    },
+    "deal_score": {
+      "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+      "deal_score": 82,
+      "is_hot_deal": true,
+      "predicted_reduction_likelihood": 0.34,
+      "factors": {
+        "bmv_discount": { "weight": 0.35, "score": 88, "value": "12.4% below area average" }
+      },
+      "hidden_opportunities": { "epc_below_c": true, "pd_conversion_potential": true }
+    },
+    "motivation": {
+      "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+      "motivation_score": 76,
+      "motivation_tier": "gold",
+      "scored_at": "2026-06-12T03:41:58Z"
+    },
+    "sold_history": {
+      "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+      "current_price": 215000,
+      "sold_records": [
+        { "sale_date": "2017-05-19", "sale_price": 168000, "source": "land_registry", "match_confidence": "exact_uprn" }
+      ]
+    },
+    "rental_estimate": {
+      "rent_estimate": 1150,
+      "rent_lower": 1075,
+      "rent_upper": 1225,
+      "comparables_count": 14,
+      "source": "listing_comparables"
+    },
+    "playbook_tiers": {
+      "brrr_candidate": "gold",
+      "hmo_conversion": "silver",
+      "btl_candidate": "gold"
+    },
+    "strategy_scores": {
+      "scores": { "overall": 74, "btl": 81, "hmo": 68, "flip": 55, "brrr": 72, "sa": 49, "r2r": 38 },
+      "best_strategy": "btl",
+      "best_strategy_score": 81
+    }
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 10,
+      "monthly_used": 4837,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | string | The property's UUID |
+| `valuation` | object \| null | Same shape as [`/api/v1/valuation`](./valuation) |
+| `deal_score` | object \| null | Same shape as [`/api/v1/deal-score`](./deal-score) |
+| `motivation` | object \| null | Same shape as [`/api/v1/motivation-score`](./motivation-score) |
+| `sold_history` | object \| null | Same shape as the market-data sold-history endpoint |
+| `rental_estimate` | object \| null | Rental estimate with a lower/upper band |
+| `playbook_tiers` | object \| null | Same shape as [`/api/v1/playbook-tiers`](./playbook-tiers) |
+| `strategy_scores` | object \| null | Same shape as [`/api/v1/strategy-scores`](./strategy-scores) |
+
+Any slice that cannot be computed is returned as `null`. The pack does not fail because one slice is unavailable.
+
+## Common patterns
+
+### Handle missing slices defensively
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/property-pack",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+valuation = res.get("valuation")
+if valuation:
+    print(f"Estimate £{valuation['sale_estimate']:,}")
+else:
+    print("No valuation available for this property")
+```

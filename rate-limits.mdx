@@ -93,6 +93,19 @@ When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Non-AI endpoints c
 
 **Every paid plan includes AI chat** — Starter 100 chats/month, Professional 1,000, Business 4,000. When the AI quota is exhausted the AI endpoints return `429 ai_chat_quota_exceeded`; all other endpoints keep working until the main monthly request quota is also used up.
 
+### Request cost by endpoint
+
+Most endpoints cost **1 request** against your monthly quota. Some cost more:
+
+| Cost | Endpoints |
+|---|---|
+| 1 | Atomic data endpoints — `/prices`, `/sold-prices`, `/demand`, `/growth`, `/comparables`, `/sold-history`, `/rental-estimate`, `/playbook-tiers`, `/motivation-score`, plus most others |
+| 2 | `/valuation`, `/deal-score`, `/strategy-scores` |
+| 5 | `/ultimate-ai/*` (AI chat) |
+| 10 | `/property-pack`, `/area-summary` (convenience bundles) |
+
+The `X-Request-Cost` response header and `meta.usage.request_cost` tell you exactly what each call consumed. The bundles (`/property-pack`, `/area-summary`) cost 10 because they assemble several atomic endpoints in one call — only cheaper than fetching the slices individually when you need most of them.
+
 ### Service-level backpressure (`503`)
 
 During high concurrent traffic, the API server may return `503 Service temporarily busy` when its database connection pool is >85% utilized. This is a protective fast-fail to prevent cascade failures — not an authentication or quota error. The response includes a `Retry-After: 2` header.

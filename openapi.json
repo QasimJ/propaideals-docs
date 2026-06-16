@@ -570,7 +570,6 @@
           "avg_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -583,7 +582,6 @@
           "max_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -596,7 +594,6 @@
           "min_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -687,6 +684,71 @@
           "avg_bedrooms"
         ],
         "title": "AreaStatisticsResponse",
+        "type": "object"
+      },
+      "AreaSummaryResponse": {
+        "properties": {
+          "area": {
+            "title": "Area",
+            "type": "string"
+          },
+          "asking_prices": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asking Prices"
+          },
+          "demand": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demand"
+          },
+          "growth": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Growth"
+          },
+          "sold_prices": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Prices"
+          }
+        },
+        "required": [
+          "area",
+          "asking_prices",
+          "sold_prices",
+          "demand",
+          "growth"
+        ],
+        "title": "AreaSummaryResponse",
         "type": "object"
       },
       "AreaYieldResponse": {
@@ -858,7 +920,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -873,7 +934,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -897,7 +957,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -913,7 +972,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -929,7 +987,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -945,7 +1002,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -981,7 +1037,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -999,7 +1054,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -1035,7 +1089,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1053,7 +1106,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -1068,7 +1120,6 @@
                   "type": "number"
                 },
                 {
-                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                   "type": "string"
                 }
               ]
@@ -1135,20 +1186,17 @@
         "properties": {
           "after_repair_value": {
             "description": "After Repair Value (ARV) (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "After Repair Value",
             "type": "string"
           },
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "annual_net_income": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1160,32 +1208,27 @@
           },
           "bridge_finance_cost": {
             "description": "Total bridge finance costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Bridge Finance Cost",
             "type": "string"
           },
           "capital_efficiency_percentage": {
             "description": "Annual rent / Cash left in deal (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Capital Efficiency Percentage",
             "type": "string"
           },
           "cash_left_in_deal": {
             "description": "Net cash left in deal after refinance (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Cash Left In Deal",
             "type": "string"
           },
           "equity_released": {
             "description": "Equity released through refinance (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Equity Released",
             "type": "string"
           },
           "gross_cashflow_monthly": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1197,20 +1240,17 @@
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "monthly_mortgage": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1223,7 +1263,6 @@
           "net_cashflow_monthly": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1235,14 +1274,12 @@
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1254,32 +1291,27 @@
           },
           "purchase_price": {
             "description": "Initial purchase price (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Purchase Price",
             "type": "string"
           },
           "refinance_amount": {
             "description": "Refinance amount (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Refinance Amount",
             "type": "string"
           },
           "roce_percentage": {
             "description": "Return on Capital Employed (ROCE) (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roce Percentage",
             "type": "string"
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1291,13 +1323,11 @@
           },
           "total_investment": {
             "description": "Total capital invested (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           },
           "total_refurb_costs": {
             "description": "Total refurbishment costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Refurb Costs",
             "type": "string"
           }
@@ -1327,19 +1357,16 @@
         "properties": {
           "btl_monthly_rent_estimate": {
             "description": "Estimated BTL monthly rent (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Btl Monthly Rent Estimate",
             "type": "string"
           },
           "sa_monthly_income": {
             "description": "SA monthly net income (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sa Monthly Income",
             "type": "string"
           },
           "sa_vs_btl_multiplier": {
             "description": "SA income multiplier vs BTL",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sa Vs Btl Multiplier",
             "type": "string"
           }
@@ -1363,7 +1390,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -1399,7 +1425,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -1435,7 +1460,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1765,6 +1789,81 @@
           "property_ids"
         ],
         "title": "Body_load_properties_progressive_batch_api_v1_properties_progressive_batch_post",
+        "type": "object"
+      },
+      "Body_post_refurb_estimate_from_images_api_v1_investment_refurb_estimate_from_images_post": {
+        "properties": {
+          "age_band": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age Band"
+          },
+          "bathrooms": {
+            "default": 1,
+            "title": "Bathrooms",
+            "type": "integer"
+          },
+          "bedrooms": {
+            "default": 3,
+            "title": "Bedrooms",
+            "type": "integer"
+          },
+          "condition_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition Tier"
+          },
+          "floor_area_m2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor Area M2"
+          },
+          "images": {
+            "items": {
+              "format": "binary",
+              "type": "string"
+            },
+            "title": "Images",
+            "type": "array"
+          },
+          "postcode": {
+            "title": "Postcode",
+            "type": "string"
+          },
+          "property_type": {
+            "default": "semi_detached",
+            "title": "Property Type",
+            "type": "string"
+          },
+          "reception_rooms": {
+            "default": 1,
+            "title": "Reception Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "images",
+          "postcode"
+        ],
+        "title": "Body_post_refurb_estimate_from_images_api_v1_investment_refurb_estimate_from_images_post",
         "type": "object"
       },
       "Body_search_properties_batch_api_v1_properties_search_batch_post": {
@@ -2151,6 +2250,211 @@
           }
         },
         "title": "ClassificationCountsResponse",
+        "type": "object"
+      },
+      "ComparableItem": {
+        "properties": {
+          "address": {
+            "description": "Comparable property address",
+            "title": "Address",
+            "type": "string"
+          },
+          "bedrooms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bedroom count",
+            "title": "Bedrooms"
+          },
+          "confidence_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "gold / silver / bronze / supporting / excluded",
+            "title": "Confidence Tier"
+          },
+          "distance_miles": {
+            "description": "Distance from the subject postcode (miles)",
+            "title": "Distance Miles",
+            "type": "number"
+          },
+          "energy_rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "EPC band A-G",
+            "title": "Energy Rating"
+          },
+          "floor_area_sqft": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Floor area (sqft)",
+            "title": "Floor Area Sqft"
+          },
+          "is_likely_flip": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Re-sold within 3y for >=25% more",
+            "title": "Is Likely Flip"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latitude",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Longitude",
+            "title": "Longitude"
+          },
+          "price": {
+            "description": "Sale price (GBP)",
+            "title": "Price",
+            "type": "integer"
+          },
+          "price_per_bedroom": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Price per bedroom (GBP)",
+            "title": "Price Per Bedroom"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Property type",
+            "title": "Property Type"
+          },
+          "sale_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sale date (ISO 8601)",
+            "title": "Sale Date"
+          },
+          "similarity_score": {
+            "description": "Similarity score 0-100",
+            "title": "Similarity Score",
+            "type": "integer"
+          },
+          "tenure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Tenure (freehold / leasehold)",
+            "title": "Tenure"
+          },
+          "transaction_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "standard / non_standard",
+            "title": "Transaction Category"
+          }
+        },
+        "required": [
+          "address",
+          "price",
+          "distance_miles",
+          "similarity_score"
+        ],
+        "title": "ComparableItem",
+        "type": "object"
+      },
+      "ComparablesResponse": {
+        "properties": {
+          "comparables": {
+            "description": "Ranked comparable sales",
+            "items": {
+              "$ref": "#/components/schemas/ComparableItem"
+            },
+            "title": "Comparables",
+            "type": "array"
+          },
+          "count": {
+            "description": "Number of comparables returned",
+            "title": "Count",
+            "type": "integer"
+          },
+          "postcode": {
+            "description": "Normalised postcode the comparables are for",
+            "title": "Postcode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "postcode",
+          "count",
+          "comparables"
+        ],
+        "title": "ComparablesResponse",
         "type": "object"
       },
       "ComparisonMetrics": {
@@ -3303,6 +3607,57 @@
         "title": "DataQualityMetrics",
         "type": "object"
       },
+      "DemandResponse": {
+        "properties": {
+          "active_listings": {
+            "title": "Active Listings",
+            "type": "integer"
+          },
+          "area": {
+            "title": "Area",
+            "type": "string"
+          },
+          "avg_days_on_market": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Days On Market"
+          },
+          "demand_rating": {
+            "title": "Demand Rating",
+            "type": "string"
+          },
+          "sold_last_90d": {
+            "title": "Sold Last 90D",
+            "type": "integer"
+          },
+          "turnover_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Ratio"
+          }
+        },
+        "required": [
+          "area",
+          "demand_rating",
+          "active_listings",
+          "sold_last_90d",
+          "avg_days_on_market"
+        ],
+        "title": "DemandResponse",
+        "type": "object"
+      },
       "DemographicsResponse": {
         "properties": {
           "crime_rate": {
@@ -4307,7 +4662,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4322,7 +4676,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -4340,7 +4693,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4356,7 +4708,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4372,7 +4723,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4395,7 +4745,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4411,7 +4760,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4427,7 +4775,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4450,7 +4797,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4464,7 +4810,6 @@
                   "type": "number"
                 },
                 {
-                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                   "type": "string"
                 }
               ]
@@ -4492,7 +4837,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4557,14 +4901,12 @@
         "properties": {
           "annualized_return_percentage": {
             "description": "Annualized return (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annualized Return Percentage",
             "type": "string"
           },
           "bridge_finance_costs": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -4576,7 +4918,6 @@
           },
           "expected_sale_price": {
             "description": "Expected sale price (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Expected Sale Price",
             "type": "string"
           },
@@ -4588,7 +4929,6 @@
           "legal_fees_purchase": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -4600,38 +4940,32 @@
           },
           "net_profit": {
             "description": "Net profit (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Profit",
             "type": "string"
           },
           "profit_on_cost_percentage": {
             "description": "Profit on Cost (POC) (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Profit On Cost Percentage",
             "type": "string"
           },
           "purchase_price": {
             "description": "Purchase price (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Purchase Price",
             "type": "string"
           },
           "sale_costs": {
             "description": "Total sale costs (agent, legal) (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sale Costs",
             "type": "string"
           },
           "sale_proceeds": {
             "description": "Net sale proceeds after costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sale Proceeds",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -4644,7 +4978,6 @@
           "stamp_duty": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -4657,7 +4990,6 @@
           "survey_fees": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -4681,25 +5013,21 @@
           },
           "total_costs": {
             "description": "Total project costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Costs",
             "type": "string"
           },
           "total_finance_costs": {
             "description": "Total finance costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Finance Costs",
             "type": "string"
           },
           "total_holding_costs": {
             "description": "Total holding costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Holding Costs",
             "type": "string"
           },
           "total_renovation_costs": {
             "description": "Total renovation costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Renovation Costs",
             "type": "string"
           }
@@ -4824,6 +5152,65 @@
         "title": "GenerateLettersRequest",
         "type": "object"
       },
+      "GrowthResponse": {
+        "properties": {
+          "area": {
+            "title": "Area",
+            "type": "string"
+          },
+          "median_last_12m": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Last 12M"
+          },
+          "median_prior_12m": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Prior 12M"
+          },
+          "sample_size": {
+            "title": "Sample Size",
+            "type": "integer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "yoy_growth_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yoy Growth Pct"
+          }
+        },
+        "required": [
+          "area",
+          "yoy_growth_pct",
+          "median_last_12m",
+          "median_prior_12m",
+          "sample_size",
+          "source"
+        ],
+        "title": "GrowthResponse",
+        "type": "object"
+      },
       "HMOCalculationRequest": {
         "description": "HMO (House in Multiple Occupation) investment calculation request.",
         "example": {
@@ -4871,7 +5258,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4886,7 +5272,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4902,7 +5287,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4918,7 +5302,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4960,7 +5343,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -4976,7 +5358,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -5000,7 +5381,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -5028,7 +5408,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5056,7 +5435,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -5083,7 +5461,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -5163,14 +5540,12 @@
         "properties": {
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "annual_gross_income": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5183,7 +5558,6 @@
           "annual_mortgage": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5195,26 +5569,22 @@
           },
           "average_rent_per_room": {
             "description": "Average monthly rent per room (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Average Rent Per Room",
             "type": "string"
           },
           "cleaning_cost_monthly": {
             "description": "Monthly cleaning costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Cleaning Cost Monthly",
             "type": "string"
           },
           "enhanced_insurance_cost_monthly": {
             "description": "Monthly enhanced insurance cost (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Enhanced Insurance Cost Monthly",
             "type": "string"
           },
           "gross_cashflow_annual": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5227,7 +5597,6 @@
           "gross_cashflow_monthly": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5239,26 +5608,22 @@
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
           "hmo_license_cost_monthly": {
             "description": "Monthly HMO license cost (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Hmo License Cost Monthly",
             "type": "string"
           },
           "management_fee_monthly": {
             "description": "Monthly management fee (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Management Fee Monthly",
             "type": "string"
           },
           "monthly_cash_flow": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5270,14 +5635,12 @@
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "monthly_mortgage": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5290,7 +5653,6 @@
           "net_annual_income": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5303,7 +5665,6 @@
           "net_cashflow_annual": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5316,7 +5677,6 @@
           "net_cashflow_monthly": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5328,20 +5688,17 @@
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "occupancy_adjusted_rent": {
             "description": "Rent adjusted for occupancy rate (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Occupancy Adjusted Rent",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5353,7 +5710,6 @@
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
@@ -5365,7 +5721,6 @@
           "sourcing_fee": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5378,7 +5733,6 @@
           "total_annual_costs": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5390,19 +5744,16 @@
           },
           "total_investment": {
             "description": "Total capital invested (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           },
           "total_room_rent": {
             "description": "Total monthly room rents (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Room Rent",
             "type": "string"
           },
           "utilities_cost_monthly": {
             "description": "Monthly utility costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Utilities Cost Monthly",
             "type": "string"
           }
@@ -6299,7 +6650,6 @@
             "type": "array"
           },
           "price": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Price",
             "type": "string"
           },
@@ -6354,7 +6704,6 @@
           "avg_comparable_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -7573,6 +7922,52 @@
           "term_years"
         ],
         "title": "MortgageScenarioRequest",
+        "type": "object"
+      },
+      "MotivationResponse": {
+        "properties": {
+          "motivation_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivation Score"
+          },
+          "motivation_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivation Tier"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "scored_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scored At"
+          }
+        },
+        "required": [
+          "property_id"
+        ],
+        "title": "MotivationResponse",
         "type": "object"
       },
       "NaturalSearchError": {
@@ -8899,6 +9294,26 @@
         "title": "PlanningPolicyInfo",
         "type": "object"
       },
+      "PlaybookTiersResponse": {
+        "properties": {
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "tiers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Tiers",
+            "type": "object"
+          }
+        },
+        "required": [
+          "property_id"
+        ],
+        "title": "PlaybookTiersResponse",
+        "type": "object"
+      },
       "PoiRecord": {
         "properties": {
           "city": {
@@ -9266,13 +9681,105 @@
         "title": "PostcodePlanningSearchResponse",
         "type": "object"
       },
+      "PriceAggregateResponse": {
+        "properties": {
+          "area": {
+            "title": "Area",
+            "type": "string"
+          },
+          "average_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Price"
+          },
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "bedrooms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bedrooms"
+          },
+          "median_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Price"
+          },
+          "p25_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P25 Price"
+          },
+          "p75_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P75 Price"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Type"
+          },
+          "sample_size": {
+            "title": "Sample Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "area",
+          "basis",
+          "sample_size",
+          "average_price",
+          "median_price",
+          "p25_price",
+          "p75_price"
+        ],
+        "title": "PriceAggregateResponse",
+        "type": "object"
+      },
       "PriceAppreciation": {
         "description": "Price appreciation metrics for TIER 0 exact matches.",
         "properties": {
           "amount_1yr": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -9285,7 +9792,6 @@
           "amount_5yr": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -12169,7 +12675,6 @@
           "estimated_value_lower": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -12194,7 +12699,6 @@
           "estimated_value_radius_miles": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -12231,7 +12735,6 @@
           "estimated_value_upper": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14359,7 +14862,6 @@
           "rent_pcm_central": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14396,7 +14898,6 @@
           "rent_pcm_lower": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14433,7 +14934,6 @@
           "rent_pcm_radius_miles": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14470,7 +14970,6 @@
           "rent_pcm_upper": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -15829,6 +16328,110 @@
         "title": "PropertyMediaResponse",
         "type": "object"
       },
+      "PropertyPackResponse": {
+        "properties": {
+          "deal_score": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deal Score"
+          },
+          "motivation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivation"
+          },
+          "playbook_tiers": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playbook Tiers"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "rental_estimate": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rental Estimate"
+          },
+          "sold_history": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold History"
+          },
+          "strategy_scores": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Scores"
+          },
+          "valuation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuation"
+          }
+        },
+        "required": [
+          "property_id",
+          "valuation",
+          "deal_score",
+          "motivation",
+          "sold_history",
+          "rental_estimate",
+          "playbook_tiers",
+          "strategy_scores"
+        ],
+        "title": "PropertyPackResponse",
+        "type": "object"
+      },
       "PropertyPriceHistory": {
         "description": "Property price history schema.",
         "properties": {
@@ -16054,7 +16657,6 @@
           },
           "price": {
             "description": "Sale price in GBP",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Price",
             "type": "string"
           },
@@ -21508,6 +22110,29 @@
         "title": "RefurbEstimate",
         "type": "object"
       },
+      "RefurbImageScanResponse": {
+        "description": "Response for the standalone calculator image-upload scan.\n\nThe AI estimate (with vision overrides applied) plus the caller's\nrefreshed monthly scan quota so the UI can show 'X of 50 left'\nimmediately after the scan that just consumed one.",
+        "properties": {
+          "estimate": {
+            "$ref": "#/components/schemas/RefurbEstimate"
+          },
+          "quota": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RefurbScanUserQuota"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "estimate"
+        ],
+        "title": "RefurbImageScanResponse",
+        "type": "object"
+      },
       "RefurbItemEstimate": {
         "description": "Estimated cost for a single refurb category.",
         "properties": {
@@ -21822,6 +22447,48 @@
         "title": "RentDistribution",
         "type": "object"
       },
+      "RentalEstimateResponse": {
+        "properties": {
+          "implied_gross_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Implied Gross Yield Pct"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "rent_estimate_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rent Estimate Pcm"
+          },
+          "sample_size": {
+            "title": "Sample Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "property_id",
+          "rent_estimate_pcm",
+          "sample_size",
+          "implied_gross_yield_pct"
+        ],
+        "title": "RentalEstimateResponse",
+        "type": "object"
+      },
       "RentalMarketContext": {
         "description": "Rental market context from live rental listings in the area.",
         "properties": {
@@ -22088,7 +22755,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22204,7 +22870,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22220,7 +22885,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22236,7 +22900,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22252,7 +22915,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22268,7 +22930,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22296,7 +22957,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22326,7 +22986,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22342,7 +23001,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22366,7 +23024,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22381,7 +23038,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22397,7 +23053,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22415,7 +23070,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22433,7 +23087,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22461,7 +23114,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22479,7 +23131,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22514,7 +23165,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -22587,14 +23237,12 @@
         "properties": {
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "annual_mortgage": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22611,20 +23259,17 @@
           },
           "cleaning_costs_annual": {
             "description": "Annual cleaning costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Cleaning Costs Annual",
             "type": "string"
           },
           "consumables_annual": {
             "description": "Annual consumables cost (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Consumables Annual",
             "type": "string"
           },
           "gross_cashflow_annual": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22637,7 +23282,6 @@
           "gross_cashflow_monthly": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22649,32 +23293,27 @@
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
           "license_cost_annual": {
             "description": "Annual license cost (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "License Cost Annual",
             "type": "string"
           },
           "management_fee_annual": {
             "description": "Annual management fee if outsourced (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Management Fee Annual",
             "type": "string"
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "monthly_mortgage": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22687,7 +23326,6 @@
           "net_cashflow_annual": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22700,7 +23338,6 @@
           "net_cashflow_monthly": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22712,38 +23349,32 @@
           },
           "net_revenue": {
             "description": "Net revenue after all SA-specific costs (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Revenue",
             "type": "string"
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "nightly_rate": {
             "description": "Average Daily Rate (ADR) (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Nightly Rate",
             "type": "string"
           },
           "occupancy_adjusted_revenue": {
             "description": "Revenue adjusted for occupancy (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Occupancy Adjusted Revenue",
             "type": "string"
           },
           "occupancy_rate": {
             "description": "Occupancy rate (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Occupancy Rate",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22755,32 +23386,27 @@
           },
           "platform_fees": {
             "description": "Annual platform fees (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Platform Fees",
             "type": "string"
           },
           "potential_annual_revenue": {
             "description": "Revenue at 100% occupancy (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Potential Annual Revenue",
             "type": "string"
           },
           "revpan": {
             "description": "Revenue per Available Night (RevPAN) (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Revpan",
             "type": "string"
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -22792,13 +23418,11 @@
           },
           "total_investment": {
             "description": "Total capital invested (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           },
           "utilities_annual": {
             "description": "Annual utilities (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Utilities Annual",
             "type": "string"
           }
@@ -23511,6 +24135,55 @@
         "title": "SmallPropertyCardData",
         "type": "object"
       },
+      "SoldHistoryResponse": {
+        "properties": {
+          "estimate_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimate Note"
+          },
+          "is_building_estimate": {
+            "default": false,
+            "title": "Is Building Estimate",
+            "type": "boolean"
+          },
+          "match_confidence": {
+            "default": 0,
+            "title": "Match Confidence",
+            "type": "integer"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "sold_history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Sold History",
+            "type": "array"
+          },
+          "sources_used": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources Used",
+            "type": "array"
+          }
+        },
+        "required": [
+          "property_id"
+        ],
+        "title": "SoldHistoryResponse",
+        "type": "object"
+      },
       "SoldVsAsking": {
         "properties": {
           "median_ratio": {
@@ -23566,7 +24239,6 @@
                 "type": "number"
               },
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -23915,6 +24587,56 @@
         "title": "StrategyComparisonResponse",
         "type": "object"
       },
+      "StrategyScoresResponse": {
+        "properties": {
+          "best_strategy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Strategy"
+          },
+          "best_strategy_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Strategy Score"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "scores": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Scores",
+            "type": "object"
+          }
+        },
+        "required": [
+          "property_id",
+          "scores"
+        ],
+        "title": "StrategyScoresResponse",
+        "type": "object"
+      },
       "StreamlinedSearchRequest": {
         "description": "Request model for streamlined natural language search.",
         "properties": {
@@ -24071,7 +24793,6 @@
           "street_avg_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -24084,7 +24805,6 @@
           "street_median_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25481,6 +26201,172 @@
         "title": "HeritageStatusResponse",
         "type": "object"
       },
+      "app__routers__api_granular__differentiators__DealScoreResponse": {
+        "properties": {
+          "deal_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deal Score"
+          },
+          "factors": {
+            "additionalProperties": true,
+            "title": "Factors",
+            "type": "object"
+          },
+          "hidden_opportunities": {
+            "additionalProperties": true,
+            "title": "Hidden Opportunities",
+            "type": "object"
+          },
+          "is_hot_deal": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Hot Deal"
+          },
+          "predicted_reduction_likelihood": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted Reduction Likelihood"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_id"
+        ],
+        "title": "DealScoreResponse",
+        "type": "object"
+      },
+      "app__routers__api_granular__valuation_comparables__ValuationResponse": {
+        "properties": {
+          "area_average": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Area average sale value (GBP)",
+            "title": "Area Average"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Confidence band for the estimate",
+            "title": "Confidence"
+          },
+          "gross_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Gross rental yield (%)",
+            "title": "Gross Yield Pct"
+          },
+          "postcode": {
+            "description": "Normalised postcode the valuation is for",
+            "title": "Postcode",
+            "type": "string"
+          },
+          "rent_estimate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Estimated monthly rent (GBP/mo)",
+            "title": "Rent Estimate"
+          },
+          "sale_estimate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Point sale value estimate (GBP)",
+            "title": "Sale Estimate"
+          },
+          "sale_lower": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lower bound of the sale estimate (GBP)",
+            "title": "Sale Lower"
+          },
+          "sale_upper": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Upper bound of the sale estimate (GBP)",
+            "title": "Sale Upper"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Data source for the valuation",
+            "title": "Source"
+          }
+        },
+        "required": [
+          "postcode"
+        ],
+        "title": "ValuationResponse",
+        "type": "object"
+      },
       "app__routers__investment_analysis__StampDutyRequest": {
         "description": "Request model for stamp duty calculation.",
         "properties": {
@@ -25547,32 +26433,27 @@
         "properties": {
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25584,14 +26465,12 @@
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25603,7 +26482,6 @@
           },
           "total_investment": {
             "description": "Total capital invested (GBP)",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           }
@@ -26807,7 +27685,6 @@
           "estimated_value_lower": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -26832,7 +27709,6 @@
           "estimated_value_radius_miles": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -26869,7 +27745,6 @@
           "estimated_value_upper": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -28367,7 +29242,6 @@
           "rent_pcm_central": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -28404,7 +29278,6 @@
           "rent_pcm_lower": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -28441,7 +29314,6 @@
           "rent_pcm_radius_miles": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -28478,7 +29350,6 @@
           "rent_pcm_upper": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -29111,14 +29982,12 @@
         "properties": {
           "asking_price": {
             "description": "Current asking price",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Asking Price",
             "type": "string"
           },
           "bmv_amount": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -29143,7 +30012,6 @@
           "comparable_avg_price": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -29641,6 +30509,72 @@
           }
         ],
         "summary": "Delete Subscription",
+        "tags": [
+          "Area & market intelligence"
+        ]
+      }
+    },
+    "/api/v1/area-summary": {
+      "get": {
+        "description": "Bundle (cost 10): asking prices + sold prices + demand + growth for an\narea in one call. Each slice is best-effort.",
+        "operationId": "get_area_summary_api_v1_area_summary_get",
+        "parameters": [
+          {
+            "description": "Full postcode or outcode",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Full postcode or outcode",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AreaSummaryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Area Summary",
         "tags": [
           "Area & market intelligence"
         ]
@@ -30608,6 +31542,259 @@
         ]
       }
     },
+    "/api/v1/comparables": {
+      "get": {
+        "description": "Return ranked comparable sales near a postcode.\n\nAdapts the unified comparables ranking core. Each comparable carries the\nsame confidence tier / transaction-category / flip signals the rest of\nthe platform uses.",
+        "operationId": "get_comparables_api_v1_comparables_get",
+        "parameters": [
+          {
+            "description": "Full postcode",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Full postcode",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bedrooms",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 10,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bedrooms"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "radius_miles",
+            "required": false,
+            "schema": {
+              "default": 0.5,
+              "maximum": 5.0,
+              "minimum": 0.1,
+              "title": "Radius Miles",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparablesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Comparables",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/deal-score": {
+      "get": {
+        "operationId": "get_deal_score_api_v1_deal_score_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__routers__api_granular__differentiators__DealScoreResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Deal Score",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/demand": {
+      "get": {
+        "description": "Market demand / turnover for an outcode.\n\nCompares active sale listings against properties marked sold/under-offer\nin the last 90 days to derive a turnover ratio + a seller/buyer/balanced\nrating, plus average days-on-market for live listings.",
+        "operationId": "get_demand_api_v1_demand_get",
+        "parameters": [
+          {
+            "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemandResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Demand",
+        "tags": [
+          "Area & market intelligence"
+        ]
+      }
+    },
     "/api/v1/demographics/{postcode_district}": {
       "get": {
         "description": "Return area demographics for a postcode district (e.g. M1, SW1, EH4).\n\nCombines ONS census data, ONS deprivation index, and police.uk crime\nstatistics into one record per district. Updated quarterly.",
@@ -30988,6 +32175,72 @@
         "summary": "Get Flood Risk For Property",
         "tags": [
           "Planning & environment"
+        ]
+      }
+    },
+    "/api/v1/growth": {
+      "get": {
+        "description": "Year-on-year capital growth for an outcode from Land Registry medians.\n\nCompares the median sold price of the last 12 months against the prior 12\nmonths to compute a YoY growth percentage.",
+        "operationId": "get_growth_api_v1_growth_get",
+        "parameters": [
+          {
+            "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Growth",
+        "tags": [
+          "Area & market intelligence"
         ]
       }
     },
@@ -32792,6 +34045,53 @@
         ]
       }
     },
+    "/api/v1/investment/refurb-estimate-from-images": {
+      "post": {
+        "description": "AI refurb estimate from user-uploaded photos (standalone calculator).\n\nPro/Founder only - consumes ONE of the user's monthly refurb-vision\nallowance (15/month), the SAME counter as the property-page scan.\nImages are sent inline to the model as base64 data URIs and are NOT\nstored. HTTP 402 when the monthly quota is exhausted; 403 when the\ntier has no scan allowance; 401 when not signed in.",
+        "operationId": "post_refurb_estimate_from_images_api_v1_investment_refurb_estimate_from_images_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_post_refurb_estimate_from_images_api_v1_investment_refurb_estimate_from_images_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefurbImageScanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Post Refurb Estimate From Images",
+        "tags": [
+          "Investment"
+        ]
+      }
+    },
     "/api/v1/investment/refurb-estimate/{property_id}": {
       "get": {
         "description": "Get a smart refurbishment cost estimate for a property.\n\nUses property condition, size, type, and EPC data to produce\na data-driven estimate broken down by trade category.\n\nWhen ``use_vision=true`` and the user is on Pro or Founder, the\nservice additionally runs a GPT-4o-mini photo pass against the\nproperty's interior images (and a floorplan pass when\n``floor_area_sqft`` is missing) to derive condition grades from\nreal evidence. Vision spend is bounded per user per month (premium 5,\npro/founder 50 - see REFURB_VISION_PER_MONTH) - a 30-day Redis cache on the assessment\nmeans re-runs of the same property are free. HTTP 402 is returned\nwhen the monthly quota is exhausted; HTTP 403 when the tier does\nnot include refurb-vision.",
@@ -32847,6 +34147,61 @@
           }
         ],
         "summary": "Get Refurb Estimate",
+        "tags": [
+          "Investment"
+        ]
+      }
+    },
+    "/api/v1/investment/refurb-scan-quota": {
+      "get": {
+        "description": "Return the caller's monthly AI refurb-scan quota.\n\nLets the standalone calculator show '3 of 50 used - 47 left' and\ngate the upload button before the first scan. Requires sign-in.",
+        "operationId": "get_refurb_scan_quota_api_v1_investment_refurb_scan_quota_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefurbScanUserQuota"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Refurb Scan Quota",
         "tags": [
           "Investment"
         ]
@@ -37040,6 +38395,69 @@
         ]
       }
     },
+    "/api/v1/motivation-score": {
+      "get": {
+        "operationId": "get_motivation_score_api_v1_motivation_score_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MotivationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Motivation Score",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
     "/api/v1/off-market-lead-generators": {
       "get": {
         "description": "Returns all active off-market lead generators for the authenticated user.",
@@ -38416,6 +39834,69 @@
         ]
       }
     },
+    "/api/v1/playbook-tiers": {
+      "get": {
+        "operationId": "get_playbook_tiers_api_v1_playbook_tiers_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookTiersResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Playbook Tiers",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
     "/api/v1/points-of-interest/airports": {
       "get": {
         "description": "Return UK airports within a radius of a coordinate.\n\nUseful for short-let / serviced-accommodation investors who want\nproperties within commute of an airport. Default 50km radius.",
@@ -38701,6 +40182,108 @@
         "summary": "Get Nearby Tourist Attractions",
         "tags": [
           "Area & market intelligence"
+        ]
+      }
+    },
+    "/api/v1/prices": {
+      "get": {
+        "description": "Asking-price aggregate for an outcode from active sale listings.\n\nReturns count + mean/median/p25/p75 of asking prices, optionally filtered\nby bedroom count and property type.",
+        "operationId": "get_asking_prices_api_v1_prices_get",
+        "parameters": [
+          {
+            "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bedrooms",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 10,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bedrooms"
+            }
+          },
+          {
+            "description": "Property type substring filter",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Property type substring filter",
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceAggregateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Asking Prices",
+        "tags": [
+          "Market data"
         ]
       }
     },
@@ -49019,6 +50602,138 @@
         ]
       }
     },
+    "/api/v1/property-pack": {
+      "get": {
+        "description": "Bundle (cost 10): valuation + deal score + motivation + sold history +\nrental estimate + playbook tiers + strategy scores in one call. Convenience\nover composing the atomic endpoints; each slice is best-effort.",
+        "operationId": "get_property_pack_api_v1_property_pack_get",
+        "parameters": [
+          {
+            "description": "Internal property UUID",
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Internal property UUID",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyPackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Property Pack",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/rental-estimate": {
+      "get": {
+        "description": "Estimate the monthly rent for a property from nearby rental comparables.\n\nUses the median of comparable rents within ~1km (±1 bedroom) and, when the\nproperty has a sale price, derives an implied gross yield.",
+        "operationId": "get_rental_estimate_api_v1_rental_estimate_get",
+        "parameters": [
+          {
+            "description": "Internal property UUID",
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Internal property UUID",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RentalEstimateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Rental Estimate",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
     "/api/v1/rents/area/{outcode}": {
       "get": {
         "description": "Aggregate monthly rents for a postcode outcode.\n\nPulls from active rental listings in the `properties` table. Returns\noverall mean/median/p25/p75 plus a per-bedroom breakdown (1-5 beds).",
@@ -49075,6 +50790,168 @@
         "summary": "Get Area Rents",
         "tags": [
           "Area & market intelligence"
+        ]
+      }
+    },
+    "/api/v1/sold-history": {
+      "get": {
+        "description": "Return the matched sold transaction history for a property.\n\nLooks up the property's identity (UPRN, coords, address) then runs the\nmulti-source sold-history matcher (UPRN exact > PostGIS spatial > Land\nRegistry spatial + address).",
+        "operationId": "get_sold_history_api_v1_sold_history_get",
+        "parameters": [
+          {
+            "description": "Internal property UUID",
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Internal property UUID",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SoldHistoryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Sold History",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/sold-prices": {
+      "get": {
+        "description": "Sold-price aggregate for an outcode from HM Land Registry transactions.\n\nReturns count + mean/median/p25/p75 of sold prices over the last\n`max_age_months` months. Land Registry has no bedroom data, so there is\nno bedrooms filter.",
+        "operationId": "get_sold_prices_api_v1_sold_prices_get",
+        "parameters": [
+          {
+            "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Property type substring filter",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Property type substring filter",
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "max_age_months",
+            "required": false,
+            "schema": {
+              "default": 24,
+              "maximum": 120,
+              "minimum": 3,
+              "title": "Max Age Months",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceAggregateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Sold Prices",
+        "tags": [
+          "Market data"
         ]
       }
     },
@@ -50266,6 +52143,69 @@
         ]
       }
     },
+    "/api/v1/strategy-scores": {
+      "get": {
+        "operationId": "get_strategy_scores_api_v1_strategy_scores_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyScoresResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Strategy Scores",
+        "tags": [
+          "Investment"
+        ]
+      }
+    },
     "/api/v1/ultimate-ai/chat": {
       "post": {
         "description": "Main chat endpoint for Ultimate AI system - REQUIRES AUTHENTICATION.\n\nUses read replica for property search queries (no RLS, no write contention).\nPrimary DB used only for conversation saves via global_db_manager.",
@@ -50593,6 +52533,106 @@
         "summary": "Lookup Uprn",
         "tags": [
           "EPC & UPRN"
+        ]
+      }
+    },
+    "/api/v1/valuation": {
+      "get": {
+        "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nAdapts ValuationService.get_valuation_by_postcode. Returns 404 when no\nvaluation data exists for the postcode.",
+        "operationId": "get_valuation_api_v1_valuation_get",
+        "parameters": [
+          {
+            "description": "Full postcode",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "Full postcode",
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bedrooms",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 10,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bedrooms"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__routers__api_granular__valuation_comparables__ValuationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Valuation",
+        "tags": [
+          "Market data"
         ]
       }
     },

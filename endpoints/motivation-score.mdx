@@ -1,0 +1,108 @@
+---
+title: Motivation score endpoint
+description: PII-free, listing-signal-derived vendor-motivation indicator (0–100) with a gold/silver/bronze tier for a UK property. Required scope market-data:read.
+---
+
+# Motivation score
+
+The motivation score endpoint returns an indicator of how motivated a property's vendor is likely to be. The score is derived purely from public listing signals — price reductions, time on market, re-listings, keyword cues, and tenure — and contains **no personal data** about the seller. Use it to prioritise outreach towards listings where a deal is more likely.
+
+**Required scope:** `market-data:read`
+**Cost:** 1 request per call
+
+## Get the motivation score for a property
+
+```http
+GET /api/v1/motivation-score
+```
+
+Returns the motivation score, its tier, and when it was last computed for a single property, identified by its UUID.
+
+### Authentication
+
+```bash
+Authorization: Bearer paid_your_key
+```
+
+All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous requests are rejected with `401`.
+
+### Query parameters
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `property_id` | string (UUID) | — | **Required.** The property's UUID |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/motivation-score?property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer paid_your_key"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/motivation-score",
+    params={"property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde"},
+    headers={"Authorization": "Bearer paid_your_key"},
+)
+motivation = res.json()["data"]
+```
+
+```javascript
+const params = new URLSearchParams({ property_id: "5fa1b2c3-d4e5-6f78-9012-3456789abcde" });
+const res = await fetch(
+  `https://api.propaideals.co.uk/api/v1/motivation-score?${params}`,
+  { headers: { Authorization: "Bearer paid_your_key" } },
+);
+const { data } = await res.json();
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
+    "motivation_score": 76,
+    "motivation_tier": "gold",
+    "scored_at": "2026-06-12T03:41:58Z"
+  },
+  "meta": {
+    "usage": {
+      "request_cost": 1,
+      "monthly_used": 4827,
+      "monthly_limit": 100000
+    }
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `property_id` | string | The property's UUID |
+| `motivation_score` | integer | Vendor-motivation indicator, `0`–`100` (higher = more motivated) |
+| `motivation_tier` | string | `gold`, `silver`, `bronze`, or `excluded` |
+| `scored_at` | string \| null | ISO 8601 timestamp of the last scoring run, or `null` if not yet scored |
+
+<Note>
+The motivation score is **PII-free**. It is computed only from public listing signals and tells you nothing about the named seller — there is no personal data in the response.
+</Note>
+
+## Common patterns
+
+### Prioritise outreach to motivated vendors
+
+```python
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/motivation-score",
+    params={"property_id": property_id},
+    headers={"Authorization": "Bearer paid_your_key"},
+).json()["data"]
+
+if res["motivation_tier"] in ("gold", "silver"):
+    print(f"Worth a call — motivation {res['motivation_score']}/100 ({res['motivation_tier']})")
+```
