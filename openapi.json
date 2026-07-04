@@ -1969,6 +1969,147 @@
         "title": "CalculatorType",
         "type": "string"
       },
+      "ChatFilters": {
+        "description": "Optional structured search constraints from the Deal Finder filter panel.\n\nSTRICTLY ADDITIVE: every field is Optional and defaults to None. When the\nwhole object is absent (legacy clients send no `filters`), or when every\nfield is None/empty, the chat behaves exactly as it did before — the\ncoordinator only threads this into the search when at least one constraint\nis set (see `ChatFilters.is_empty`).\n\nField names are snake_case to match the search agent's existing\n`_convert_frontend_filter_criteria` / `_apply_snake_case_criteria` keys, so\nno new mapping code is needed on the merge side.",
+        "properties": {
+          "ai_categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Categories"
+          },
+          "listing_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "for_sale",
+                  "sold",
+                  "all"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Status"
+          },
+          "max_bedrooms": {
+            "anyOf": [
+              {
+                "maximum": 20.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Bedrooms"
+          },
+          "max_price": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Price"
+          },
+          "min_bedrooms": {
+            "anyOf": [
+              {
+                "maximum": 20.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Bedrooms"
+          },
+          "min_bmv_discount": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Bmv Discount"
+          },
+          "min_deal_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Deal Score"
+          },
+          "min_price": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price"
+          },
+          "min_yield": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Yield"
+          },
+          "property_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "e.g. ['flat', 'terraced', 'semi-detached']",
+            "title": "Property Types"
+          }
+        },
+        "title": "ChatFilters",
+        "type": "object"
+      },
       "ChatRequest": {
         "description": "Request model for chat endpoints.",
         "example": {
@@ -1990,9 +2131,20 @@
             "description": "Additional context",
             "title": "Context"
           },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChatFilters"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Structured search filters (Deal Finder panel). No-op when absent."
+          },
           "message": {
             "description": "User's message",
-            "maxLength": 2000,
+            "maxLength": 5000,
             "minLength": 1,
             "title": "Message",
             "type": "string"
@@ -2711,6 +2863,16 @@
             "title": "Electrics Visible Age Band",
             "type": "string"
           },
+          "external_walls_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "flooring_grade": {
             "anyOf": [
               {
@@ -2757,6 +2919,21 @@
             ],
             "title": "Floorplan Reception Rooms"
           },
+          "garden_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interior_photos_detected": {
+            "default": true,
+            "title": "Interior Photos Detected",
+            "type": "boolean"
+          },
           "kitchen_grade": {
             "anyOf": [
               {
@@ -2798,6 +2975,16 @@
             "title": "Photos Analysed",
             "type": "integer"
           },
+          "roof_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "room_assessments": {
             "items": {
               "$ref": "#/components/schemas/RoomAssessment"
@@ -2830,6 +3017,63 @@
           "model_version"
         ],
         "title": "ConditionAssessment",
+        "type": "object"
+      },
+      "ConversationListResponse": {
+        "description": "List of the user's saved AI conversations for the history panel.",
+        "properties": {
+          "conversations": {
+            "items": {},
+            "title": "Conversations",
+            "type": "array"
+          }
+        },
+        "title": "ConversationListResponse",
+        "type": "object"
+      },
+      "ConversationRestoreResponse": {
+        "description": "Payload for rehydrating a past AI chat so the user can return to a\nprevious search instead of starting from scratch.",
+        "properties": {
+          "has_history": {
+            "default": false,
+            "title": "Has History",
+            "type": "boolean"
+          },
+          "messages": {
+            "items": {},
+            "title": "Messages",
+            "type": "array"
+          },
+          "properties": {
+            "items": {},
+            "title": "Properties",
+            "type": "array"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "show_more_session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Show More Session Id"
+          },
+          "total_properties": {
+            "default": 0,
+            "title": "Total Properties",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "title": "ConversationRestoreResponse",
         "type": "object"
       },
       "CouncilContactInfo": {
@@ -4828,6 +5072,23 @@
               }
             ],
             "description": "Optional sourcing fee added at acquisition. Inflates total costs and reduces profit-on-cost / profit margin. Does NOT affect the expected sale price."
+          },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees for purchase (None = auto: max of £600 or 0.2% of price)",
+            "title": "Survey Fees"
           },
           "utilities_monthly": {
             "anyOf": [
@@ -11678,6 +11939,30 @@
             "description": "Article 4 direction blocks Class Q conversion",
             "title": "Article 4 Restricts Q"
           },
+          "asking_rent_pa": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Advertised annual rent (£/yr)",
+            "title": "Asking Rent Pa"
+          },
+          "asking_rent_psf": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Advertised rent per square foot (£/sq ft)",
+            "title": "Asking Rent Psf"
+          },
           "auction_confidence": {
             "anyOf": [
               {
@@ -11850,6 +12135,18 @@
             "description": "Block of flats",
             "title": "Block Of Flats"
           },
+          "bmv_comp_count_used": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Genuine sold comparables used for the BMV calculation",
+            "title": "Bmv Comp Count Used"
+          },
           "bmv_comparable_count": {
             "anyOf": [
               {
@@ -11887,7 +12184,7 @@
                 "type": "null"
               }
             ],
-            "description": "BMV confidence: very_high|high|medium|low",
+            "description": "BMV confidence: very_high|high|medium|low|insufficient_comps",
             "title": "Bmv Confidence Level"
           },
           "bmv_corrected_discount_percentage": {
@@ -11913,6 +12210,18 @@
             ],
             "description": "Residual-model-corrected fair value (GBP)",
             "title": "Bmv Corrected Value"
+          },
+          "bmv_data_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "BMV data source. AVM-fallback sources (e.g. zoopla_avm_*) have no genuine sold comparables and are suppressed by the display gate.",
+            "title": "Bmv Data Source"
           },
           "bmv_discount_pct_best": {
             "anyOf": [
@@ -12208,6 +12517,18 @@
             "description": "Suitable for buy-to-let",
             "title": "Btl Suitable"
           },
+          "business_rates_pa": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual business rates payable (£/yr)",
+            "title": "Business Rates Pa"
+          },
           "cash_buyer_only": {
             "anyOf": [
               {
@@ -12268,6 +12589,18 @@
             "description": "Character property",
             "title": "Character Property"
           },
+          "commercial": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the listing is flagged commercial at source",
+            "title": "Commercial"
+          },
           "commercial_floors": {
             "anyOf": [
               {
@@ -12279,6 +12612,42 @@
             ],
             "description": "Number of commercial floors (extracted from listing)",
             "title": "Commercial Floors"
+          },
+          "commercial_property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Commercial sub-type, e.g. 'Office', 'restaurant', 'Mixed Use'",
+            "title": "Commercial Property Type"
+          },
+          "commercial_size_sqft": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Commercial floor area in square feet",
+            "title": "Commercial Size Sqft"
+          },
+          "commercial_size_sqm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Commercial floor area in square metres",
+            "title": "Commercial Size Sqm"
           },
           "commercial_use_class": {
             "anyOf": [
@@ -12379,6 +12748,18 @@
             ],
             "description": "Crime decile (1=highest crime, 10=lowest)",
             "title": "Crime Score"
+          },
+          "current_occupancy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Occupancy status, e.g. 'Vacant', 'Let', 'Owner occupied'",
+            "title": "Current Occupancy"
           },
           "damp_issues": {
             "anyOf": [
@@ -12965,6 +13346,20 @@
             },
             "title": "Floor Plans",
             "type": "array"
+          },
+          "for_you_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unified For-You ranking score 0-100 (verdict_score × investor fit). Only present in personalised feed responses.",
+            "title": "For You Score"
           },
           "furnished_state": {
             "anyOf": [
@@ -13720,6 +14115,30 @@
             "description": "Latitude coordinate",
             "title": "Latitude"
           },
+          "lease_term_years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lease term in years",
+            "title": "Lease Term Years"
+          },
+          "lease_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lease type, e.g. 'FRI', 'Internal Repairing'",
+            "title": "Lease Type"
+          },
           "lease_years_remaining": {
             "anyOf": [
               {
@@ -14026,6 +14445,21 @@
             "description": "Match score 0-100 based on investor profile (only with personalized=true)",
             "title": "Match Score"
           },
+          "matched_signals": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preferred deal-signal slugs this property matches (catalogue order). Only with personalized=true.",
+            "title": "Matched Signals"
+          },
           "minimum_tenancy_months": {
             "anyOf": [
               {
@@ -14267,6 +14701,53 @@
             "description": "Type of parking",
             "title": "Parking Type"
           },
+          "permitted_development": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether permitted-development rights apply",
+            "title": "Permitted Development"
+          },
+          "personalisation_chips": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Human-readable personalised-verdict chips. Only with personalized=true.",
+            "title": "Personalisation Chips"
+          },
+          "personalized_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-investor verdict overlay: pursue | watch | pass | insufficient_data. Only present in personalised feed responses.",
+            "title": "Personalized Verdict"
+          },
+          "personalized_verdict_reasons": {
+            "description": "Human-readable chips explaining the personalised verdict. Only present in personalised feed responses.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Personalized Verdict Reasons",
+            "type": "array"
+          },
           "pet_friendly": {
             "anyOf": [
               {
@@ -14484,30 +14965,6 @@
             "description": "Formatted price",
             "title": "Price"
           },
-          "price_accuracy_confidence": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Price accuracy confidence level",
-            "title": "Price Accuracy Confidence"
-          },
-          "price_accuracy_gap_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Price gap vs comparable sales %",
-            "title": "Price Accuracy Gap Pct"
-          },
           "price_changed_date": {
             "anyOf": [
               {
@@ -14687,6 +15144,18 @@
             "description": "Property badge/label",
             "title": "Property Badge"
           },
+          "property_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Top-level category, e.g. 'residential' or 'commercial'",
+            "title": "Property Category"
+          },
           "property_images": {
             "description": "Detailed property images with metadata",
             "items": {
@@ -14847,6 +15316,30 @@
             "description": "Suitable for rent-to-rent",
             "title": "R2R Suitable"
           },
+          "rateable_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "VOA rateable value (£)",
+            "title": "Rateable Value"
+          },
+          "rateable_value_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Provenance of the rateable value: 'voa', 'scraper', 'manual'",
+            "title": "Rateable Value Source"
+          },
           "reception_rooms": {
             "anyOf": [
               {
@@ -14990,6 +15483,19 @@
             ],
             "description": "Derived: commercial annual rent per sqft (£)",
             "title": "Rent Psf"
+          },
+          "rent_review_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Next rent review date",
+            "title": "Rent Review Date"
           },
           "rent_to_rent_tier": {
             "anyOf": [
@@ -15268,6 +15774,18 @@
             ],
             "description": "Annual service charge",
             "title": "Service Charge Annual"
+          },
+          "service_charge_pa": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual commercial service charge (£/yr)",
+            "title": "Service Charge Pa"
           },
           "serviced_accommodation_tier": {
             "anyOf": [
@@ -15705,6 +16223,68 @@
             ],
             "description": "Vacant possession",
             "title": "Vacant Possession"
+          },
+          "vat_applicable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether VAT is applicable on the property",
+            "title": "Vat Applicable"
+          },
+          "vendor_motivation_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Listing-vendor motivation score (property_market_signals)",
+            "title": "Vendor Motivation Score"
+          },
+          "vendor_motivation_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Listing-vendor motivation tier (hot/warm/cold)",
+            "title": "Vendor Motivation Tier"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "AI verdict: pursue | watch | pass | insufficient_data",
+            "title": "Verdict"
+          },
+          "verdict_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Holistic verdict score 0-100; sort key within a verdict tier",
+            "title": "Verdict Score"
           },
           "view_count": {
             "default": 0,
@@ -16857,14 +17437,14 @@
           "best_strategy": {
             "anyOf": [
               {
-                "pattern": "^(btl|hmo|brrr|flip|sa|r2r|BTL|HMO|BRRR|FLIP|SA|R2R)$",
+                "pattern": "^(brrr|btl|edc|flip|hmo|plo|r2r|r2r_hmo|r2r_sa|sa|BRRR|BTL|EDC|FLIP|HMO|PLO|R2R|R2R_HMO|R2R_SA|SA)$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "description": "Filter by best strategy (btl, hmo, brrr, flip, sa, r2r)",
+            "description": "Filter by best strategy (canonical keys)",
             "title": "Best Strategy"
           },
           "bills_included": {
@@ -18419,6 +18999,21 @@
             "description": "Filter for STPP (subject to planning) properties",
             "title": "Stpp"
           },
+          "strategy_tags_any": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Match properties whose effective strategy tags include ANY of these canonical keys (computed suitable_strategies + user pins - user removals)",
+            "title": "Strategy Tags Any"
+          },
           "street": {
             "anyOf": [
               {
@@ -18688,6 +19283,7 @@
           "onthemarket",
           "primelocation",
           "spareroom",
+          "propertypal",
           "auction_house_london",
           "sdl_auctions",
           "future_property_auctions",
@@ -18999,6 +19595,18 @@
             ],
             "description": "Estimated rental yield percentage",
             "title": "Estimated Rental Yield"
+          },
+          "gross_yield": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical gross yield % (zoopla-preferred); use this for display",
+            "title": "Gross Yield"
           },
           "id": {
             "title": "Id",
@@ -19853,14 +20461,14 @@
           "best_strategy": {
             "anyOf": [
               {
-                "pattern": "^(btl|hmo|brrr|flip|sa|r2r|BTL|HMO|BRRR|FLIP|SA|R2R)$",
+                "pattern": "^(brrr|btl|edc|flip|hmo|plo|r2r|r2r_hmo|r2r_sa|sa|BRRR|BTL|EDC|FLIP|HMO|PLO|R2R|R2R_HMO|R2R_SA|SA)$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "description": "Filter by best strategy (btl, hmo, brrr, flip, sa, r2r)",
+            "description": "Filter by best strategy (canonical keys)",
             "title": "Best Strategy"
           },
           "bills_included": {
@@ -21430,6 +22038,21 @@
             "description": "Filter for STPP (subject to planning) properties",
             "title": "Stpp"
           },
+          "strategy_tags_any": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Match properties whose effective strategy tags include ANY of these canonical keys (computed suitable_strategies + user pins - user removals)",
+            "title": "Strategy Tags Any"
+          },
           "street": {
             "anyOf": [
               {
@@ -21665,6 +22288,30 @@
             "description": "Recommended investment strategy",
             "title": "Best Strategy"
           },
+          "bmv_corrected_discount_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected BMV discount: (corrected_value - price) / corrected_value * 100",
+            "title": "Bmv Corrected Discount Percentage"
+          },
+          "bmv_corrected_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "AI-corrected comparable market value",
+            "title": "Bmv Corrected Value"
+          },
           "brrr_score": {
             "anyOf": [
               {
@@ -21749,6 +22396,17 @@
             "description": "Floor area in sqm",
             "title": "Floor Area Sqm"
           },
+          "ground_rent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ground Rent"
+          },
           "hmo_score": {
             "anyOf": [
               {
@@ -21796,6 +22454,17 @@
             "description": "Property latitude",
             "title": "Latitude"
           },
+          "lease_years_remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Years Remaining"
+          },
           "longitude": {
             "anyOf": [
               {
@@ -21834,6 +22503,26 @@
             "minimum": 0.0,
             "title": "Match Score",
             "type": "integer"
+          },
+          "personalized_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Personalised verdict state: pursue, watch, pass",
+            "title": "Personalized Verdict"
+          },
+          "personalized_verdict_reasons": {
+            "description": "Reason chips for the personalised verdict",
+            "items": {
+              "type": "string"
+            },
+            "title": "Personalized Verdict Reasons",
+            "type": "array"
           },
           "postcode": {
             "anyOf": [
@@ -21890,6 +22579,28 @@
             ],
             "description": "Formatted yield string",
             "title": "Rental Yield Display"
+          },
+          "service_charge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Charge"
+          },
+          "short_lease": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Lease"
           },
           "source": {
             "anyOf": [
@@ -22008,6 +22719,50 @@
       "RefurbEstimate": {
         "description": "Full refurb estimate response.\n\nThe vision_used / vision_overrides pair forms the audit trail for\nAI-graded estimates added in Phase 1 of the refurb vision plan\n(docs/superpowers/plans/2026-05-09-refurb-vision-pipeline-integration.md).\nDefaults are backwards-compatible - existing manual-path callers\nserialise to vision_used=False with an empty overrides dict.",
         "properties": {
+          "bedroom_add_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bedroom Add Note"
+          },
+          "bedroom_potential_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bedroom Potential Score"
+          },
+          "bedroom_potential_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bedroom Potential Tier"
+          },
+          "condition_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition Level"
+          },
           "confidence": {
             "default": "low",
             "title": "Confidence",
@@ -22058,6 +22813,39 @@
               }
             ],
             "title": "Property Id"
+          },
+          "recommendation_caveat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommendation Caveat"
+          },
+          "recommended_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Level"
+          },
+          "recommended_level_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Level Reason"
           },
           "region": {
             "default": "",
@@ -23045,6 +23833,23 @@
             "description": "Average annual occupancy rate (% of nights booked)",
             "title": "Occupancy Rate"
           },
+          "offpeak_nightly_rate": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 50.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Off-peak season nightly rate (ADR) in GBP; defaults to nightly_rate",
+            "title": "Offpeak Nightly Rate"
+          },
           "offpeak_occupancy": {
             "anyOf": [
               {
@@ -23061,6 +23866,23 @@
             ],
             "description": "Off-peak season occupancy % (Winter: 40-60%)",
             "title": "Offpeak Occupancy"
+          },
+          "peak_nightly_rate": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 50.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Peak season nightly rate (ADR) in GBP; defaults to nightly_rate",
+            "title": "Peak Nightly Rate"
           },
           "peak_occupancy": {
             "anyOf": [
@@ -23122,6 +23944,40 @@
             ],
             "description": "Property purchase price in GBP (can be below market for SA)",
             "title": "Purchase Price"
+          },
+          "rateable_value": {
+            "anyOf": [
+              {
+                "maximum": 500000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rateable value (GBP) — enables FHL business-rates modelling",
+            "title": "Rateable Value"
+          },
+          "shoulder_nightly_rate": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 50.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Shoulder season nightly rate (ADR) in GBP; defaults to nightly_rate",
+            "title": "Shoulder Nightly Rate"
           },
           "shoulder_occupancy": {
             "anyOf": [
@@ -24302,6 +25158,17 @@
         "title": "SpecificPropertyHistory",
         "type": "object"
       },
+      "StarConversationRequest": {
+        "properties": {
+          "starred": {
+            "default": true,
+            "title": "Starred",
+            "type": "boolean"
+          }
+        },
+        "title": "StarConversationRequest",
+        "type": "object"
+      },
       "StatusCountsResponse": {
         "description": "Response with property count breakdown by status category.",
         "properties": {
@@ -24635,6 +25502,68 @@
           "scores"
         ],
         "title": "StrategyScoresResponse",
+        "type": "object"
+      },
+      "StrategyTagsResponse": {
+        "properties": {
+          "auto": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Auto",
+            "type": "array"
+          },
+          "effective": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Effective",
+            "type": "array"
+          },
+          "pinned": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pinned",
+            "type": "array"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Removed",
+            "type": "array"
+          }
+        },
+        "required": [
+          "auto",
+          "pinned",
+          "removed",
+          "effective"
+        ],
+        "title": "StrategyTagsResponse",
+        "type": "object"
+      },
+      "StrategyTagsUpdate": {
+        "properties": {
+          "add": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Add",
+            "type": "array"
+          },
+          "remove": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Remove",
+            "type": "array"
+          }
+        },
+        "title": "StrategyTagsUpdate",
         "type": "object"
       },
       "StreamlinedSearchRequest": {
@@ -26367,28 +27296,24 @@
         "title": "ValuationResponse",
         "type": "object"
       },
-      "app__routers__investment_analysis__StampDutyRequest": {
-        "description": "Request model for stamp duty calculation.",
+      "app__routers__investment__StampDutyRequest": {
+        "description": "Request model for stamp duty calculations.",
         "properties": {
           "is_additional_property": {
             "default": true,
+            "description": "Is this an additional property",
             "title": "Is Additional Property",
             "type": "boolean"
           },
-          "is_first_time_buyer": {
-            "default": false,
-            "title": "Is First Time Buyer",
-            "type": "boolean"
-          },
-          "property_price": {
-            "description": "Property purchase price",
+          "price": {
+            "description": "Property price",
             "exclusiveMinimum": 0.0,
-            "title": "Property Price",
+            "title": "Price",
             "type": "number"
           }
         },
         "required": [
-          "property_price"
+          "price"
         ],
         "title": "StampDutyRequest",
         "type": "object"
@@ -26962,6 +27887,18 @@
             "description": "Block of flats",
             "title": "Block Of Flats"
           },
+          "bmv_comp_count_used": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Genuine sold comparables used for the BMV calculation",
+            "title": "Bmv Comp Count Used"
+          },
           "bmv_comparable_count": {
             "anyOf": [
               {
@@ -26999,7 +27936,7 @@
                 "type": "null"
               }
             ],
-            "description": "BMV confidence: very_high|high|medium|low",
+            "description": "BMV confidence: very_high|high|medium|low|insufficient_comps",
             "title": "Bmv Confidence Level"
           },
           "bmv_corrected_discount_percentage": {
@@ -27025,6 +27962,18 @@
             ],
             "description": "Residual-model-corrected fair value (GBP)",
             "title": "Bmv Corrected Value"
+          },
+          "bmv_data_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "BMV data source. AVM-fallback sources (e.g. zoopla_avm_*) have no genuine sold comparables and are suppressed by the display gate.",
+            "title": "Bmv Data Source"
           },
           "bmv_discount_pct_best": {
             "anyOf": [
@@ -27380,6 +28329,18 @@
             "description": "Character property",
             "title": "Character Property"
           },
+          "commercial": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the listing is flagged commercial at source",
+            "title": "Commercial"
+          },
           "commercial_floors": {
             "anyOf": [
               {
@@ -27391,6 +28352,18 @@
             ],
             "description": "Number of commercial floors (extracted from listing)",
             "title": "Commercial Floors"
+          },
+          "commercial_property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Commercial sub-type, e.g. 'Office', 'restaurant', 'Mixed Use'",
+            "title": "Commercial Property Type"
           },
           "commercial_use_class": {
             "anyOf": [
@@ -27887,6 +28860,20 @@
             "description": "Floor area in square meters",
             "title": "Floor Area Sqm"
           },
+          "for_you_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unified For-You ranking score 0-100 (verdict_score × investor fit). Only present in personalised feed responses.",
+            "title": "For You Score"
+          },
           "furnished_state": {
             "anyOf": [
               {
@@ -27898,6 +28885,18 @@
             ],
             "description": "Furnished state",
             "title": "Furnished State"
+          },
+          "ground_rent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual ground rent (GBP)",
+            "title": "Ground Rent"
           },
           "has_access_road": {
             "anyOf": [
@@ -28467,6 +29466,18 @@
             "description": "Latitude coordinate",
             "title": "Latitude"
           },
+          "lease_years_remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Years remaining on the lease (leasehold only)",
+            "title": "Lease Years Remaining"
+          },
           "lha_brma_name": {
             "anyOf": [
               {
@@ -28593,6 +29604,21 @@
             ],
             "description": "Match score 0-100 based on investor profile (only with personalized=true)",
             "title": "Match Score"
+          },
+          "matched_signals": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preferred deal-signal slugs this property matches (catalogue order). Only with personalized=true.",
+            "title": "Matched Signals"
           },
           "mixed_use": {
             "anyOf": [
@@ -28758,6 +29784,41 @@
             ],
             "description": "Ownership type (freehold, leasehold, etc.)",
             "title": "Ownership Type"
+          },
+          "personalisation_chips": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Human-readable personalised-verdict chips. Only with personalized=true.",
+            "title": "Personalisation Chips"
+          },
+          "personalized_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-investor verdict overlay: pursue | watch | pass | insufficient_data. Only present in personalised feed responses.",
+            "title": "Personalized Verdict"
+          },
+          "personalized_verdict_reasons": {
+            "description": "Human-readable chips explaining the personalised verdict. Only present in personalised feed responses.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Personalized Verdict Reasons",
+            "type": "array"
           },
           "pet_friendly": {
             "anyOf": [
@@ -28928,30 +29989,6 @@
             "description": "Formatted price",
             "title": "Price"
           },
-          "price_accuracy_confidence": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Price accuracy confidence level",
-            "title": "Price Accuracy Confidence"
-          },
-          "price_accuracy_gap_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Price gap vs comparable sales %",
-            "title": "Price Accuracy Gap Pct"
-          },
           "price_changed_date": {
             "anyOf": [
               {
@@ -29098,6 +30135,18 @@
             ],
             "description": "When strategy projections were last calculated",
             "title": "Projections Calculated At"
+          },
+          "property_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Top-level category, e.g. 'residential' or 'commercial'",
+            "title": "Property Category"
           },
           "property_sub_type": {
             "anyOf": [
@@ -29565,6 +30614,18 @@
             "description": "Suitable for serviced accommodation",
             "title": "Sa Suitable"
           },
+          "service_charge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual service charge (GBP)",
+            "title": "Service Charge"
+          },
           "serviced_accommodation_tier": {
             "anyOf": [
               {
@@ -29796,6 +30857,18 @@
             "description": "Property is tenanted",
             "title": "Tenanted"
           },
+          "tenure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Property tenure (Freehold/Leasehold)",
+            "title": "Tenure"
+          },
           "tenure_epc": {
             "anyOf": [
               {
@@ -29872,6 +30945,56 @@
             ],
             "description": "Vacant possession",
             "title": "Vacant Possession"
+          },
+          "vendor_motivation_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Listing-vendor motivation score (property_market_signals)",
+            "title": "Vendor Motivation Score"
+          },
+          "vendor_motivation_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Listing-vendor motivation tier (hot/warm/cold)",
+            "title": "Vendor Motivation Tier"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "AI verdict: pursue | watch | pass | insufficient_data",
+            "title": "Verdict"
+          },
+          "verdict_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Holistic verdict score 0-100; sort key within a verdict tier",
+            "title": "Verdict Score"
           },
           "view_count": {
             "default": 0,
@@ -30228,6 +31351,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Agents In Area",
         "tags": [
           "Area & market intelligence"
@@ -31185,6 +32313,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Search Build Costs",
         "tags": [
           "Build cost"
@@ -31226,6 +32359,23 @@
                 }
               ],
               "title": "Calculator Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_saved",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": true,
+              "title": "Is Saved"
             }
           },
           {
@@ -31302,6 +32452,18 @@
       "post": {
         "description": "Save an investment calculation for later use or import into investor packs",
         "operationId": "save_calculation_api_v1_calculations_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "autosave",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Autosave",
+              "type": "boolean"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -31848,6 +33010,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Demographics",
         "tags": [
           "Area & market intelligence"
@@ -31921,6 +33088,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Epc By Postcode",
         "tags": [
           "EPC & UPRN"
@@ -31981,6 +33153,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Epc By Property",
         "tags": [
           "EPC & UPRN"
@@ -32040,6 +33217,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Epc By Uprn",
         "tags": [
           "EPC & UPRN"
@@ -32112,6 +33294,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Flood Risk At Coordinates",
         "tags": [
           "Planning & environment"
@@ -32172,6 +33359,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Flood Risk For Property",
         "tags": [
           "Planning & environment"
@@ -32297,6 +33489,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Heritage In Area",
         "tags": [
           "Planning & environment"
@@ -32357,6 +33554,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Heritage Status",
         "tags": [
           "Planning & environment"
@@ -34273,13 +35475,13 @@
     },
     "/api/v1/investment/stamp-duty": {
       "post": {
-        "description": "Calculate UK stamp duty land tax for property purchase.\n\nIncludes residential rates and additional property surcharge\nfor buy-to-let investors.",
+        "description": "Calculate stamp duty for a property purchase.\n\nTakes into account whether it's an additional property.",
         "operationId": "calculate_stamp_duty_api_v1_investment_stamp_duty_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__routers__investment_analysis__StampDutyRequest"
+                "$ref": "#/components/schemas/app__routers__investment__StampDutyRequest"
               }
             }
           },
@@ -34311,7 +35513,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "Optional Bearer Token": []
           }
         ],
         "summary": "Calculate Stamp Duty",
@@ -34893,6 +36095,27 @@
             }
           },
           {
+            "description": "Runtime AI verdict filter: pursue, watch (repeatable)",
+            "in": "query",
+            "name": "verdict",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Runtime AI verdict filter: pursue, watch (repeatable)",
+              "title": "Verdict"
+            }
+          },
+          {
             "in": "query",
             "name": "user_id",
             "required": false,
@@ -34990,6 +36213,24 @@
               ],
               "description": "Status category or comma-separated list",
               "title": "Status"
+            }
+          },
+          {
+            "description": "Comma-separated property UUIDs to export exactly (max 500). When set, the filter criteria are relaxed and only these ids export.",
+            "in": "query",
+            "name": "property_ids",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated property UUIDs to export exactly (max 500). When set, the filter criteria are relaxed and only these ids export.",
+              "title": "Property Ids"
             }
           },
           {
@@ -35686,6 +36927,27 @@
               ],
               "description": "Playbook eligibility slug (e.g. plot_subdivision, hmo_conversion)",
               "title": "Playbook"
+            }
+          },
+          {
+            "description": "Runtime AI verdict filter: pursue, watch (repeatable)",
+            "in": "query",
+            "name": "verdict",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Runtime AI verdict filter: pursue, watch (repeatable)",
+              "title": "Verdict"
             }
           },
           {
@@ -36563,6 +37825,189 @@
           }
         ],
         "summary": "Get Nearby Listings",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/market-data/{property_id}/nearby-schools": {
+      "get": {
+        "description": "Nearest schools to a property (PostGIS KNN over the ``schools`` table).\n\nAuth: none — factual public area context, like council-tax data.\nReturns ``{available: false, items: []}`` when the property has no\ncoordinates or nothing is within 3 miles, so the frontend panel self-hides.",
+        "operationId": "get_nearby_schools_endpoint_api_v1_market_data__property_id__nearby_schools_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Nearby Schools Endpoint Api V1 Market Data  Property Id  Nearby Schools Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Nearby Schools Endpoint",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/market-data/{property_id}/nearby-transport": {
+      "get": {
+        "description": "Nearest transport stops to a property (PostGIS KNN over ``transport_links``).\n\nAuth: none. Returns ``{available: false, items: []}`` when the property\nhas no coordinates or nothing is within 10 miles.",
+        "operationId": "get_nearby_transport_endpoint_api_v1_market_data__property_id__nearby_transport_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Nearby Transport Endpoint Api V1 Market Data  Property Id  Nearby Transport Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Nearby Transport Endpoint",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/market-data/{property_id}/ni-area-prices": {
+      "get": {
+        "description": "NI House Price Index area-price context for a Northern Ireland property.\n\nReturns the latest standardised median price and YoY growth for the\ncouncil area that the property's BT outcode maps to.  Non-NI properties\n(non-BT postcodes) receive ``{available: false}`` so the frontend panel\nself-hides cleanly.\n\nAuth: none — factual public area context, like council-tax data.",
+        "operationId": "get_ni_area_prices_api_v1_market_data__property_id__ni_area_prices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Ni Area Prices Api V1 Market Data  Property Id  Ni Area Prices Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Ni Area Prices",
         "tags": [
           "Market data"
         ]
@@ -39059,6 +40504,24 @@
             }
           },
           {
+            "description": "Probate-matched leads only",
+            "in": "query",
+            "name": "probate_only",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Probate-matched leads only",
+              "title": "Probate Only"
+            }
+          },
+          {
             "description": "Min last sold price",
             "in": "query",
             "name": "min_price",
@@ -39987,6 +41450,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Nearby Airports",
         "tags": [
           "Area & market intelligence"
@@ -40083,6 +41551,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Nearby Hospitals",
         "tags": [
           "Area & market intelligence"
@@ -40179,6 +41652,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Nearby Tourist Attractions",
         "tags": [
           "Area & market intelligence"
@@ -40584,6 +42062,27 @@
               ],
               "description": "Filter by best strategy (btl, hmo, brrr, flip, sa, r2r)",
               "title": "Best Strategy"
+            }
+          },
+          {
+            "description": "Effective strategy tag filter",
+            "in": "query",
+            "name": "strategy_tags_any",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Effective strategy tag filter",
+              "title": "Strategy Tags Any"
             }
           },
           {
@@ -41919,6 +43418,27 @@
               ],
               "description": "Filter by best strategy (btl, hmo, brrr, flip, sa, r2r)",
               "title": "Best Strategy"
+            }
+          },
+          {
+            "description": "Effective strategy tag filter",
+            "in": "query",
+            "name": "strategy_tags_any",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Effective strategy tag filter",
+              "title": "Strategy Tags Any"
             }
           },
           {
@@ -43581,15 +45101,19 @@
     },
     "/api/v1/properties/featured": {
       "get": {
-        "description": "Get featured properties for anonymous homepage display.\n\nThis endpoint is PUBLIC and does not require authentication.\nReturns up to 12 featured properties with first image only for privacy.\n\nArgs:\n    limit: Maximum number of properties to return (default 12, max 24)\n    db: Async database session\n\nReturns:\n    List of PropertyCardData with public-safe property information",
+        "description": "Get featured properties for anonymous homepage display (PUBLIC endpoint).\n\nReturns up to 12 featured properties with high yields (10%+) mixed by property type.\nUses indexed query on rental_yield for sub-50ms performance.",
         "operationId": "get_featured_properties_api_v1_properties_featured_get",
         "parameters": [
           {
+            "description": "Number of properties to return",
             "in": "query",
             "name": "limit",
             "required": false,
             "schema": {
               "default": 12,
+              "description": "Number of properties to return",
+              "maximum": 24,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
@@ -43617,7 +45141,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/PropertyCardData"
+                    "$ref": "#/components/schemas/app__schemas__property__PropertySummary"
                   },
                   "title": "Response Get Featured Properties Api V1 Properties Featured Get",
                   "type": "array"
@@ -43635,6 +45159,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
           }
         },
         "summary": "Get Featured Properties",
@@ -44342,6 +45876,27 @@
             }
           },
           {
+            "description": "Effective strategy tag filter",
+            "in": "query",
+            "name": "strategy_tags_any",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Effective strategy tag filter",
+              "title": "Strategy Tags Any"
+            }
+          },
+          {
             "description": "Minimum ML investment score (0-100)",
             "in": "query",
             "name": "min_ml_score",
@@ -44921,6 +46476,24 @@
               ],
               "description": "Filter for new build properties",
               "title": "Is New Build"
+            }
+          },
+          {
+            "description": "Exclude new build properties",
+            "in": "query",
+            "name": "exclude_new_builds",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exclude new build properties",
+              "title": "Exclude New Builds"
             }
           },
           {
@@ -45835,6 +47408,27 @@
             }
           },
           {
+            "description": "Effective strategy tag filter",
+            "in": "query",
+            "name": "strategy_tags_any",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Effective strategy tag filter",
+              "title": "Strategy Tags Any"
+            }
+          },
+          {
             "description": "Minimum ML score",
             "in": "query",
             "name": "min_ml_score",
@@ -46099,6 +47693,26 @@
               ],
               "description": "Max sqft",
               "title": "Max Floor Area Sqft"
+            }
+          },
+          {
+            "description": "Minimum remaining lease years",
+            "in": "query",
+            "name": "min_lease_years",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 999,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum remaining lease years",
+              "title": "Min Lease Years"
             }
           },
           {
@@ -47398,6 +49012,24 @@
             }
           },
           {
+            "description": "Only properties listed for sale AND rent at the same time (PLO signal)",
+            "in": "query",
+            "name": "dual_listed",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only properties listed for sale AND rent at the same time (PLO signal)",
+              "title": "Dual Listed"
+            }
+          },
+          {
             "description": "Bedroom potential tier(s): high,moderate,low or 'any'",
             "in": "query",
             "name": "bedroom_potential",
@@ -47434,6 +49066,27 @@
               ],
               "description": "Include additional statuses: sold_stc, under_offer, let_agreed, withdrawn, sold, archived",
               "title": "Include Statuses"
+            }
+          },
+          {
+            "description": "Filter by AI verdict: pursue, watch",
+            "in": "query",
+            "name": "verdict",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by AI verdict: pursue, watch",
+              "title": "Verdict"
             }
           },
           {
@@ -49525,6 +51178,72 @@
         ]
       }
     },
+    "/api/v1/properties/{property_id}/personalised-rationale": {
+      "get": {
+        "description": "Return Archie's on-demand rationale for why a property is or isn't a\ngood deal for the authenticated investor.\n\nRequires Clerk authentication. Dashboard-only — not exposed via public API\n(not in PATH_SCOPE_MAP). Cached in Redis for 24 h, keyed by a hash of the\ninvestor profile + behaviour + global verdict so it auto-invalidates when\ninputs change.\n\nReturns:\n    {\n        \"rationale\":            str  — 1–2 sentence British-English explanation,\n        \"personalized_verdict\": str  — \"pursue\" | \"watch\" | \"pass\" | …,\n        \"reasons\":              list[str] — personalisation chips,\n        \"cached\":               bool,\n    }",
+        "operationId": "get_personalised_rationale_endpoint_api_v1_properties__property_id__personalised_rationale_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Personalised Rationale Endpoint Api V1 Properties  Property Id  Personalised Rationale Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Personalised Rationale Endpoint",
+        "tags": [
+          "Properties"
+        ]
+      }
+    },
     "/api/v1/properties/{property_id}/price-history": {
       "get": {
         "description": "Retrieve 12-month price history with area comparison",
@@ -49903,7 +51622,7 @@
         },
         "security": [
           {
-            "Optional Bearer Token": []
+            "Bearer Token": []
           }
         ],
         "summary": "Refresh yield calculation",
@@ -50258,6 +51977,126 @@
           }
         },
         "summary": "Multi-lens similar properties for the v3 property page section",
+        "tags": [
+          "Properties"
+        ]
+      }
+    },
+    "/api/v1/properties/{property_id}/strategy-tags": {
+      "get": {
+        "operationId": "get_property_strategy_tags_api_v1_properties__property_id__strategy_tags_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyTagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Property Strategy Tags",
+        "tags": [
+          "Properties"
+        ]
+      },
+      "put": {
+        "operationId": "put_property_strategy_tags_api_v1_properties__property_id__strategy_tags_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Property Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StrategyTagsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyTagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Put Property Strategy Tags",
         "tags": [
           "Properties"
         ]
@@ -50787,6 +52626,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Area Rents",
         "tags": [
           "Area & market intelligence"
@@ -51232,6 +53076,102 @@
         ]
       }
     },
+    "/api/v1/spatial/overlays/aonb": {
+      "get": {
+        "description": "Area of Outstanding Natural Beauty polygons within the viewport.",
+        "operationId": "get_aonb_overlay_api_v1_spatial_overlays_aonb_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Aonb Overlay Api V1 Spatial Overlays Aonb Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Aonb Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
     "/api/v1/spatial/overlays/article4": {
       "get": {
         "description": "HMO-restricting Article 4 direction polygons within the viewport.",
@@ -51336,6 +53276,198 @@
         ]
       }
     },
+    "/api/v1/spatial/overlays/article4-all": {
+      "get": {
+        "description": "All Article 4 direction polygons (not just HMO-restricting) within the viewport.",
+        "operationId": "get_article4_all_overlay_api_v1_spatial_overlays_article4_all_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Article4 All Overlay Api V1 Spatial Overlays Article4 All Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Article4 All Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
+    "/api/v1/spatial/overlays/brownfield": {
+      "get": {
+        "description": "Brownfield Land Register polygons within the viewport.",
+        "operationId": "get_brownfield_overlay_api_v1_spatial_overlays_brownfield_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Brownfield Overlay Api V1 Spatial Overlays Brownfield Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Brownfield Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
     "/api/v1/spatial/overlays/conservation-areas": {
       "get": {
         "description": "Conservation-area polygons within the viewport.",
@@ -51432,6 +53564,294 @@
         ]
       }
     },
+    "/api/v1/spatial/overlays/flood-zones": {
+      "get": {
+        "description": "SEPA flood-zone polygons (Scotland) within the viewport.",
+        "operationId": "get_flood_zones_overlay_api_v1_spatial_overlays_flood_zones_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Flood Zones Overlay Api V1 Spatial Overlays Flood Zones Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Flood Zones Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
+    "/api/v1/spatial/overlays/green-belt": {
+      "get": {
+        "description": "Green Belt polygons within the viewport.",
+        "operationId": "get_green_belt_overlay_api_v1_spatial_overlays_green_belt_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Green Belt Overlay Api V1 Spatial Overlays Green Belt Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Green Belt Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
+    "/api/v1/spatial/overlays/national-parks": {
+      "get": {
+        "description": "National Park polygons within the viewport.",
+        "operationId": "get_national_park_overlay_api_v1_spatial_overlays_national_parks_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get National Park Overlay Api V1 Spatial Overlays National Parks Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get National Park Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
     "/api/v1/spatial/overlays/nearby-hmos": {
       "get": {
         "description": "Nearby HMO listings (keyword-detected) as a point halo within the viewport.",
@@ -51523,6 +53943,184 @@
           }
         ],
         "summary": "Get Nearby Hmos Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
+    "/api/v1/spatial/overlays/property-boundaries": {
+      "get": {
+        "description": "INSPIRE/RoS property-boundary polygons (E&W + Scotland) within the viewport.",
+        "operationId": "get_property_boundaries_overlay_api_v1_spatial_overlays_property_boundaries_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "north",
+            "required": true,
+            "schema": {
+              "title": "North",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "south",
+            "required": true,
+            "schema": {
+              "title": "South",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "east",
+            "required": true,
+            "schema": {
+              "title": "East",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "west",
+            "required": true,
+            "schema": {
+              "title": "West",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Property Boundaries Overlay Api V1 Spatial Overlays Property Boundaries Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Property Boundaries Overlay",
+        "tags": [
+          "Spatial search"
+        ]
+      }
+    },
+    "/api/v1/spatial/overlays/property-boundary": {
+      "get": {
+        "description": "The single INSPIRE/RoS parcel containing the given point (subject property).",
+        "operationId": "get_subject_parcel_overlay_api_v1_spatial_overlays_property_boundary_get",
+        "parameters": [
+          {
+            "description": "Subject property latitude",
+            "in": "query",
+            "name": "lat",
+            "required": true,
+            "schema": {
+              "description": "Subject property latitude",
+              "title": "Lat",
+              "type": "number"
+            }
+          },
+          {
+            "description": "Subject property longitude",
+            "in": "query",
+            "name": "lon",
+            "required": true,
+            "schema": {
+              "description": "Subject property longitude",
+              "title": "Lon",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Subject Parcel Overlay Api V1 Spatial Overlays Property Boundary Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Get Subject Parcel Overlay",
         "tags": [
           "Spatial search"
         ]
@@ -52298,6 +54896,221 @@
         ]
       }
     },
+    "/api/v1/ultimate-ai/conversations": {
+      "get": {
+        "description": "List the current user's saved AI conversations (powers the history panel).\n\nReads ``ai_conversation_sessions`` keyed by the internal ``users.id`` UUID —\nthe same id the chat persists under. The legacy ``/api/v1/ai/conversations``\nrouter was never registered in the app, so the history list 404'd and showed\nblank; this endpoint lives on the registered, Clerk-aware ultimate-ai router\ninstead. Empty sessions (no messages) are excluded.",
+        "operationId": "list_conversations_api_v1_ultimate_ai_conversations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "List Conversations",
+        "tags": [
+          "AI chat"
+        ]
+      }
+    },
+    "/api/v1/ultimate-ai/conversations/{session_id}": {
+      "delete": {
+        "description": "Delete a conversation — ownership-scoped; messages cascade via the\n``ai_conversation_messages.session_id`` FK. Also clears the Redis cache so a\ndeleted chat can't resurrect.",
+        "operationId": "delete_conversation_api_v1_ultimate_ai_conversations__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Conversation Api V1 Ultimate Ai Conversations  Session Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Delete Conversation",
+        "tags": [
+          "AI chat"
+        ]
+      },
+      "get": {
+        "description": "Rehydrate a past AI chat (its messages + the properties it returned).\n\nBacks the \"go back to a previous search\" flow. The conversation and the\nproperties each turn surfaced are already persisted, but the frontend had\nno way to reload them — so users had to restart from scratch (Joanna's\ncomplaint, June 2026). Ownership is enforced: a session that doesn't exist\nor belongs to another user returns 404 (no existence leak).",
+        "operationId": "restore_conversation_api_v1_ultimate_ai_conversations__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationRestoreResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Restore Conversation",
+        "tags": [
+          "AI chat"
+        ]
+      }
+    },
+    "/api/v1/ultimate-ai/conversations/{session_id}/star": {
+      "put": {
+        "description": "Pin/unpin a conversation in the history panel — ownership-scoped.",
+        "operationId": "star_conversation_api_v1_ultimate_ai_conversations__session_id__star_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StarConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Star Conversation Api V1 Ultimate Ai Conversations  Session Id  Star Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Star Conversation",
+        "tags": [
+          "AI chat"
+        ]
+      }
+    },
     "/api/v1/ultimate-ai/feedback": {
       "post": {
         "description": "Record thumbs-up/down feedback on an Archie response.",
@@ -52530,6 +55343,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Lookup Uprn",
         "tags": [
           "EPC & UPRN"
@@ -52689,6 +55507,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Area Yields",
         "tags": [
           "Area & market intelligence"
