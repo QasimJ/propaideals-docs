@@ -68,7 +68,7 @@ Your key is valid, but its plan doesn't grant access to this endpoint.
 }
 ```
 
-**Fix:** Upgrade your plan, or use a different endpoint. See [Authentication › Scopes](./authentication#scopes).
+**Fix:** Upgrade your plan, or use a different endpoint. Note the Free plan carries a reduced scope set — `properties:read`, `market-data:read`, `areas:read`, and `epc:read` only. See [Authentication › Scopes](./authentication#scopes).
 
 ### `rate_limit_exceeded` — 429
 
@@ -120,7 +120,7 @@ AI chat endpoints (`/api/v1/ultimate-ai/*`) have a separate monthly quota that's
 }
 ```
 
-Every paid tier includes AI chat: Starter 100/month, Professional 1,000/month, Business 4,000/month.
+AI chat is included from the Growth plan up: Growth 25/month, Advanced 100/month, Professional 1,000/month, Business 4,000/month. The Free and Starter plans do not include AI chat — calls to `/api/v1/ultimate-ai/*` on those plans fail on scope, not quota.
 
 **Fix:** Upgrade for a higher AI chat quota, or wait until the first of next month when usage counters reset. Non-AI endpoints continue to work normally until your main monthly quota is also exhausted.
 

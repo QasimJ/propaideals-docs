@@ -9,7 +9,7 @@ Location-level intelligence for screening areas before you screen properties. Th
 
 **Required scope:** `areas:read`
 **Cost:** 1 request per call
-**Available on:** Starter, Professional, Business
+**Available on:** every plan carries the `areas:read` scope, including Free. The postcode analytics endpoints additionally require a Pro or Founder **platform** subscription and return `402` otherwise.
 
 <Note>
 The `/api/v1/area` endpoints are available to every API plan. The `/api/v1/area-analytics` and `/api/v1/area-pack` endpoints carry an additional gate enforced in the API itself: the platform account linked to your API key must be on a **Pro or Founder** subscription. Other accounts receive `402 Payment Required` with an upgrade message.

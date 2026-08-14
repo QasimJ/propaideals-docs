@@ -90,7 +90,7 @@ properties = res.json()["data"]["properties"]
 | `max_bedrooms` | integer | Maximum bedrooms |
 | `bedrooms` | integer | Exact bedroom count |
 | `min_bathrooms` | integer | Minimum bathrooms |
-| `property_type` | string\|array | `house`, `flat`, `bungalow`, `detached`, `semi-detached`, `terraced`, `studio`, `maisonette`, `land`, `commercial` |
+| `property_type` | string\|array | The canonical vocabulary: `flat`, `terraced`, `semi-detached`, `detached`, `bungalow`, `house`, `studio`, `maisonette`, `land`, `commercial`, `parking`, `caravan`, `other`. Portal and Land Registry spellings (`Purpose Built Flat`, `semi_detached`, `Mid Terrace House`) are normalised server-side, so anything a [comparable](./comparables) publishes can be sent straight back here. `house` widens to every house type; `bungalow` also matches bungalows stored under their parent type. |
 | `tenure` | string | `freehold`, `leasehold`, `share-of-freehold`, `commonhold` |
 | `min_floor_area_sqft` | integer | Minimum internal area |
 | `max_floor_area_sqft` | integer | Maximum internal area |

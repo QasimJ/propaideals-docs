@@ -59,7 +59,12 @@ console.log(`Est. rent £${data.rent_estimate_pcm.toLocaleString()}/mo`);
     "property_id": "5fa1b2c3-d4e5-6f78-9012-3456789abcde",
     "rent_estimate_pcm": 1250,
     "sample_size": 23,
-    "implied_gross_yield_pct": 6.4
+    "implied_gross_yield_pct": 6.4,
+    "floor_area_sqft": 712,
+    "floor_area_source": "measured",
+    "price_per_sqft": 301,
+    "price_per_sqft_is_estimated": false,
+    "price_per_sqft_note": null
   },
   "meta": {
     "usage": {
@@ -79,6 +84,19 @@ console.log(`Est. rent £${data.rent_estimate_pcm.toLocaleString()}/mo`);
 | `rent_estimate_pcm` | number | Estimated monthly rent in £, the median of nearby rental comparables. |
 | `sample_size` | integer | Number of rental comparables behind the estimate. |
 | `implied_gross_yield_pct` | number \| null | Annualised gross yield against the property's listed sale price, or `null` when no sale price is available. |
+| `floor_area_sqft` | number \| null | The subject's own floor area, the divisor behind `price_per_sqft`. |
+| `floor_area_source` | string | `measured`, `building_estimate`, `unverified` or `absent` — see below. |
+| `price_per_sqft` | number \| null | Listed price ÷ `floor_area_sqft`, in £, truncated to whole pounds. `null` when either input is missing. |
+| `price_per_sqft_is_estimated` | boolean | `true` unless `floor_area_source` is `measured`. |
+| `price_per_sqft_note` | string \| null | Why the figure is qualified, when it is. |
+
+### The subject's £/sqft, and why it is qualified
+
+`price_per_sqft` is published here because this is the only per-property endpoint that already resolves both the floor area and its provenance — so you can put the subject on the same footing as the per-row `price_per_sqft` on [`/api/v1/comparables`](./comparables) instead of dividing by an unqualified size yourself.
+
+Most floor areas come from an EPC certificate, and a certificate is routinely fanned across a whole building: 231,406 of the 595,694 active listings that carry a floor area — 38.9%, measured 2026-08-13 — resolve to a building-level estimate, rising to 43.6% of flats. One block in Canary Wharf had 65 distinct addresses across three bedroom counts all reporting exactly 850 sqft.
+
+`floor_area_source` says which case the subject is in (`measured`, `building_estimate`, `unverified`, `absent`); `price_per_sqft_is_estimated` is `true` for everything except `measured`. The same provenance also governs the rent basis: a rent per sqft is only applied to a `measured` area, which is why `basis` falls back to `beds_median_rent` otherwise.
 
 ### How the estimate is built
 

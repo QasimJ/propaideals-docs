@@ -1,0 +1,216 @@
+---
+title: "Connect to Claude (MCP)"
+description: "Set up the Prop AI Deals MCP server in claude.ai, Claude Desktop, or Claude Code. Gives Claude direct access to UK property data — valuations, Land Registry comparables, deal scores and area market statistics — inside any conversation."
+---
+
+Connect PAID to Claude and ask about UK property in plain English. Claude
+queries our data directly and reasons over the results — no copying figures
+between tabs.
+
+<Info>
+**Free to try.** Every account includes 200 credits a month, no card required.
+A full working-up of one property — search it, value it, pull the comparables,
+then fetch the full report — costs 14 credits, so the free allowance covers
+roughly **14 complete property analyses a month**. See
+[what the free credits buy](#what-the-free-200-credits-buy-you) for the
+arithmetic.
+</Info>
+
+## What Claude can do once connected
+
+| Ask | Claude uses |
+|---|---|
+| "Find 2-bed flats under £250k in M1" | `search_properties` |
+| "What's that worth, and what would it rent for?" | `value_property` |
+| "Show me the comparable sales backing that" | `get_comparables` |
+| "How is the M1 market performing?" | `get_area_market` |
+| "Is this a good deal?" | `score_deal` |
+| "What has it sold for before, and which strategies does it fit?" | `get_property_details` |
+| "Give me everything on this property" | `get_property_report` |
+
+The comparables are the part worth knowing about: every comparable carries a
+confidence tier (gold, silver or bronze), and sales that were repossessions,
+right-to-buy, auctions or family transfers are flagged as **non-standard**, as
+are likely **flips**. Claude is told to treat those with caution when
+averaging, so a headline "£/sqft" is not quietly skewed by a repossession
+three doors down.
+
+## Connect from claude.ai
+
+<Steps>
+  <Step title="Sign in to PAID">
+    You need a PAID account — [sign up free](https://propaideals.co.uk/sign-up).
+    The MCP connection is tied to your account, and your credit allowance is
+    shared with any REST API keys you hold.
+  </Step>
+  <Step title="Add the connector in Claude">
+    In [claude.ai](https://claude.ai), go to **Settings → Connectors → Add
+    custom connector** and enter exactly:
+
+    ```
+    https://api.propaideals.co.uk/mcp
+    ```
+  </Step>
+  <Step title="Authorise">
+    Claude opens the PAID sign-in page (our authorisation is handled by Clerk,
+    the same provider that signs you into the dashboard). Sign in if you
+    aren't already, review the consent screen, and approve. You are returned
+    to Claude with the seven tools available. The token Claude receives works
+    **only** against the MCP server — it cannot be replayed against your
+    dashboard session.
+  </Step>
+  <Step title="Ask something">
+    Try: *"Using PAID, what would a 2-bed flat in M1 4BT be worth, and what
+    comparable sales support that?"*
+  </Step>
+</Steps>
+
+## Connect from Claude Desktop
+
+Claude Desktop shares connectors with your claude.ai account. Add the
+connector once — **Settings → Connectors → Add custom connector →
+`https://api.propaideals.co.uk/mcp`** — either in the desktop app or on the
+web, authorise as above, and it is available in both.
+
+## Connect from Claude Code
+
+Add the server from your terminal:
+
+```bash
+claude mcp add --transport http paid-property https://api.propaideals.co.uk/mcp
+```
+
+Then, inside a Claude Code session, run `/mcp` and pick **paid-property** to
+complete the OAuth sign-in in your browser. Once authorised, ask things like:
+
+```
+> Value 12 Example Road, M1 4BT and sanity-check it against the comparables
+> Pull the deal score for the property at <uuid> and summarise the risks
+```
+
+To remove it later: `claude mcp remove paid-property`.
+
+## The OAuth consent flow
+
+Authorisation is standard OAuth 2.1 with PKCE, run by Clerk on our behalf:
+
+1. Your MCP client discovers the authorisation server from the
+   protected-resource metadata at
+   `https://api.propaideals.co.uk/.well-known/oauth-protected-resource`.
+2. It registers itself automatically (RFC 7591 dynamic client registration) —
+   no client id to copy anywhere.
+3. You sign in with your normal PAID account and approve the consent screen.
+4. The client receives an access token whose **audience is the MCP server
+   only**. We validate signature, expiry and audience on every request;
+   dashboard session tokens are rejected here, and MCP tokens are rejected at
+   the dashboard.
+
+Removing the connector in Claude (or in Claude Code, `claude mcp remove`)
+stops further access; tokens are short-lived and expire on their own.
+
+## Credit costs per tool
+
+Discovery is free — listing the tools never costs anything. Each tool call
+costs the sum of the underlying REST endpoints it fans out to (REST and MCP
+share one cost table, so there is nothing separate to learn):
+
+| Tool | Credits |
+|---|---|
+| `search_properties` | 1 |
+| `get_comparables` | 1 |
+| `value_property` | 2 |
+| `get_property_details` | 3 |
+| `get_area_market` | 4 |
+| `score_deal` | 5 |
+| `get_property_report` | 10 |
+
+Your usage is visible at [/dashboard/api](https://propaideals.co.uk/dashboard/api).
+When the monthly allowance runs out, Claude receives a clear message and stops
+calling the tools rather than failing silently.
+
+## What the free 200 credits buy you
+
+A typical full analysis of one property:
+
+| Step | Tool | Credits |
+|---|---|---|
+| Find the property | `search_properties` | 1 |
+| Value it | `value_property` | 2 |
+| Check the comparable sales | `get_comparables` | 1 |
+| Pull the full report | `get_property_report` | 10 |
+| **Total per property** | | **14** |
+
+200 credits ÷ 14 ≈ **14 complete property analyses a month, free**. Lighter
+usage stretches much further — an area check (`get_area_market`, 4 credits)
+fifty times a month fits inside the free allowance on its own.
+
+## Plans
+
+MCP calls and REST API calls draw from **one shared monthly allowance** on
+your account. Any plan below applies to both:
+
+| Plan | Credits / month |
+|---|---|
+| Free (£0, no card) | 200 |
+| Starter (from £29/mo) | 2,500 |
+| Growth (from £59/mo) | 7,500 |
+| Advanced (£99/mo) | 20,000 |
+| Professional (£299/mo) | 100,000 |
+| Business (£999/mo) | 400,000 |
+| Pro **platform** subscriber (£59/mo) | 5,000 included |
+
+If you already subscribe to the £59 Pro platform plan, MCP access is included
+— no separate API subscription needed. Sign in with the same account and it is
+picked up automatically. The Starter and Growth API tiers are rolling out now
+and appear at checkout as they go live; Advanced is the plan previously sold
+as Starter. Full ladder: [Rate limits › Plan comparison](./rate-limits#plan-comparison).
+
+## Troubleshooting
+
+**The connector shows zero tools.** This is protocol-version negotiation, not
+an auth problem: a server and client that fail to agree a protocol revision
+produce an empty tool list. Our server speaks every revision from `2025-06-18`
+through `2026-07-28`, so first remove and re-add the connector (stale sessions
+pin an old negotiation), and update your Claude client if it is very old. If
+it persists, email us with the approximate time — we log the version each
+handshake requested.
+
+**`401` on every call after connecting.** Almost always an **audience
+mismatch** — the token was minted for a different resource than the server
+expects. Check the connector URL is exactly
+`https://api.propaideals.co.uk/mcp` (no trailing slash, no `www.`), then
+remove and re-add the connector so a fresh token is issued for the right
+audience. Rejected audiences are logged on our side with the exact value the
+token presented, so support can resolve a stubborn case quickly.
+
+**Tools stop mid-conversation with a quota message.** You have used the
+month's credits. Check usage at
+[/dashboard/api](https://propaideals.co.uk/dashboard/api); upgrade or wait for
+the month to roll over. Nothing is broken — the server refuses cleanly rather
+than failing silently.
+
+**A property tool returns "not found".** `score_deal`,
+`get_property_details` and `get_property_report` key on a property UUID that
+comes from `search_properties` (the postcode-keyed tools — search, valuation,
+comparables, area market — don't need one). Ask Claude to search first; ids
+from outside the platform (portal URLs, other APIs) will not resolve.
+
+## Notes for developers
+
+- **Transport:** Streamable HTTP at `POST /mcp`. Protocol revisions
+  `2025-06-18` through `2026-07-28` are all served, so the endpoint works with
+  older and newer clients alike.
+- **Authorisation:** OAuth 2.1. The server publishes
+  [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) protected-resource
+  metadata at `/.well-known/oauth-protected-resource`; tokens are validated
+  for signature, expiry and audience.
+- **No AI proxying.** The MCP server exposes data tools only. Claude does the
+  reasoning; we do not bill you for a second model behind the scenes.
+- **One quota.** MCP calls and REST API calls draw from the same monthly
+  allowance on your account, so there is nothing to reconcile between them.
+- **Costs are the REST costs.** Each tool's credit price is the sum of the
+  [per-endpoint request costs](./rate-limits#request-cost-by-endpoint) of the
+  endpoints it wraps — a single cost table governs both surfaces.
+
+For the REST API covering the same data, see the
+[Quickstart](./quickstart).

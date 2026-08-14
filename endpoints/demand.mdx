@@ -58,7 +58,7 @@ console.log(`${data.area}: ${data.demand_rating} market`);
     "demand_rating": "seller",
     "active_listings": 96,
     "sold_last_90d": 152,
-    "avg_days_on_market": 41,
+    "avg_days_listed": 41,
     "turnover_ratio": 1.58
   },
   "meta": {
@@ -79,7 +79,7 @@ console.log(`${data.area}: ${data.demand_rating} market`);
 | `demand_rating` | string | `seller`, `balanced`, or `buyer` — see below. |
 | `active_listings` | integer | Properties currently listed for sale in the area. |
 | `sold_last_90d` | integer | Transactions completed in the last 90 days. |
-| `avg_days_on_market` | integer | Mean days active listings have been on the market. |
+| `avg_days_listed` | number | Mean age in days of listings that are **still active** — how long unsold stock has been sitting. Not time-to-sell: sold listings are excluded from the average entirely. Replaces `avg_days_on_market`, removed 2026-08-13 — see the [changelog](../changelog). |
 | `turnover_ratio` | number | `sold_last_90d / active_listings`. |
 
 ### How the rating is derived

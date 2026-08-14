@@ -7,6 +7,29 @@ description: Prop AI Deals API release notes, breaking changes, and deprecation 
 
 This page lists user-visible changes to the Prop AI Deals API. We follow [SemVer](https://semver.org/) at the API level — breaking changes are versioned (`/api/v2/`) and announced at least 90 days in advance.
 
+## 2026-08-14 — Free tier, two new plans, and a rename
+
+**New:**
+- **Free plan** — 200 credits/month at 2 req/s, no card required, granted to every account. Scopes: `properties:read`, `market-data:read`, `areas:read`, `epc:read`. Create a key at `/dashboard/api` and start calling — the paywall in front of key creation is gone.
+- **Starter** (from £29/mo — 2,500 credits, 5 req/s) and **Growth** (from £59/mo — 7,500 credits, 10 req/s, 25 AI chats) — two lower-priced tiers between Free and the £99 plan. They are rolling out now and appear in `GET /api/v1/api-billing/plans` and at checkout as they go live.
+- **[MCP server](./mcp)** — connect Claude (claude.ai, Claude Desktop, or Claude Code) to the property data directly at `https://api.propaideals.co.uk/mcp`. OAuth 2.1; seven tools; credits shared with your REST keys.
+
+**Changed:**
+- The £99 plan is renamed **Starter → Advanced**. Price, limits (20,000 credits, 10 req/s, 100 AI chats), and scopes are unchanged, and its machine `id` is stable — existing subscriptions and integrations are unaffected. The rename frees the Starter name for the new £29 entry tier.
+- Docs now describe quotas in **credits** (1 credit = 1 standard request; heavier endpoints cost more per call, exactly as `X-Request-Cost` has always reported).
+
+## 2026-08-13 — Two duplicate response fields removed (breaking)
+
+**Removed:**
+- `avg_days_on_market` on `GET /api/v1/demand` — and on the `demand` slice of the `GET /api/v1/area-summary` bundle, which returns the same object. Use **`avg_days_listed`**, which carries the identical value.
+- `min_match_confidence` on `GET /api/v1/sold-history` — use **`match_confidence`**, which carries the identical value.
+
+**Why:** in both cases the endpoint returned one number under two names from the same constructor — `avg_days_on_market=days_listed, avg_days_listed=days_listed` and `match_confidence=weakest, min_match_confidence=weakest`. A duplicate is not free when the two names disagree about what they mean. `avg_days_on_market` reads as *time-to-sell*, but the figure is the mean age of listings that have **not** sold yet; sold listings are not in the average at all, so a fast-moving market reads low because its stock turns over quickly, not because the field measures turnover. `min_match_confidence` implied `match_confidence` was a maximum or a mean, when it is already the weakest record in the set. Keeping the misleading half of each pair meant shipping a field whose name licenses a conclusion the number does not support — for `avg_days_on_market`, a valuation input read straight off a survivorship-biased sample.
+
+**Migration:** rename the field in your client. No value, type or nullability changed — `avg_days_on_market` → `avg_days_listed` and `min_match_confidence` → `match_confidence` are pure renames of the same computed number.
+
+**On the 90-day notice policy:** this is a deliberate exception, not an oversight. The public API has no meaningful subscriber base yet — self-serve key issuance only opened in August 2026 — so the cost of this break is the lowest it will ever be, and carrying two names for one number into a growing integration base is the more expensive option. Once volume exists we hold to the notice period stated at the top of this page.
+
 ## 2026-04-29 — Specialty property type filters
 
 **New:**

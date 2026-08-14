@@ -115,7 +115,7 @@ curl "https://api.propaideals.co.uk/api/v1/market-data/5fa1b2c3-d4e5-6f78-9012-3
 | `limit` | integer | `20` | Max comparables (max `100`) |
 | `min_bedrooms` | integer | — | Only matching bedroom count |
 | `max_bedrooms` | integer | — | |
-| `property_type` | string | — | Filter by `D`/`S`/`T`/`F` (Detached/Semi/Terrace/Flat) |
+| `property_type` | string | — | HM Land Registry's own **registry code**: `D`/`S`/`T`/`F` (Detached/Semi/Terrace/Flat). This endpoint reads Price Paid Data directly and compares the code, so it is deliberately NOT on the canonical vocabulary the [comparables endpoint](./comparables) publishes — translating it here would break the very filter it echoes. |
 | `radius_meters` | integer | `100` | Search radius from target |
 
 ### Response

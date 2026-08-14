@@ -28,7 +28,8 @@
               "rate-limits",
               "errors",
               "response-format",
-              "connect-with-ai"
+              "connect-with-ai",
+              "mcp"
             ]
           },
           {

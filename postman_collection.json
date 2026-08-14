@@ -2730,9 +2730,69 @@
                   "value": "['']"
                 },
                 {
+                  "description": "Minimum BTL score",
+                  "disabled": true,
+                  "key": "min_btl_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum HMO score",
+                  "disabled": true,
+                  "key": "min_hmo_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum BRRR score",
+                  "disabled": true,
+                  "key": "min_brrr_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum Flip score",
+                  "disabled": true,
+                  "key": "min_flip_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum SA score",
+                  "disabled": true,
+                  "key": "min_sa_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum R2R score",
+                  "disabled": true,
+                  "key": "min_r2r_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum PLO score",
+                  "disabled": true,
+                  "key": "min_plo_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum EDC score",
+                  "disabled": true,
+                  "key": "min_edc_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum LHA BTL score",
+                  "disabled": true,
+                  "key": "min_lha_btl_score",
+                  "value": ""
+                },
+                {
                   "description": "Minimum ML score",
                   "disabled": true,
                   "key": "min_ml_score",
+                  "value": ""
+                },
+                {
+                  "description": "Only properties in outcodes with rising LR median (YoY)",
+                  "disabled": true,
+                  "key": "rising_outcode",
                   "value": ""
                 },
                 {
@@ -3264,7 +3324,7 @@
                   "value": ""
                 },
                 {
-                  "description": "Include additional statuses: sold_stc, under_offer, let_agreed, withdrawn, sold, archived",
+                  "description": "Include additional statuses: sold_stc, under_offer, let_agreed, withdrawn, removed, sold, archived",
                   "disabled": true,
                   "key": "include_statuses",
                   "value": "['']"
@@ -3274,6 +3334,12 @@
                   "disabled": true,
                   "key": "verdict",
                   "value": "['']"
+                },
+                {
+                  "description": "Ordering-only overlay for score-based /plays feeds: float the signed-in user's 'pursue' verdicts to the top, then 'watch', with the play's own score sort as the in-bucket tiebreak. Never filters rows (pass/verdict-null sort to the bottom band, not the top).",
+                  "disabled": true,
+                  "key": "pursue_first",
+                  "value": ""
                 },
                 {
                   "description": "Filter to properties matching a playbook's eligibility. Any of the 22 SPEC-101 slugs or 'any' for at least one match.",
@@ -3765,6 +3831,24 @@
                   "value": ""
                 },
                 {
+                  "description": "Property status(es) to include: active, sold_stc, under_offer, let_agreed, withdrawn, removed, sold, archived. Repeated or comma-separated. 'all' returns every status. Default: active only.",
+                  "disabled": true,
+                  "key": "status",
+                  "value": "['']"
+                },
+                {
+                  "description": "Exact estate agent name match (no cross-branch bleed)",
+                  "disabled": true,
+                  "key": "agent_name_exact",
+                  "value": ""
+                },
+                {
+                  "description": "Exact branch id match (precise branch join key)",
+                  "disabled": true,
+                  "key": "branch_id",
+                  "value": ""
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -4223,6 +4307,24 @@
                   "value": ""
                 },
                 {
+                  "description": "Property status(es) to include: active, sold_stc, under_offer, let_agreed, withdrawn, removed, sold, archived. Repeated or comma-separated. 'all' returns every status. Default: active only.",
+                  "disabled": true,
+                  "key": "status",
+                  "value": "['']"
+                },
+                {
+                  "description": "Exact estate agent name match (no cross-branch bleed)",
+                  "disabled": true,
+                  "key": "agent_name_exact",
+                  "value": ""
+                },
+                {
+                  "description": "Exact branch id match (precise branch join key)",
+                  "disabled": true,
+                  "key": "branch_id",
+                  "value": ""
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -4678,6 +4780,24 @@
                   "description": "Street name to fuzzy-match — slug ('acacia-avenue') or light free text ('Gloucestershire.'). Normalised server-side; requires postcode.",
                   "disabled": true,
                   "key": "street",
+                  "value": ""
+                },
+                {
+                  "description": "Property status(es) to include: active, sold_stc, under_offer, let_agreed, withdrawn, removed, sold, archived. Repeated or comma-separated. 'all' returns every status. Default: active only.",
+                  "disabled": true,
+                  "key": "status",
+                  "value": "['']"
+                },
+                {
+                  "description": "Exact estate agent name match (no cross-branch bleed)",
+                  "disabled": true,
+                  "key": "agent_name_exact",
+                  "value": ""
+                },
+                {
+                  "description": "Exact branch id match (precise branch join key)",
+                  "disabled": true,
+                  "key": "branch_id",
                   "value": ""
                 },
                 {
@@ -6417,7 +6537,7 @@
         {
           "name": "Get Deal Score",
           "request": {
-            "description": "Get Deal Score",
+            "description": "Stored deal score, with the Yield factor reconciled against the\nunified rent resolver before publication.\n\nThe stored factor JSON is written by the worker off the old rent engine's\ncolumns, so it could publish \"6.7% gross yield - Strong yield\" (10/16\npoints) for a property whose rental surface (get_property_details /\n/api/v1/rental-estimate) refuses to publish any rent - one property, two\ncontradictory rent stories (live finding, Fairholme Road, 2026-08-13).\nThe Yield Potential factor is therefore re-derived here from the SAME\nrental-estimate machinery get_property_details calls, and deal_score /\nis_hot_deal are adjusted by the delta. Cost: up to 4 additional reads\n(live-listing check, subject row, floor-area provenance, one district\nrent aggregate) - the same work the 1-credit /api/v1/rental-estimate\nendpoint performs, on a 2-credit endpoint.",
             "header": [
               {
                 "key": "Accept",
@@ -6752,7 +6872,7 @@
         {
           "name": "Get Playbook Tiers",
           "request": {
-            "description": "Get Playbook Tiers",
+            "description": "Playbook classifications stored for this property.\n\nThree states, kept apart because they mean different things and the old\nsingle-map shape flattened two of them into \"absent\". A tier column is\nNULL until that playbook's rollup cron reaches the property, and each of\nthe twenty has its own cron at its own depth: measured across the estate\non 2026-08-13, coverage per playbook ranged from 4,116 rows\n(lease_extension) to 1,643,694 (hmo_conversion) of 4,592,840, so a typical\nproperty has a stored result for only a handful. That is why the map came\nback with three entries and why its size moved from property to property -\nthe other seventeen were unevaluated, not disqualified, and the response\ngave no way to tell.",
             "header": [
               {
                 "key": "Accept",
@@ -7157,7 +7277,7 @@
         {
           "name": "Get Rental Estimate",
           "request": {
-            "description": "Estimate the monthly rent for a property from nearby rental comparables.\n\nUses the median of comparable rents within ~1km (±1 bedroom) and, when the\nproperty has a sale price, derives an implied gross yield.",
+            "description": "Estimate the monthly rent for a property, and the yield it implies.\n\nRuns the unified resolver (``app/services/rent/unified_rent_resolver.py``):\nmedian rent per sqft for the subject's postcode sector AND exact bedroom\ncount, applied to its own measured floor area, held inside that sample's\ninterquartile band.\n\nThis replaced a median of the 20 nearest lets within 1km at bedrooms +/-1.\nThat set is near-identical for every property in a dense district and mixes\nthe bed counts together, so the rent barely moved with the subject and the\ngross yield was 12 x constant / price - a cheapest-first sort presented as\na yield ranking. Measured over twenty M1 flats on production (2026-08-13,\nthe sample in ``tests/services/rent/test_unified_rent_resolver.py``):\ncorrelation between rent and bedroom count rose from 0.2707 to 0.7018, and\nthe top published gross yield fell from 15.53% to 11.80%.",
             "header": [
               {
                 "key": "Accept",
@@ -7195,7 +7315,7 @@
         {
           "name": "Get Sold History",
           "request": {
-            "description": "Return the matched sold transaction history for a property.\n\nLooks up the property's identity (UPRN, coords, address) then runs the\nmulti-source sold-history matcher (UPRN exact > PostGIS spatial > Land\nRegistry spatial + address).",
+            "description": "Return the matched sold transaction history for a property.\n\nLooks up the property's identity (UPRN, coords, address) then runs the\nmulti-source sold-history matcher (UPRN exact > PostGIS spatial > Land\nRegistry spatial + address). Only sales whose address is consistent with\nTHIS property stay in sold_history; nearby sales that positively belong to\nanother address are surfaced separately as neighbour_sales.",
             "header": [
               {
                 "key": "Accept",
@@ -7354,7 +7474,7 @@
         {
           "name": "Get Valuation",
           "request": {
-            "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nAdapts ValuationService.get_valuation_by_postcode. Returns 404 when no\nvaluation data exists for the postcode.",
+            "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nSale comes from ValuationService.get_valuation_by_postcode. **Rent does\nnot**: it comes from the unified resolver\n(``app/services/rent/unified_rent_resolver.py``), the same engine\n``/api/v1/rental-estimate`` uses, so the two endpoints can no longer\ndisagree about what a let is worth.\n\nValuationService answered rent with a median of\n``zoopla_properties.rent_estimate_current`` walked up a postcode -> sector\n-> outcode ladder. Only ~4% of those rows carry a rent, so in practice the\nladder ran to the district and returned one number for the whole area,\nwhich the endpoint then divided into the sale estimate. The resolver keys\non live and let-agreed asking rents at an exact bedroom count and refuses\nto publish a yield above 12%.\n\nReturns 404 only when no estimate of any kind exists — a rent-only result\nis still a result.",
             "header": [
               {
                 "key": "Accept",
@@ -8524,6 +8644,12 @@
               ],
               "query": [
                 {
+                  "description": "User-edited ledger total for this scan (property page refurb editor). When set, adjusted_strategy_economics is recomputed against this figure instead of the raw AI scan total - value precedence: user-adjusted > vision-scan > rate-card. Never persisted.",
+                  "disabled": true,
+                  "key": "override_refurb_cost_mid",
+                  "value": ""
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -8991,10 +9117,23 @@
         {
           "name": "Update saved calculation",
           "request": {
-            "description": "Update name or notes of a saved calculation",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"inputs\": {},\n  \"outputs\": {}\n}"
+            },
+            "description": "Update name/notes of a saved calculation, or overwrite its inputs/outputs snapshot",
             "header": [
               {
                 "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
                 "value": "application/json"
               }
             ],
@@ -9431,6 +9570,45 @@
           }
         },
         {
+          "name": "Get Area Service Summary",
+          "request": {
+            "description": "Compact hyper-local district summary for a trusted partner service.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nRaises:\n    HTTPException: 404 if the district has no data in\n        mv_postcode_district_metrics.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "area",
+                "service-summary"
+              ],
+              "query": [
+                {
+                  "description": "UK postcode district, e.g. S63",
+                  "disabled": false,
+                  "key": "district",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/area/service-summary?district="
+            }
+          }
+        },
+        {
           "name": "Get Area Summary",
           "request": {
             "description": "Bundle (cost 10): asking prices + sold prices + demand + growth for an\narea in one call. Each slice is best-effort.",
@@ -9510,9 +9688,50 @@
           }
         },
         {
+          "name": "Get Commercial Area Analytics",
+          "request": {
+            "description": "Per-outcode commercial market aggregates (supply, £/sqft, yield, rateable value).\n\nOutcode-level: a full postcode or a bare outcode is accepted. Pro tier minimum\n(``pro`` or ``founder``); lower tiers receive HTTP 402. Commercial has no Land\nRegistry sold feed, so every figure is asking-based from our own listings.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "area-analytics",
+                ":postcode",
+                "commercial"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/area-analytics/:postcode/commercial",
+              "variable": [
+                {
+                  "description": "",
+                  "key": "postcode",
+                  "value": "<postcode>"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Get Demand",
           "request": {
-            "description": "Market demand / turnover for an outcode.\n\nCompares active sale listings against properties marked sold/under-offer\nin the last 90 days to derive a turnover ratio + a seller/buyer/balanced\nrating, plus average days-on-market for live listings.",
+            "description": "Market demand / turnover for an outcode.\n\nCompares active sale listings against properties marked sold/under-offer\nin the last 90 days to derive a turnover ratio + a seller/buyer/balanced\nrating (or 'insufficient_data' when the sample is under 10 observations).\navg_days_listed measures the current age of ACTIVE listings — how long\nunsold stock has been listed — not time-to-sell. It used to be returned\ntwice, also as avg_days_on_market; both names were filled from the one\nAVG() below, so the response carried two names for one number and the\nmisleading name was the one a reader trusted. avg_days_on_market is gone.\n\n`bedrooms` narrows both sides of the ratio to one size band. It is honoured\nhere because these counts come from our own listings, which carry a bedroom\ncount; the Land-Registry-backed /sold-prices and /growth cannot honour it.",
             "header": [
               {
                 "key": "Accept",
@@ -9534,6 +9753,12 @@
                   "description": "Postcode (outcode is derived, e.g. 'M1 4WP' -> 'M1')",
                   "disabled": false,
                   "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "Restrict both counts to listings with this bedroom count.",
+                  "disabled": true,
+                  "key": "bedrooms",
                   "value": ""
                 },
                 {
@@ -9901,7 +10126,7 @@
         {
           "name": "Get Growth",
           "request": {
-            "description": "Year-on-year capital growth for an outcode from Land Registry medians.\n\nCompares the median sold price of the last 12 months against the prior 12\nmonths to compute a YoY growth percentage.",
+            "description": "Year-on-year capital growth for an outcode from Land Registry medians.\n\nFull postcodes are collapsed to their OUTCODE (`area_level=\"outcode\"`).\nCompares the median sold price of the last 12 months against the prior 12\nmonths; when the comparison can't be made honestly, `yoy_growth_pct` is\nnull and `reason` says why.\n\n**Both medians are taken over the same kind of stock.** Land Registry\nregistrations arrive on a lag that differs sharply by transaction kind, so\na median over \"everything registered in the window\" is a median over a\nbasket whose composition changes with the calendar rather than the market:\n\n* **New build (old_new='Y') is excluded.** Developer plot sales register\n  months later than resale, and land in tranches. Measured on production\n  2026-08-13: B1's prior window carried 307 new-build registrations against\n  8 in the recent window — zero in every month from November 2025 onward —\n  and they priced above the resale median. Excluding new build alone moves\n  B1's YoY from -31.25% to -4.76%, and leaves an outcode with no new build\n  at all over the 24 months (M14, 0 registrations) bit-identical at -0.73%.\n* **PPD category B is excluded.** Repossessions, buy-to-let portfolio\n  transfers and other non-arm's-length sales. L1 registered 67 of them at a\n  median of £15,000 in May 2025 alone. Across the 2,301 outcodes holding\n  in-band Land Registry data, the two filters together take the standard\n  deviation of the YoY figure from 28.76 to 11.93 points.\n\nMost of that spread sits in outcodes the MIN_GROWTH_SAMPLE floor already\nsuppresses: on the 2,151 outcodes that actually publish a figure, sigma\nonly moves 7.67 -> 7.25. The filters earn their place on individual\noutcodes rather than in aggregate — B1 is published (56 and 92 eligible\nsales) and moves -31.25% -> -11.83%.\n\nNeither filter flattens a genuine move: B1 still reports a double-digit\nfall, because B1's filtered median has fallen 200,000 -> 177,500 -> 156,500\nover three consecutive 12-month windows. What goes away is the phantom 20\npoints on top.\n\nNOTE on mv_area_price_growth: the monthly MV is per (outcode,\nproperty_type) with the same category-A / price-band filters — but there is\nno all-property-types outcode row and medians can't be combined across type\nrows, so serving this endpoint from it would silently change the numbers.\nWe keep the live SQL (index-friendly + cached 6h) instead.",
             "header": [
               {
                 "key": "Accept",
@@ -11409,6 +11634,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Runtime AI verdict filter: pursue, watch (repeatable)",
+                  "disabled": true,
+                  "key": "verdict",
+                  "value": "['']"
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -11718,6 +11949,42 @@
                   "value": ""
                 },
                 {
+                  "description": "Company-owned properties only",
+                  "disabled": true,
+                  "key": "company_owned_only",
+                  "value": ""
+                },
+                {
+                  "description": "Owned by a company in distress only",
+                  "disabled": true,
+                  "key": "distressed_company_only",
+                  "value": ""
+                },
+                {
+                  "description": "Silent-pull minimum confidence tier: gold, silver, bronze",
+                  "disabled": true,
+                  "key": "silently_pulled_min_tier",
+                  "value": ""
+                },
+                {
+                  "description": "FREEHOLD or LEASEHOLD",
+                  "disabled": true,
+                  "key": "tenure",
+                  "value": ""
+                },
+                {
+                  "description": "Only leads with images",
+                  "disabled": true,
+                  "key": "has_images_only",
+                  "value": ""
+                },
+                {
+                  "description": "Min historic sales count",
+                  "disabled": true,
+                  "key": "min_historic_sales",
+                  "value": ""
+                },
+                {
                   "description": "Min last sold price",
                   "disabled": true,
                   "key": "min_price",
@@ -11888,6 +12155,12 @@
                   "description": "Price reduced only",
                   "disabled": true,
                   "key": "price_reduced",
+                  "value": ""
+                },
+                {
+                  "description": "Dual-listed (live for sale AND rent) only",
+                  "disabled": true,
+                  "key": "dual_listed",
                   "value": ""
                 },
                 {
@@ -12650,7 +12923,7 @@
               },
               "raw": "{\n  \"context\": {},\n  \"message\": \"Find me 2-bedroom flats in Edinburgh under \\u00a3300,000\",\n  \"session_id\": \"session_12345\"\n}"
             },
-            "description": "Main chat endpoint for Ultimate AI system - REQUIRES AUTHENTICATION.\n\nUses read replica for property search queries (no RLS, no write contention).\nPrimary DB used only for conversation saves via global_db_manager.",
+            "description": "Main chat endpoint for Ultimate AI system - REQUIRES AUTHENTICATION.\n\nUses read replica for property search queries (no RLS, no write contention).\nPrimary DB used only for conversation saves via global_db_manager.\n\nDeliberately takes NO ``Depends(get_async_db)``. That dependency is resolved\nbefore the body runs and its session is parked at ``yield`` until the\nresponse is produced. Because it is non-autocommit, its first ``SET LOCAL``\nautobegins a transaction, so the backend would sit ``idle in transaction``\nfor the whole <=30s coordinator run — until the 180s per-role\n``idle_in_transaction_session_timeout`` kills it and PgBouncer loses the\npooled server connection (\"server conn crashed?\" -> client\n``unexpected connection_lost()``). The session was never used here anyway.",
             "header": [
               {
                 "key": "Accept",
@@ -12842,7 +13115,7 @@
         {
           "name": "Show More Properties",
           "request": {
-            "description": "Get additional properties from search session - REQUIRES AUTH.\n\nProtected to verify session ownership and prevent unauthorized\naccess to other users' search results.\n\nArgs:\n    session_id: Session ID from previous search\n    shown_count: Number of properties already shown\n    limit: Number of additional properties to return\n    current_user: Authenticated user (verified for session ownership)\n\nReturns:\n    Additional properties with Show More availability",
+            "description": "Get additional properties from search session - REQUIRES AUTH.\n\nProtected to verify session ownership and prevent unauthorized\naccess to other users' search results.\n\nTakes no ``Depends(get_async_db)`` — see ``chat_with_ai`` for why an unused\nnon-autocommit session still pins a PgBouncer backend idle-in-transaction.\n\nArgs:\n    session_id: Session ID from previous search\n    shown_count: Number of properties already shown\n    limit: Number of additional properties to return\n    current_user: Authenticated user (verified for session ownership)\n\nReturns:\n    Additional properties with Show More availability",
             "header": [
               {
                 "key": "Accept",

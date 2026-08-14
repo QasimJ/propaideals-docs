@@ -1,6 +1,6 @@
 ---
 title: Rate limits
-description: Per-second rate limits, monthly request quotas, AI chat quotas, and rate limit headers for the Prop AI Deals API. Covers the Starter, Professional, and Business plans with concrete numbers.
+description: Per-second rate limits, monthly credit quotas, AI chat quotas, and rate limit headers for the Prop AI Deals API. Covers the Free, Starter, Growth, Advanced, Professional, and Business plans with concrete numbers.
 ---
 
 # Rate limits
@@ -11,20 +11,27 @@ The Prop AI Deals API enforces three types of limits on every `paid_*` request:
 2. **Monthly request quota** — **Hard cap** at the plan's `monthly_request_limit`. No soft/hard split, no 2× tolerance. Once you hit the cap, requests are blocked until the next billing period.
 3. **AI chat quota** — Separate quota for AI endpoints (which also cost 5× normal requests against your monthly quota)
 
-All limits are per **account** (not per IP, not per key). Your subscription buys one shared pool: every API key you create draws from the **same** per-second rate limit, monthly request quota, and AI chat quota. Creating more keys does **not** increase your limits.
+All limits are per **account** (not per IP, not per key). Your subscription buys one shared pool: every API key you create draws from the **same** per-second rate limit, monthly request quota, and AI chat quota. Creating more keys does **not** increase your limits. [MCP tool calls](./mcp) (the Claude connector) draw from the same monthly pool as your REST keys.
 
 ## Plan comparison
 
-| Plan | Price (GBP/mo) | Requests / month | £/request | Per-second | AI chats / month | Batch limit |
-|---|---|---|---|---|---|---|
-| **Starter** | £99 | 20,000 | £0.00495 | 10 req/s | 100 | 100 |
-| **Professional** | £299 | 100,000 | £0.00299 | 25 req/s | 1,000 | 200 |
-| **Business** | £999 | 400,000 | £0.00250 | 50 req/s | 4,000 | 500 |
-| **Enterprise** | Custom | Custom | — | Custom | Custom | Custom |
+| Plan | Price (GBP/mo) | Credits / month | Per-second | AI chats / month | Batch limit |
+|---|---|---|---|---|---|
+| **Free** | £0 — no card | 200 | 2 req/s | — | — |
+| **Starter** | from £29 | 2,500 | 5 req/s | — | — |
+| **Growth** | from £59 | 7,500 | 10 req/s | 25 | — |
+| **Advanced** | £99 | 20,000 | 10 req/s | 100 | 100 |
+| **Professional** | £299 | 100,000 | 25 req/s | 1,000 | 200 |
+| **Business** | £999 | 400,000 | 50 req/s | 4,000 | 500 |
+| **Enterprise** | Custom | Custom | Custom | Custom | Custom |
 
-**All tiers are paid — there is no free tier.** Every plan grants read access to properties, market data, investment calculators, spatial search, planning data, lead generators, EPC certificates, UPRN, demographics, flood risk, and heritage data, plus the `ai:chat` scope (the AI chat quota scales by tier — see the table above). Professional and Business additionally include `build-cost:read`.
+A **credit** is one standard request; heavier endpoints consume more per call (see [request cost by endpoint](#request-cost-by-endpoint)).
 
-> **Per-request value:** at every tier we're cheaper per request than the closest UK competitor AND give 20–25× higher per-second rate limits than equivalent tiers at PropertyData.
+**There is a free tier.** Every account can create an API key on the Free plan — 200 credits a month at 2 req/s, no card required — with the `properties:read`, `market-data:read`, `areas:read`, and `epc:read` scopes. That covers listing search, valuations, comparables, sold prices, area statistics, and EPC lookups. AI chat is included from the Growth plan up; the Advanced plan and above add investment calculators, spatial search, planning / flood-risk / heritage data, and lead generators; Professional and Business additionally include `build-cost:read`. For any plan, the live scope list is always `GET /api/v1/api-billing/plans`.
+
+**Advanced is the plan previously sold as Starter.** Same £99 price, limits, and scopes — only the name changed when the £29 Starter and £59 Growth tiers were introduced. Existing subscriptions are unaffected.
+
+**Starter and Growth are rolling out now.** They are priced from £29/mo and £59/mo and appear at checkout as soon as they go live on your dashboard. If you don't see them yet, start on Free (no card needed) or pick Advanced.
 
 **Enterprise** plans are custom-provisioned (negotiated limits, dedicated infrastructure, SLAs). Email `info@propaideals.co.uk` to discuss.
 
@@ -91,7 +98,7 @@ When the AI quota is exhausted: `429 ai_chat_quota_exceeded`. Non-AI endpoints c
 }
 ```
 
-**Every paid plan includes AI chat** — Starter 100 chats/month, Professional 1,000, Business 4,000. When the AI quota is exhausted the AI endpoints return `429 ai_chat_quota_exceeded`; all other endpoints keep working until the main monthly request quota is also used up.
+**AI chat is included from the Growth plan up** — Growth 25 chats/month, Advanced 100, Professional 1,000, Business 4,000. Free and Starter do not include AI chat. When the AI quota is exhausted the AI endpoints return `429 ai_chat_quota_exceeded`; all other endpoints keep working until the main monthly request quota is also used up.
 
 ### Request cost by endpoint
 

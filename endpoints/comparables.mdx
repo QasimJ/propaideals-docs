@@ -1,11 +1,15 @@
 ---
 title: Comparables endpoint
-description: Ranked sold comparables for a UK postcode, with similarity scores, confidence tiers, and flags for non-standard or flip transactions. Sourced from HM Land Registry via PostGIS spatial matching. Required scope market-data:read.
+description: Ranked sold comparables for a UK postcode, with similarity scores, confidence tiers, per-row source attribution, and flags for non-standard or flip transactions. Required scope market-data:read.
 ---
 
 # Comparables
 
-Returns ranked sold comparables around a UK postcode, sourced from **HM Land Registry Price Paid Data** and matched via PostGIS spatial search. Each comparable carries a `similarity_score`, a `confidence_tier`, and flags that surface distressed or flip transactions, so you can build a defensible valuation rather than a flat list of nearby sales.
+Returns ranked sold comparables around a UK postcode, matched via PostGIS spatial search. Each comparable carries a `similarity_score`, a `confidence_tier`, a `source_attribution`, and flags that surface distressed or flip transactions, so you can build a defensible valuation rather than a flat list of nearby sales.
+
+<Warning>
+**Attribution is per row, not per response.** HM Land Registry Price Paid Data covers **England and Wales only**. Scottish comparables come from Registers of Scotland sold-price data supplied through our aggregation partners; Northern Irish comparables are estate agent **asking prices**, not completed sales, because Land & Property Services NI transaction data is not held. Read the `source_attribution` field on each comparable, or the response-level `sources` array, and cite that — never a single national registry.
+</Warning>
 
 **Required scope:** `market-data:read` · **Cost:** 1 request
 
@@ -76,12 +80,16 @@ data.comparables.forEach((c) =>
   "data": {
     "postcode": "M1 4WP",
     "count": 2,
+    "sources": [
+      "HM Land Registry Price Paid Data (England and Wales)"
+    ],
     "comparables": [
       {
         "address": "14 Example Court, Manchester, M1 4WP",
         "price": 215000,
         "sale_date": "2025-11-22",
         "property_type": "flat",
+        "property_type_source": "Purpose Built Flat",
         "bedrooms": 2,
         "distance_miles": 0.08,
         "similarity_score": 94,
@@ -89,8 +97,15 @@ data.comparables.forEach((c) =>
         "transaction_category": "standard",
         "is_likely_flip": false,
         "floor_area_sqft": 712,
+        "floor_area_source": "measured",
+        "price_per_sqft": 301,
+        "price_per_sqft_is_estimated": false,
+        "price_per_sqft_note": null,
         "price_per_bedroom": 107500,
-        "tenure": "leasehold",
+        "tenure": "Leasehold",
+        "jurisdiction": "england_wales",
+        "tenure_note": null,
+        "source_attribution": "HM Land Registry Price Paid Data (England and Wales)",
         "energy_rating": "C",
         "latitude": 53.4751,
         "longitude": -2.2301
@@ -100,6 +115,7 @@ data.comparables.forEach((c) =>
         "price": 168000,
         "sale_date": "2025-07-03",
         "property_type": "flat",
+        "property_type_source": "Flat/Maisonette",
         "bedrooms": 2,
         "distance_miles": 0.31,
         "similarity_score": 61,
@@ -107,8 +123,15 @@ data.comparables.forEach((c) =>
         "transaction_category": "non_standard",
         "is_likely_flip": true,
         "floor_area_sqft": 688,
+        "floor_area_source": "building_estimate",
+        "price_per_sqft": 244,
+        "price_per_sqft_is_estimated": true,
+        "price_per_sqft_note": "Imputed: the EPC certificate behind this size was attached by whole-address similarity, which every flat in one block passes. Treat the size, and any price per square foot derived from it, as an order of magnitude.",
         "price_per_bedroom": 84000,
-        "tenure": "leasehold",
+        "tenure": "Leasehold",
+        "jurisdiction": "england_wales",
+        "tenure_note": null,
+        "source_attribution": "HM Land Registry Price Paid Data (England and Wales)",
         "energy_rating": "D",
         "latitude": 53.4769,
         "longitude": -2.2358
@@ -131,6 +154,7 @@ data.comparables.forEach((c) =>
 |---|---|---|
 | `postcode` | string | The postcode the search was run for. |
 | `count` | integer | Number of comparables returned. |
+| `sources` | array | The distinct `source_attribution` values present in `comparables`, sorted. |
 | `comparables` | array | Ranked comparable sales (see per-item fields below). |
 
 Each item in `comparables`:
@@ -140,7 +164,8 @@ Each item in `comparables`:
 | `address` | string | Full address of the comparable. |
 | `price` | number | Sold price in £. |
 | `sale_date` | string | Transaction date (`YYYY-MM-DD`). |
-| `property_type` | string | Property type, e.g. `flat`, `terraced`. |
+| `property_type` | string \| null | One vocabulary across every source: `flat`, `terraced`, `semi-detached`, `detached`, `bungalow`, `house`, `studio`, `maisonette`, `land`, `commercial`, `parking`, `caravan`, `other`. Safe to send straight back as the `type` filter. `null` when the source recorded no type. |
+| `property_type_source` | string \| null | The supplier's own words, unedited — `"Mid Terrace House"`, `"Purpose Built Flat"`, `"Semi-Detached"`. Audit trail only; do not filter on it. |
 | `bedrooms` | integer \| null | Bedroom count where known. |
 | `distance_miles` | number | Distance from the search postcode. |
 | `similarity_score` | integer | Composite similarity to the search criteria, `0`–`100`. |
@@ -148,11 +173,50 @@ Each item in `comparables`:
 | `transaction_category` | string | `standard` or `non_standard`. |
 | `is_likely_flip` | boolean | `true` when the same address re-sold within ~3 years for a large uplift. |
 | `floor_area_sqft` | number \| null | Floor area in square feet where known. |
+| `floor_area_source` | string | `measured`, `building_estimate`, `unverified` or `absent`. See **Floor area and £/sqft** below. |
+| `price_per_sqft` | number \| null | `price / floor_area_sqft`, in £, truncated to whole pounds. `null` when no floor area is held. |
+| `price_per_sqft_is_estimated` | boolean | `true` unless `floor_area_source` is `measured`. |
+| `price_per_sqft_note` | string \| null | Why the figure is qualified, when it is. |
 | `price_per_bedroom` | number \| null | `price / bedrooms`, in £. |
-| `tenure` | string \| null | `freehold` or `leasehold`. |
+| `tenure` | string \| null | `Freehold` or `Leasehold` in England, Wales and Northern Ireland. `Ownership` or `null` in Scotland — see `tenure_note` and the note below. |
+| `jurisdiction` | string \| null | `scotland`, `england_wales`, `northern_ireland`, or `unknown`. |
+| `tenure_note` | string \| null | Why `tenure` reads the way it does when the jurisdiction changed it. Scottish rows only. |
+| `source_attribution` | string \| null | Where **this row** came from. |
 | `energy_rating` | string \| null | EPC band, A–G. |
 | `latitude` | number | Latitude (WGS84). |
 | `longitude` | number | Longitude (WGS84). |
+
+### Property type
+
+Comparables are drawn from three registers that each name the same dwelling differently. Zoopla says `Semi-Detached House`, `Flat/Maisonette`, `Purpose Built Flat`, `Converted Flat`, `Mid Terrace House`; HM Land Registry stores `D`/`S`/`T`/`F`, which the comparables query expands to `Detached`/`Semi-Detached`/`Terraced`/`Flat`; Rightmove uses `semi_detached`. One ranked list could therefore contain seven labels for four kinds of dwelling.
+
+`property_type` publishes **one** vocabulary for all of them:
+
+`flat` · `terraced` · `semi-detached` · `detached` · `bungalow` · `house` · `studio` · `maisonette` · `land` · `commercial` · `parking` · `caravan` · `other`
+
+The published value is always a value you can send straight back as `type=` and get that row again — the mapping is chosen so the label selects its own row. `property_type_source` carries the supplier's original string so you can audit the mapping.
+
+Two consequences worth knowing:
+
+- `Semi-Detached Bungalow` publishes as `semi-detached`, not `bungalow`. The structure decides the bucket the filter uses; the bungalow detail stays in `property_type_source`.
+- `/api/v1/market-data` is deliberately **not** on this vocabulary. Its `property_type` is HM Land Registry's own `D`/`S`/`T`/`F` code, which is also its filter value — translating it there would break the filter it echoes.
+
+### Floor area and £/sqft
+
+A floor area is not always a measurement of the dwelling it is attached to. Most areas come from an EPC certificate, and a certificate routinely covers a whole block: 3,071,054 of the 26,755,813 Land Registry floor areas — 11.5%, measured 2026-08-13 — were attached by whole-address similarity, the rule that matches "Flat 3, 12 High Street" to "Flat 8, 12 High Street".
+
+Dividing by such an area produces an exact-looking £/sqft whose precision is manufactured by the division. `floor_area_source` says which case you are in:
+
+| Value | Meaning |
+|---|---|
+| `measured` | The certificate was matched to **this** address (`uprn_match_method = 'epc_exact'`). Safe to treat `price_per_sqft` as this property's own. |
+| `building_estimate` | Attached at building level — a fuzzy whole-address match, or one certificate fanned across a block. Treat the size, and anything divided by it, as an order of magnitude. |
+| `unverified` | A real area whose source records nothing about which address it was measured at. Every Zoopla row is in this state: `zoopla_properties` stores the certificate key but not how it was chosen. Not proven imputed — but not publishable as measured either. |
+| `absent` | No floor area, so `price_per_sqft` is `null`. |
+
+`price_per_sqft_is_estimated` is `true` for everything except `measured`. It is deliberately asymmetric: absent evidence of a measurement is not evidence of one.
+
+The subject property's own £/sqft, on the same footing, is returned by [`/api/v1/rental-estimate`](./rental-estimate).
 
 ### Confidence tiers
 
@@ -165,6 +229,22 @@ The `confidence_tier` ranks how directly comparable each sale is, combining simi
 | `bronze` | Looser matches; useful context, weight with care. |
 | `supporting` | Peripheral evidence only. |
 | `excluded` | Filtered from the headline valuation (kept for transparency). |
+
+### Tenure outside England and Wales
+
+`Freehold` and `Leasehold` are estates in English land law. **Neither exists in Scotland.** Feudal tenure was abolished by the Abolition of Feudal Tenure etc. (Scotland) Act 2000, and residential long leases converted to outright ownership under the Long Leases (Scotland) Act 2012.
+
+A comparable with `jurisdiction: "scotland"` therefore returns:
+
+| Underlying value | `tenure` | Why |
+| --- | --- | --- |
+| Freehold / Feudal | `Ownership` | Terminology correction — both describe the outright ownership the 2000 Act converted feudal estates into. |
+| Leasehold | `null` | The true position is not recoverable from the data held, so nothing is asserted. |
+| Occupancy labels (`owner-occupied`, `rented (private)`, …) | `null` | Never a tenure in any jurisdiction. |
+
+Northern Ireland is unaffected: freehold and leasehold both genuinely exist there.
+
+Where a postcode district straddles the border (`TD12`, `TD15`) and no stronger evidence is held, `jurisdiction` is `unknown` and the tenure is passed through untouched rather than rewritten on a guess.
 
 ### Distressed and flip flags
 

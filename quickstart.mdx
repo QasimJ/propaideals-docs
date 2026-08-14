@@ -9,7 +9,9 @@ Get from zero to your first API response in three minutes.
 
 ## 1. Create an account
 
-Sign up at [propaideals.co.uk/sign-up](https://propaideals.co.uk/sign-up), then subscribe to a Public API plan at [propaideals.co.uk/dashboard/api](https://propaideals.co.uk/dashboard/api). Starter is **£99/mo**, Professional is **£299/mo**, Business is **£999/mo**. There is no free tier.
+Sign up at [propaideals.co.uk/sign-up](https://propaideals.co.uk/sign-up) — every account includes the **Free API plan**: 200 credits a month at 2 req/s, no card required. You can create a key and make your first call without subscribing to anything.
+
+When you need more, paid plans start **from £29/mo** (Starter, 2,500 credits) through Growth (from £59/mo, 7,500 credits), Advanced (£99/mo, 20,000 credits), Professional (£299/mo, 100,000), and Business (£999/mo, 400,000) at [propaideals.co.uk/dashboard/api](https://propaideals.co.uk/dashboard/api). See [Rate limits](./rate-limits#plan-comparison) for the full comparison.
 
 ## 2. Generate an API key
 
@@ -149,7 +151,7 @@ Every successful response is wrapped in an envelope:
     "latency_ms": 184.5,
     "usage": {
       "monthly_used": 12,
-      "monthly_limit": 10000,
+      "monthly_limit": 200,
       "request_cost": 1
     }
   }
@@ -163,12 +165,14 @@ Every successful response is wrapped in an envelope:
 Every response also includes these headers:
 
 ```
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 9
+X-RateLimit-Limit: 2
+X-RateLimit-Remaining: 1
 X-Request-Cost: 1
 X-Monthly-Usage: 12
-X-Monthly-Limit: 10000
+X-Monthly-Limit: 200
 ```
+
+(Values shown for the Free plan — a paid plan reports its own limits here.)
 
 ## 5. Next steps
 

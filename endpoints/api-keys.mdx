@@ -67,12 +67,10 @@ print("Save this:", created["key"])
   "scopes": [
     "properties:read",
     "market-data:read",
-    "rentals:read",
-    "investment:read",
     "areas:read",
-    "spatial:read"
+    "epc:read"
   ],
-  "plan": "developer",
+  "plan": "free",
   "status": "active",
   "last_used": null,
   "expires_at": null,
@@ -110,7 +108,7 @@ curl https://api.propaideals.co.uk/api/v1/api-keys \
     "name": "Production server",
     "prefix": "paid_a1b2c3",
     "scopes": ["properties:read", "market-data:read"],
-    "plan": "developer",
+    "plan": "free",
     "status": "active",
     "last_used": "2026-04-14T10:25:00Z",
     "expires_at": null,
@@ -121,7 +119,7 @@ curl https://api.propaideals.co.uk/api/v1/api-keys \
     "name": "Staging server",
     "prefix": "paid_x9y8z7",
     "scopes": ["properties:read"],
-    "plan": "developer",
+    "plan": "free",
     "status": "revoked",
     "last_used": "2026-04-10T08:00:00Z",
     "expires_at": null,
@@ -202,7 +200,7 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
 [
   {
     "id": "starter",
-    "name": "Starter",
+    "name": "Advanced",
     "monthly_price_pence": 9900,
     "monthly_request_limit": 20000,
     "rate_limit_per_second": 10,
@@ -216,7 +214,8 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
       "spatial:read",
       "planning:read",
       "leads:read",
-      "epc:read"
+      "epc:read",
+      "ai:chat"
     ]
   },
   {
@@ -264,4 +263,9 @@ Public endpoint (no auth required) — returns the list of API plans for your pr
 ]
 ```
 
-**All tiers are paid** — there is no free or Developer tier. The three plans are £99, £299, and £999 per month respectively. Enterprise plans are provisioned manually (contact `info@propaideals.co.uk`).
+Notes on this list:
+
+- **`id` is a stable machine identifier and may predate a display rename.** The £99 Advanced plan was previously named Starter and keeps its original id, so existing integrations and subscriptions are unaffected. Match on `id` in code; show `name` to users.
+- **The Free plan does not appear here.** This endpoint lists plans you can purchase; the Free plan (200 credits/mo, no card) is granted automatically — just [create a key](#create-an-api-key).
+- **The new £29 Starter and £59 Growth tiers appear in this list as they go live.** Until then, the paid ladder shown at checkout is Advanced (£99), Professional (£299), and Business (£999). See [Rate limits › Plan comparison](../rate-limits#plan-comparison) for the full ladder.
+- Enterprise plans are provisioned manually (contact `info@propaideals.co.uk`).
