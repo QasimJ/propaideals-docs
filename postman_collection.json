@@ -7424,7 +7424,7 @@
         {
           "name": "Get Sold Prices",
           "request": {
-            "description": "Sold-price aggregate for an outcode from HM Land Registry transactions.\n\nReturns count + mean/median/p25/p75 of sold prices over the last\n`max_age_months` months. Land Registry has no bedroom data, so there is\nno bedrooms filter.",
+            "description": "Sold-price aggregate for an outcode from HM Land Registry transactions.\n\nReturns count + mean/median/p25/p75 of sold prices over the last\n`max_age_months` months; the exact window evaluated is reported back\n(window_months + window_from/window_to) so the sample is interpretable.\nLand Registry has no bedroom data, so there is no bedrooms filter.",
             "header": [
               {
                 "key": "Accept",
@@ -8745,7 +8745,7 @@
         {
           "name": "Get Strategy Scores",
           "request": {
-            "description": "Get Strategy Scores",
+            "description": "Per-strategy ML scores, cross-checked against the playbook verdicts and\nthe unified rent resolver before publication.\n\nTwo read-time consistency guards (B3, pre-release audit 2026-08-14 - 26\nHamnett Street published best_strategy \"HMO\" at 75 while playbook-tiers\nsaid hmo_conversion was `excluded` in the same payload family):\n\n1. A strategy whose playbook counterpart stored the `excluded` verdict\n   does not publish a score (null, reason in `suppressed`), and can never\n   be best_strategy.\n2. When the rent resolver declines to defend a rent for the subject (the\n   same machinery /api/v1/rental-estimate and the deal-score Yield factor\n   publish from), the rental strategies carry a `rent_unverified` marker\n   and best_strategy falls back to the best non-rental strategy - or\n   abstains when none clears the viability floor. Cost: up to 4 extra\n   reads, the same reconciliation the deal-score endpoint performs.",
             "header": [
               {
                 "key": "Accept",

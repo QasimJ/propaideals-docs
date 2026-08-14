@@ -74,8 +74,11 @@ const { data } = await res.json();
       "sa": 49,
       "r2r": 38
     },
-    "best_strategy": "btl",
-    "best_strategy_score": 81
+    "suppressed": {},
+    "rent_unverified": [],
+    "best_strategy": "BTL",
+    "best_strategy_score": 81,
+    "best_strategy_note": null
   },
   "meta": {
     "usage": {
@@ -99,8 +102,11 @@ const { data } = await res.json();
 | `scores.brrr` | integer | Buy, refurbish, refinance, rent fit score |
 | `scores.sa` | integer | Serviced accommodation fit score |
 | `scores.r2r` | integer | Rent-to-rent fit score |
-| `best_strategy` | string | The strategy with the highest fit score |
+| `suppressed` | object | Strategy key → why its score is `null`. A strategy whose playbook counterpart on [playbook tiers](./playbook-tiers) evaluated the property and ruled it out (`excluded`) does not publish a score — the two surfaces answer as one. Always present; `{}` when nothing is suppressed |
+| `rent_unverified` | array | Rental strategies (`btl`/`hmo`/`brrr`/`sa`) whose score is published but whose economics stand on a rent the [rental estimate](./rental-estimate) resolver declined to defend for this property. Treat these scores as unvalidated on the rent axis. Always present; `[]` when the rent basis is verified |
+| `best_strategy` | string | The strategy with the highest fit score. Never names a strategy whose playbook verdict is `excluded`, and never a rental strategy with no verified rent — in those cases it falls back to the best remaining strategy or is `null` |
 | `best_strategy_score` | integer | The score of `best_strategy` |
+| `best_strategy_note` | string | Set when the stored best strategy was invalidated at read time — explains the replacement or the abstention. `null` when the stored best stands |
 
 ## Common patterns
 
@@ -113,6 +119,8 @@ res = requests.get(
     headers={"Authorization": "Bearer paid_your_key"},
 ).json()["data"]
 
-if res["best_strategy_score"] >= 70:
-    print(f"Underwrite as {res['best_strategy'].upper()} (fit {res['best_strategy_score']}/100)")
+# best_strategy is null when nothing viable survives the playbook and
+# rent-basis cross-checks (see best_strategy_note for why).
+if res["best_strategy"] and res["best_strategy_score"] >= 70:
+    print(f"Underwrite as {res['best_strategy']} (fit {res['best_strategy_score']}/100)")
 ```

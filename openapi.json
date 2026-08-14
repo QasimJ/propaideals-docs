@@ -4296,6 +4296,12 @@
             "title": "Sold Last 90D",
             "type": "integer"
           },
+          "source": {
+            "default": "Portal listing statuses from our scraped stock: active sale listings against listings marked sold or under offer in the last 90 days. This is a broader, faster-moving universe than /growth's Land Registry sample, which counts only registered, arm's-length completions of established homes over 12 months — so sold_last_90d and /growth's sample_size measure different things and are not expected to reconcile.",
+            "description": "What the counts are drawn from, and why they differ from the Land-Registry-based /growth sample.",
+            "title": "Source",
+            "type": "string"
+          },
           "turnover_ratio": {
             "anyOf": [
               {
@@ -10234,8 +10240,69 @@
         "title": "PlanningPolicyInfo",
         "type": "object"
       },
+      "PlaybookCoverageState": {
+        "description": "Rollup that makes a sparse tier map self-explaining.\n\nevaluated_count 2 of 20 with tiers {} is the NORMAL state of a property\nthe rollup crons have barely reached, but without this summary it reads\nas breakage. Every key is always present.",
+        "properties": {
+          "dominant_not_evaluated_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most common not-evaluated category ('sweep_not_reached' or 'restricted_population'), or null when nothing is unevaluated.",
+            "title": "Dominant Not Evaluated Reason"
+          },
+          "evaluated": {
+            "default": 0,
+            "description": "qualified + excluded.",
+            "title": "Evaluated",
+            "type": "integer"
+          },
+          "excluded": {
+            "default": 0,
+            "description": "Playbooks evaluated and ruled out.",
+            "title": "Excluded",
+            "type": "integer"
+          },
+          "not_evaluated": {
+            "default": 0,
+            "description": "Playbooks with no stored result for this property.",
+            "title": "Not Evaluated",
+            "type": "integer"
+          },
+          "not_evaluated_by_reason": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Counts of not-evaluated playbooks by category: 'sweep_not_reached' (population-wide sweeps that have not reached this property yet) and 'restricted_population' (playbooks that only evaluate a restricted population, where absence commonly means the property is outside it). Always present; {} when everything is evaluated.",
+            "title": "Not Evaluated By Reason",
+            "type": "object"
+          },
+          "playbook_count": {
+            "default": 20,
+            "description": "Playbooks this endpoint reports on.",
+            "title": "Playbook Count",
+            "type": "integer"
+          },
+          "qualified": {
+            "default": 0,
+            "description": "Playbooks with a gold/silver/bronze tier.",
+            "title": "Qualified",
+            "type": "integer"
+          }
+        },
+        "title": "PlaybookCoverageState",
+        "type": "object"
+      },
       "PlaybookTiersResponse": {
         "properties": {
+          "coverage_state": {
+            "$ref": "#/components/schemas/PlaybookCoverageState",
+            "description": "Count rollup of the three states plus the dominant not-evaluated category, so a near-empty `tiers` map is self-explaining."
+          },
           "evaluated_count": {
             "default": 0,
             "description": "Playbooks with a stored result, out of 20.",
@@ -10724,6 +10791,18 @@
             ],
             "title": "Median Price"
           },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Data-quality caveats, when any apply: the mean pricing above the 75th percentile (outlier skew — quote the median), and/or a requested property_type that maps to no Land Registry class, so no type filter was applied (property_type is then null).",
+            "title": "Note"
+          },
           "p25_price": {
             "anyOf": [
               {
@@ -10755,11 +10834,50 @@
                 "type": "null"
               }
             ],
+            "description": "The type filter that was ACTUALLY applied, echoed back. Null when no filter ran — including when a requested type could not be mapped to a Land Registry class on basis='sold' (see note). An echo of an unapplied filter would mislabel a whole-area aggregate as type-specific.",
             "title": "Property Type"
           },
           "sample_size": {
             "title": "Sample Size",
             "type": "integer"
+          },
+          "window_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "First day of the aggregation window (inclusive). Sold basis only.",
+            "title": "Window From"
+          },
+          "window_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Width of the sold-price aggregation window in months (basis='sold' only; null for basis='asking', which is a live snapshot of active listings with no window).",
+            "title": "Window Months"
+          },
+          "window_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last day of the aggregation window (the query date). Sold basis only.",
+            "title": "Window To"
           }
         },
         "required": [
@@ -26901,6 +27019,18 @@
             ],
             "title": "Best Strategy"
           },
+          "best_strategy_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the stored best strategy was invalidated at read time (excluded by its playbook, or a rental strategy with no verified rent) - explains the replacement or the abstention. Null when the stored best stands.",
+            "title": "Best Strategy Note"
+          },
           "best_strategy_score": {
             "anyOf": [
               {
@@ -26916,6 +27046,14 @@
             "title": "Property Id",
             "type": "string"
           },
+          "rent_unverified": {
+            "description": "Rental strategies (btl/hmo/sa/brrr) whose score is published but whose economics stand on a rent the unified rent resolver declined to defend for this property. Treat these scores as unvalidated on the rent axis. Always present; [] when the rent basis is verified or no rental strategy is scored.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Rent Unverified",
+            "type": "array"
+          },
           "scores": {
             "additionalProperties": {
               "anyOf": [
@@ -26928,6 +27066,14 @@
               ]
             },
             "title": "Scores",
+            "type": "object"
+          },
+          "suppressed": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Strategy key -> why its score is null. A strategy whose playbook counterpart evaluated this property and ruled it out (tier 'excluded' on /api/v1/playbook-tiers) does not publish a score - the two surfaces answer as one. Always present; {} when nothing is suppressed.",
+            "title": "Suppressed",
             "type": "object"
           }
         },
@@ -28911,6 +29057,18 @@
             "description": "Number of properties in the valuation sample",
             "title": "Sample Size"
           },
+          "scope_widened": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the answer widened past the requested scope (geography or bedrooms) to find a usable sample — read valuation_notes for what moved. False when the ladder answered at the rung asked for; null on property-scoped payloads.",
+            "title": "Scope Widened"
+          },
           "source": {
             "anyOf": [
               {
@@ -28923,9 +29081,17 @@
             "description": "Data source for the valuation",
             "title": "Source"
           },
+          "valuation_notes": {
+            "description": "Every widening behind the sale estimate, in plain words.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Valuation Notes",
+            "type": "array"
+          },
           "valuation_scope": {
             "default": "postcode",
-            "description": "What sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from Zoopla's AVM over currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
+            "description": "What sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from Zoopla's AVM over currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'sector' / 'outcode' — the same aggregate answer, but the relaxation ladder found no usable sample at the requested scope and widened; the figures describe that wider geography, not the postcode asked about (scope_widened is True and valuation_notes says what moved). 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
             "title": "Valuation Scope",
             "type": "string"
           }
@@ -55229,7 +55395,7 @@
     },
     "/api/v1/sold-prices": {
       "get": {
-        "description": "Sold-price aggregate for an outcode from HM Land Registry transactions.\n\nReturns count + mean/median/p25/p75 of sold prices over the last\n`max_age_months` months. Land Registry has no bedroom data, so there is\nno bedrooms filter.",
+        "description": "Sold-price aggregate for an outcode from HM Land Registry transactions.\n\nReturns count + mean/median/p25/p75 of sold prices over the last\n`max_age_months` months; the exact window evaluated is reported back\n(window_months + window_from/window_to) so the sample is interpretable.\nLand Registry has no bedroom data, so there is no bedrooms filter.",
         "operationId": "get_sold_prices_api_v1_sold_prices_get",
         "parameters": [
           {
@@ -57267,6 +57433,7 @@
     },
     "/api/v1/strategy-scores": {
       "get": {
+        "description": "Per-strategy ML scores, cross-checked against the playbook verdicts and\nthe unified rent resolver before publication.\n\nTwo read-time consistency guards (B3, pre-release audit 2026-08-14 - 26\nHamnett Street published best_strategy \"HMO\" at 75 while playbook-tiers\nsaid hmo_conversion was `excluded` in the same payload family):\n\n1. A strategy whose playbook counterpart stored the `excluded` verdict\n   does not publish a score (null, reason in `suppressed`), and can never\n   be best_strategy.\n2. When the rent resolver declines to defend a rent for the subject (the\n   same machinery /api/v1/rental-estimate and the deal-score Yield factor\n   publish from), the rental strategies carry a `rent_unverified` marker\n   and best_strategy falls back to the best non-rental strategy - or\n   abstains when none clears the viability floor. Cost: up to 4 extra\n   reads, the same reconciliation the deal-score endpoint performs.",
         "operationId": "get_strategy_scores_api_v1_strategy_scores_get",
         "parameters": [
           {

@@ -5,7 +5,7 @@ description: Gold/silver/bronze tier classifications across 20 acquisition playb
 
 # Playbook tiers
 
-The playbook tiers endpoint returns how strongly a property fits each of our acquisition playbooks. Each matched playbook is graded `gold`, `silver`, or `bronze`; playbooks the property does not qualify for are omitted. Use it to spot which strategies a property unlocks at a glance.
+The playbook tiers endpoint returns how strongly a property fits each of our acquisition playbooks. Each matched playbook is graded `gold`, `silver`, or `bronze`. Playbooks that were evaluated and ruled out are listed in `excluded`; playbooks no rollup has scored yet are listed in `not_evaluated`, each with a per-playbook reason. Use it to spot which strategies a property unlocks at a glance.
 
 **Required scope:** `market-data:read`
 **Cost:** 1 request per call
@@ -16,7 +16,7 @@ The playbook tiers endpoint returns how strongly a property fits each of our acq
 GET /api/v1/playbook-tiers
 ```
 
-Returns the tier for each playbook the property matches. Only playbooks with a non-null tier are included in the response.
+Returns the tier for each playbook the property matches, plus which playbooks were ruled out and which have not been evaluated yet.
 
 ### Authentication
 
@@ -72,6 +72,25 @@ const { data } = await res.json();
       "motivated_seller": "bronze",
       "epc_below_c": "silver",
       "btl_candidate": "gold"
+    },
+    "excluded": ["serviced_accommodation"],
+    "not_evaluated": ["lease_extension", "pd_conversion", "..."],
+    "not_evaluated_reasons": {
+      "lease_extension": "Lease Extension is evaluated only for active leasehold sale flats with a KNOWN remaining lease term between 25 and 120 years; ..."
+    },
+    "evaluated_count": 7,
+    "playbook_count": 20,
+    "coverage_state": {
+      "qualified": 6,
+      "excluded": 1,
+      "not_evaluated": 13,
+      "evaluated": 7,
+      "playbook_count": 20,
+      "not_evaluated_by_reason": {
+        "sweep_not_reached": 8,
+        "restricted_population": 5
+      },
+      "dominant_not_evaluated_reason": "sweep_not_reached"
     }
   },
   "meta": {
@@ -91,9 +110,20 @@ const { data } = await res.json();
 | `gold` | Strong fit — the property is a prime candidate for this playbook |
 | `silver` | Good fit — worth investigating |
 | `bronze` | Marginal fit — a possible angle |
-| `excluded` | Explicitly ruled out for this playbook |
 
-Only non-null tiers are returned. A playbook absent from `tiers` was not matched at all.
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `tiers` | object | Playbooks the property qualifies for, slug → `gold`/`silver`/`bronze` |
+| `excluded` | array | Playbooks evaluated against this property and ruled out — a negative result, not a missing one |
+| `not_evaluated` | array | Playbooks with no stored result yet. Each playbook is backfilled by its own rollup at its own depth, so this list is normally non-empty — absence from `tiers` on its own has never meant "does not qualify" |
+| `not_evaluated_reasons` | object | For each slug in `not_evaluated`, what a missing result means for that playbook. Always present; `{}` when everything is evaluated |
+| `evaluated_count` | integer | Playbooks with a stored result (qualified + excluded) |
+| `playbook_count` | integer | Playbooks this endpoint reports on (20) |
+| `coverage_state` | object | Count rollup: `qualified`, `excluded`, `not_evaluated`, `evaluated`, `playbook_count`, `not_evaluated_by_reason` (counts by `sweep_not_reached` / `restricted_population`) and `dominant_not_evaluated_reason`. A sparse `tiers` map with a low `evaluated` count is the normal state of a property the rollout has barely reached, not an error |
+
+A strategy whose playbook verdict here is `excluded` also publishes no score on [strategy scores](./strategy-scores) — the two surfaces answer as one.
 
 ### Available playbook slugs
 
