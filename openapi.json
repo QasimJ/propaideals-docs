@@ -2950,6 +2950,18 @@
             "title": "Sources",
             "type": "array"
           },
+          "subject_evidence_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when SUBJECT evidence (a missing subject floor area) bounds the similarity score every comparable in this draw can reach. Read it before treating a wall of 'supporting' tiers as a verdict on the comparables themselves — they may be stronger than their tiers suggest. One honest note, no score changes.",
+            "title": "Subject Evidence Note"
+          },
           "subject_floor_area_note": {
             "anyOf": [
               {
@@ -14005,6 +14017,18 @@
             ],
             "description": "Estimated rental yield",
             "title": "Estimated Rental Yield"
+          },
+          "estimated_rental_yield_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the published yield describes: 'resolver' (stored value written by the unified rent resolver, served verbatim), 'area_typical' (implied from the area's beds-median rent — right for the area, blind to this unit), or 'stored_unverified' (legacy stored value served because the cell lookup failed). Null when no yield is published.",
+            "title": "Estimated Rental Yield Scope"
           },
           "estimated_value_comp_count": {
             "anyOf": [
@@ -27078,6 +27102,18 @@
             ],
             "title": "Best Strategy Score"
           },
+          "overall_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Which formula produced scores['overall']: 'strategy_mean' (the arithmetic mean of the published per-strategy scores — a breadth measure, mathematically bounded by the best component; the peak is best_strategy_score) | 'ml_model' (sparse-rollout fallback: no per-strategy score is computed yet, so the stored ml_investment_score — a separate four-signal fundamentals model — stands alone). Null when overall is null.",
+            "title": "Overall Basis"
+          },
           "property_id": {
             "title": "Property Id",
             "type": "string"
@@ -29033,6 +29069,18 @@
             "description": "Comparable lets behind the rent estimate",
             "title": "Rent Sample Size"
           },
+          "rent_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What rent_estimate describes, in the same structured vocabulary as /api/v1/rental-estimate: 'unit_specific' (sized by a subject dwelling's own measured floor area — never the case on this postcode-scoped endpoint) | 'area_typical' (the median for this bedroom count in the answering geography — a typical unit's rent, not any particular dwelling's). Null when no rent is published.",
+            "title": "Rent Scope"
+          },
           "resolution_level": {
             "anyOf": [
               {
@@ -29116,6 +29164,18 @@
             ],
             "description": "Data source for the valuation",
             "title": "Source"
+          },
+          "valuation_methodology": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "As-at marker naming the methodology (and its last re-basing) behind sale_estimate — e.g. 'avm_rebased_2026_08' for the postcode ladder after the Aug 2026 achieved-price re-basing, 'achieved_comparables_2026_08' for a property-scoped comparables value. When this value changes between two calls, the methodology moved — not the market.",
+            "title": "Valuation Methodology"
           },
           "valuation_notes": {
             "description": "Every widening behind the sale estimate, in plain words.",
@@ -30562,6 +30622,18 @@
             ],
             "description": "Estimated rental yield percentage",
             "title": "Estimated Rental Yield"
+          },
+          "estimated_rental_yield_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the published yield describes: 'resolver' (stored value written by the unified rent resolver, served verbatim), 'area_typical' (implied from the area's beds-median rent — right for the area, blind to this unit), or 'stored_unverified' (legacy stored value served because the cell lookup failed). Null when no yield is published.",
+            "title": "Estimated Rental Yield Scope"
           },
           "estimated_value_comp_count": {
             "anyOf": [
