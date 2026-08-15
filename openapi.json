@@ -10825,6 +10825,30 @@
             ],
             "title": "P75 Price"
           },
+          "price_band_max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sold basis only: sales at or above this are excluded (whole-building and portfolio transfers). Same band as the growth block.",
+            "title": "Price Band Max"
+          },
+          "price_band_min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sold basis only: sales at or below this are excluded (ground-rent titles and other non-market transfers). Same band as the growth block.",
+            "title": "Price Band Min"
+          },
           "property_type": {
             "anyOf": [
               {
@@ -24686,7 +24710,7 @@
         "properties": {
           "basis": {
             "default": "none",
-            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | beds_median_rent (median rent for this bedroom count, no size input) | none",
+            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | none",
             "title": "Basis",
             "type": "string"
           },
@@ -24780,6 +24804,18 @@
             "description": "Estimated monthly rent (GBP). Null when no rent sample keyed on this bedroom count reached its minimum size - read `notes`.",
             "title": "Rent Estimate Pcm"
           },
+          "rent_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What rent_estimate_pcm describes: 'unit_specific' (sized by this property's own measured floor area) | 'area_typical' (the median for this bedroom count in the answering geography — a typical unit's rent, not this one's). Null when no rent is published. This is why a postcode-only value_property answer and a property-id answer can legitimately differ for the same postcode.",
+            "title": "Rent Scope"
+          },
           "rung": {
             "default": "none",
             "description": "Geography and bedroom filter that answered: sector_beds | outcode_beds | outcode_beds_widened | none",
@@ -24794,7 +24830,7 @@
           },
           "widened": {
             "default": false,
-            "description": "True when the exact-bedroom sample was empty and the estimate fell back to bedrooms +/-1 across the district.",
+            "description": "True when the estimate answered on a wider sample than the one first asked for — the postcode sector was skipped for the whole district, or the exact-bedroom filter fell back to bedrooms +/-1. `notes` names what moved.",
             "title": "Widened",
             "type": "boolean"
           },
