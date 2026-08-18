@@ -194,6 +194,8 @@ Comparables are drawn from three registers that each name the same dwelling diff
 
 `flat` · `terraced` · `semi-detached` · `detached` · `bungalow` · `house` · `studio` · `maisonette` · `land` · `commercial` · `parking` · `caravan` · `other`
 
+`house` is a house whose subtype the source never stated (terraced vs semi-detached vs detached unknown). It is a real value, not a labelling error: some suppliers list only “house”, and subtype-specific filters (and the playbooks that gate on a specific house type) will not select those rows.
+
 The published value is always a value you can send straight back as `type=` and get that row again — the mapping is chosen so the label selects its own row. `property_type_source` carries the supplier's original string so you can audit the mapping.
 
 Two consequences worth knowing:

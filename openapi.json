@@ -27111,7 +27111,7 @@
                 "type": "null"
               }
             ],
-            "description": "Which formula produced scores['overall']: 'strategy_mean' (the arithmetic mean of the published per-strategy scores — a breadth measure, mathematically bounded by the best component; the peak is best_strategy_score) | 'ml_model' (sparse-rollout fallback: no per-strategy score is computed yet, so the stored ml_investment_score — a separate four-signal fundamentals model — stands alone). Null when overall is null.",
+            "description": "Which formula produced scores['overall']: 'rank_weighted_blend' (a convex blend over the ranked published per-strategy scores, weights 0.50/0.25/0.15/0.10 over the top four — one strong strategy dominates, breadth still adds; mathematically bounded by the best component; the peak is best_strategy_score) | 'ml_model' (sparse-rollout fallback: no per-strategy score is computed yet, so the stored ml_investment_score — a separate four-signal fundamentals model — stands alone). Null when overall is null.",
             "title": "Overall Basis"
           },
           "property_id": {
@@ -28933,9 +28933,12 @@
             "type": "object"
           },
           "hidden_opportunities": {
-            "additionalProperties": true,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
             "title": "Hidden Opportunities",
-            "type": "object"
+            "type": "array"
           },
           "is_hot_deal": {
             "anyOf": [
@@ -29186,10 +29189,17 @@
             "type": "array"
           },
           "valuation_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "default": "postcode",
-            "description": "What sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from Zoopla's AVM over currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'sector' / 'outcode' — the same aggregate answer, but the relaxation ladder found no usable sample at the requested scope and widened; the figures describe that wider geography, not the postcode asked about (scope_widened is True and valuation_notes says what moved). 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
-            "title": "Valuation Scope",
-            "type": "string"
+            "description": "Null when the sale estimate is suppressed (no rung reached the publish floor) — a rent-only answer claims no sale scope. Otherwise: what sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from Zoopla's AVM over currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'sector' / 'outcode' — the same aggregate answer, but the relaxation ladder found no usable sample at the requested scope and widened; the figures describe that wider geography, not the postcode asked about (scope_widened is True and valuation_notes says what moved). 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
+            "title": "Valuation Scope"
           }
         },
         "required": [
