@@ -1,4 +1,4 @@
----
+﻿---
 title: Changelog
 description: Prop AI Deals API release notes, breaking changes, and deprecation timeline.
 ---
@@ -12,7 +12,7 @@ This page lists user-visible changes to the Prop AI Deals API. We follow [SemVer
 **New:**
 - **Free plan** — 200 credits/month at 2 req/s, no card required, granted to every account. Scopes: `properties:read`, `market-data:read`, `areas:read`, `epc:read`. Create a key at `/dashboard/api` and start calling — the paywall in front of key creation is gone.
 - **Starter** (from £29/mo — 2,500 credits, 5 req/s) and **Growth** (from £59/mo — 7,500 credits, 10 req/s, 25 AI chats) — two lower-priced tiers between Free and the £99 plan. They are rolling out now and appear in `GET /api/v1/api-billing/plans` and at checkout as they go live.
-- **[MCP server](./mcp)** — connect Claude (claude.ai, Claude Desktop, or Claude Code) to the property data directly at `https://api.propaideals.co.uk/mcp`. OAuth 2.1; seven tools; credits shared with your REST keys.
+- **[MCP server](./connect-to-claude)** — connect Claude (claude.ai, Claude Desktop, or Claude Code) to the property data directly at `https://api.propaideals.co.uk/mcp`. OAuth 2.1; seven tools; credits shared with your REST keys.
 
 **Changed:**
 - The £99 plan is renamed **Starter → Advanced**. Price, limits (20,000 credits, 10 req/s, 100 AI chats), and scopes are unchanged, and its machine `id` is stable — existing subscriptions and integrations are unaffected. The rename frees the Starter name for the new £29 entry tier.

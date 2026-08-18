@@ -1,4 +1,4 @@
----
+﻿---
 title: Rate limits
 description: Per-second rate limits, monthly credit quotas, AI chat quotas, and rate limit headers for the Prop AI Deals API. Covers the Free, Starter, Growth, Advanced, Professional, and Business plans with concrete numbers.
 ---
@@ -11,7 +11,7 @@ The Prop AI Deals API enforces three types of limits on every `paid_*` request:
 2. **Monthly request quota** — **Hard cap** at the plan's `monthly_request_limit`. No soft/hard split, no 2× tolerance. Once you hit the cap, requests are blocked until the next billing period.
 3. **AI chat quota** — Separate quota for AI endpoints (which also cost 5× normal requests against your monthly quota)
 
-All limits are per **account** (not per IP, not per key). Your subscription buys one shared pool: every API key you create draws from the **same** per-second rate limit, monthly request quota, and AI chat quota. Creating more keys does **not** increase your limits. [MCP tool calls](./mcp) (the Claude connector) draw from the same monthly pool as your REST keys.
+All limits are per **account** (not per IP, not per key). Your subscription buys one shared pool: every API key you create draws from the **same** per-second rate limit, monthly request quota, and AI chat quota. Creating more keys does **not** increase your limits. [MCP tool calls](./connect-to-claude) (the Claude connector) draw from the same monthly pool as your REST keys.
 
 ## Plan comparison
 

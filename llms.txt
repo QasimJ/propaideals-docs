@@ -1,4 +1,4 @@
-# Prop AI Deals API
+﻿# Prop AI Deals API
 
 > The Prop AI Deals API is a REST API for UK property data, market intelligence, investment analysis, and AI-powered search. It exposes 2.1M+ on-market UK property listings aggregated from every major UK property portal, plus an exclusive off-market lead pool (distressed sales, motivated sellers, repossessions, probate stock), enriched with HM Land Registry sold history (~5M transactions), EPC certificates, rental estimates, BMV (below-market-value) scoring, build cost data from Spon's 2026 price book, and a multi-agent AI chat system. Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams.
 
@@ -18,7 +18,7 @@ Data MCP Server: `https://api.propaideals.co.uk/mcp` - connect Claude to the pro
 - [Errors](https://docs.propaideals.co.uk/errors): Standard error envelope, error codes (`invalid_api_key`, `rate_limit_exceeded`, `monthly_quota_exceeded`, `ai_chat_quota_exceeded`, `insufficient_scope`, `endpoint_not_in_public_api`, `Service temporarily busy`), and recommended retry policy with exponential backoff
 - [Response format](https://docs.propaideals.co.uk/response-format): JSON envelope, pagination (offset and cursor), timestamps, money values, coordinates, and field availability conventions
 - [Connect with AI agents](https://docs.propaideals.co.uk/connect-with-ai): Connect Claude Code, Cursor, Claude Desktop, Continue, and any MCP-aware AI client to the Prop AI Deals docs via the MCP server, llms.txt, or llms-full.txt
-- [Connect to Claude (MCP)](https://docs.propaideals.co.uk/mcp): Set up the property DATA MCP server (`https://api.propaideals.co.uk/mcp`) in claude.ai, Claude Desktop, or Claude Code. OAuth 2.1 via Clerk, 7 tools (search, valuation, comparables, area market, deal score, property details, full report) with per-call credit costs, free 200 credits/mo, troubleshooting for zero-tools and 401 audience errors
+- [Connect to Claude (MCP)](https://docs.propaideals.co.uk/connect-to-claude): Set up the property DATA MCP server (`https://api.propaideals.co.uk/mcp`) in claude.ai, Claude Desktop, or Claude Code. OAuth 2.1 via Clerk, 7 tools (search, valuation, comparables, area market, deal score, property details, full report) with per-call credit costs, free 200 credits/mo, troubleshooting for zero-tools and 401 audience errors
 - [OpenAPI spec & Postman](https://docs.propaideals.co.uk/openapi-postman): Download the OpenAPI 3.1 spec (https://docs.propaideals.co.uk/openapi.json) and the Postman v2.1 collection (https://docs.propaideals.co.uk/postman_collection.json) — generate typed clients or import every public endpoint into Postman with bearer auth pre-wired.
 
 ## API reference

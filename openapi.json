@@ -26617,7 +26617,7 @@
             "type": "integer"
           },
           "neighbour_sales": {
-            "description": "Nearby sales at OTHER addresses, separated out so they cannot be mistaken for the subject's own history. Useful as street context; never average these in with sold_history.",
+            "description": "Nearby sales at OTHER addresses, separated out so they cannot be mistaken for the subject's own history. Useful as street context; never average these in with sold_history. For a flat listing that names no unit of its own, this also carries the building's sales that are attributed to specific units — sold_history then holds only records that cannot be attributed to a different unit, and is_building_estimate + estimate_note explain the framing.",
             "items": {
               "additionalProperties": true,
               "type": "object"
