@@ -1,4 +1,4 @@
-﻿# Prop AI Deals API
+# Prop AI Deals API
 
 > The Prop AI Deals API is a REST API for UK property data, market intelligence, investment analysis, and AI-powered search. It exposes 2.1M+ on-market UK property listings aggregated from every major UK property portal, plus an exclusive off-market lead pool (distressed sales, motivated sellers, repossessions, probate stock), enriched with HM Land Registry sold history (~5M transactions), EPC certificates, rental estimates, BMV (below-market-value) scoring, build cost data from Spon's 2026 price book, and a multi-agent AI chat system. Built for property investors, fintech apps, lettings platforms, valuation tools, and research teams.
 
