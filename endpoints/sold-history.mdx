@@ -82,7 +82,8 @@ console.log(`${data.sold_history.length} records, confidence ${data.match_confid
 | Field | Type | Description |
 |---|---|---|
 | `property_id` | string | The property UUID that was queried. |
-| `sold_history` | array | Sale records, most recent first. Each carries `price` (£), `date`, and where available `tenure` and `new_build`. |
+| `sold_history` | array | Sale records, most recent first. Each carries `price` (£), `date`, and where available `tenure` and `new_build`. A record may also carry `skipped_as_price_change_basis` — see below. |
+| `sold_history[].skipped_as_price_change_basis` | boolean | `true` when the record was excluded as the *basis* for the next sale's percentage change because its price is implausible for the property (a nominal or part transfer, not an open-market sale). The record is still returned; the change on the following sale is computed against the last plausible price instead, so **differencing consecutive rows yourself will not reproduce it**. |
 | `sources_used` | array | Data sources that contributed records, e.g. `land_registry`, `zoopla`. |
 | `match_confidence` | integer | Confidence the records belong to this property, `0`–`100`. |
 | `is_building_estimate` | boolean | `true` when records are a building-level estimate rather than a unit-exact match (common for flats in a block). |

@@ -32,7 +32,7 @@ Every JSON response from the Prop AI Deals API is wrapped in a consistent envelo
 | `meta.timestamp` | number | Unix epoch (seconds, with millisecond precision) when the response was finalised. |
 | `meta.latency_ms` | number | Server-side processing time in milliseconds. |
 | `meta.usage.monthly_used` | integer | Requests consumed this billing period after this call. |
-| `meta.usage.monthly_limit` | integer | Soft cap for the billing period. |
+| `meta.usage.monthly_limit` | integer | Hard cap (monthly quota ceiling). |
 | `meta.usage.request_cost` | integer | What this single request consumed (1 for most, 5 for AI). |
 
 > The `data` field always contains the actual response. Always read `body.data`, never `body` directly.
@@ -64,7 +64,7 @@ Every response includes:
 | `X-RateLimit-Remaining` | Per-second budget left in the current window |
 | `X-Request-Cost` | Cost of this request (1 or 5) |
 | `X-Monthly-Usage` | Requests used this billing period |
-| `X-Monthly-Limit` | Soft cap for the billing period |
+| `X-Monthly-Limit` | Hard cap (monthly quota ceiling) |
 
 ## Pagination
 

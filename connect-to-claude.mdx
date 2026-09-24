@@ -29,11 +29,16 @@ arithmetic.
 | "Give me everything on this property" | `get_property_report` |
 
 The comparables are the part worth knowing about: every comparable carries a
-confidence tier (gold, silver or bronze), and sales that were repossessions,
-right-to-buy, auctions or family transfers are flagged as **non-standard**, as
-are likely **flips**. Claude is told to treat those with caution when
-averaging, so a headline "£/sqft" is not quietly skewed by a repossession
-three doors down.
+confidence tier — `gold`, `silver`, `bronze`, `supporting` or `excluded` — and
+sales that were repossessions, right-to-buy, auctions or family transfers are
+flagged as **non-standard**, as are likely **flips**. Those flagged sales are
+capped at `supporting` however well they otherwise match, because the price
+reflects a distressed or related-party sale rather than open-market value.
+Claude is told to treat them with caution when averaging, so a headline
+"£/sqft" is not quietly skewed by a repossession three doors down.
+
+A draw that comes back entirely `supporting` is therefore a real answer about
+a hard-to-match subject, not an empty result.
 
 ## Connect from claude.ai
 
@@ -157,11 +162,14 @@ your account. Any plan below applies to both:
 | Advanced (£99/mo) | 20,000 |
 | Professional (£299/mo) | 100,000 |
 | Business (£999/mo) | 400,000 |
+| Starter **platform** subscriber (£29/mo) | 1,000 included |
 | Pro **platform** subscriber (£59/mo) | 5,000 included |
+| Max **platform** subscriber (£99/mo) | 10,000 included |
 
-If you already subscribe to the £59 Pro platform plan, MCP access is included
-— no separate API subscription needed. Sign in with the same account and it is
-picked up automatically. The Starter and Growth API tiers are rolling out now
+If you already subscribe to a paid platform plan, MCP access is included — no
+separate API subscription needed. Starter includes 1,000 credits/month, Pro
+5,000, and Max 10,000. Sign in with the same account and it is picked up
+automatically. The Starter and Growth API tiers are rolling out now
 and appear at checkout as they go live; Advanced is the plan previously sold
 as Starter. Full ladder: [Rate limits › Plan comparison](./rate-limits#plan-comparison).
 

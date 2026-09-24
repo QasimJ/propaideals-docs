@@ -1,11 +1,11 @@
 ---
 title: Lead generators endpoint
-description: Create and run saved investment scanners — BMV, high-yield, motivated sellers, auctions and more — over 2.1M+ live UK listings, with match previews, status counts and CSV export.
+description: Create and run saved investment scanners — BMV, high-yield, motivated sellers, auctions and more — over 800,000 live UK listings, with match previews, status counts and CSV export.
 ---
 
 # Lead generators
 
-Lead generators are saved investment scanners: an area (a set of outcodes or a drawn polygon) plus filter criteria (price, beds, yield, BMV, 60+ keyword flags such as `probate` or `needs_modernisation`), persisted server-side and queryable on demand. They run against 2.1M+ live UK listings refreshed daily, so the same scanner returns new deals each time you poll it. Typical integration: create a scanner once, then page through `/{lg_id}/properties` (or pull the CSV export) on a schedule.
+Lead generators are saved investment scanners: an area (a set of outcodes or a drawn polygon) plus filter criteria (price, beds, yield, BMV, 60+ keyword flags such as `probate` or `needs_modernisation`), persisted server-side and queryable on demand. They run against 800,000+ live UK listings refreshed daily, so the same scanner returns new deals each time you poll it. Typical integration: create a scanner once, then page through `/{lg_id}/properties` (or pull the CSV export) on a schedule.
 
 **Required scope:** `leads:read`
 **Cost:** 1 request per call

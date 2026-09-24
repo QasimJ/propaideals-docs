@@ -82,7 +82,7 @@ console.log(`Est. rent £${data.rent_estimate_pcm.toLocaleString()}/mo`);
 |---|---|---|
 | `property_id` | string | The property UUID that was queried. |
 | `rent_estimate_pcm` | number | Estimated monthly rent in £, the median of nearby rental comparables. |
-| `sample_size` | integer | Number of rental comparables behind the estimate. |
+| `sample_size` | integer | Comparable lets behind the **published** figure — which pool that is depends on `basis`. For `rent_psf_x_floor_area` it counts only the lets that carry a floor area, the ones the median rent per sqft was measured over; most lets carry none, so this is a fraction of the rung, and it is the same number `notes` quotes. For `rent_psf_clamped_to_band` and `beds_median_rent` the published figure is a statistic of the rung's whole rent pool, so this counts that pool. |
 | `implied_gross_yield_pct` | number \| null | Annualised gross yield against the property's listed sale price, or `null` when no sale price is available. |
 | `floor_area_sqft` | number \| null | The subject's own floor area, the divisor behind `price_per_sqft`. |
 | `floor_area_source` | string | `measured`, `building_estimate`, `unverified` or `absent` — see below. |

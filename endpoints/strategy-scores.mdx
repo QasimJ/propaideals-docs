@@ -104,9 +104,10 @@ const { data } = await res.json();
 | `scores.r2r` | integer | Rent-to-rent fit score |
 | `suppressed` | object | Strategy key → why its score is `null`. A strategy whose playbook counterpart on [playbook tiers](./playbook-tiers) evaluated the property and ruled it out (`excluded`) does not publish a score — the two surfaces answer as one. Always present; `{}` when nothing is suppressed |
 | `rent_unverified` | array | Rental strategies (`btl`/`hmo`/`brrr`/`sa`) whose score is published but whose economics stand on a rent the [rental estimate](./rental-estimate) resolver declined to defend for this property. Treat these scores as unvalidated on the rent axis. Always present; `[]` when the rent basis is verified |
-| `best_strategy` | string | The strategy with the highest fit score. Never names a strategy whose playbook verdict is `excluded`, and never a rental strategy with no verified rent — in those cases it falls back to the best remaining strategy or is `null` |
-| `best_strategy_score` | integer | The score of `best_strategy` |
-| `best_strategy_note` | string | Set when the stored best strategy was invalidated at read time — explains the replacement or the abstention. `null` when the stored best stands |
+| `not_applicable` | object | Strategy key → why a published `0` is structural rather than a judgement on the property. A sale listing scores `r2r` 0 because rent-to-rent operates on rentals; a rental listing scores `btl`/`brrr`/`flip` 0 because those require a purchase. The `0` is kept and still counts toward `overall` — only the explanation is added. Always present; `{}` when no zero is attributable |
+| `best_strategy` | string | The best-fitting strategy — **not** simply the argmax over `scores`. The selection is ranked through the same hard-playbook tier weighting the [deal score](./deal-score) applies, so a strategy whose playbook has not yet been evaluated is discounted for the purposes of *choosing* a winner; a raw 95 with no tier can therefore lose to a raw 79 with one. Never names a strategy whose playbook verdict is `excluded`, and never a rental strategy with no verified rent — in those cases it falls back to the best remaining strategy or is `null` |
+| `best_strategy_score` | integer | The **raw** score of `best_strategy`, matching the value published in `scores`. The tier weighting affects which strategy is chosen, not the number reported for it |
+| `best_strategy_note` | string | Set when the stored best strategy was replaced at read time — because it was invalidated (`excluded`, or a rental strategy with no verified rent) or because another strategy outranked it once tier weighting was applied. `null` when the stored best stands |
 
 ## Common patterns
 

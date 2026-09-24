@@ -170,7 +170,8 @@ Each item in `comparables`:
 | `distance_miles` | number | Distance from the search postcode. |
 | `similarity_score` | integer | Composite similarity to the search criteria, `0`–`100`. |
 | `confidence_tier` | string | `gold`, `silver`, `bronze`, `supporting`, or `excluded`. |
-| `transaction_category` | string | `standard` or `non_standard`. |
+| `transaction_category` | string \| null | `standard` or `non_standard`. `null` outside England and Wales — the classification comes from the HM Land Registry PPD category, and Scotland and Northern Ireland keep their own registers, so the flag is unavailable rather than negative. |
+| `transaction_category_note` | string \| null | Why `transaction_category` is `null`, when that absence has an explanation. `null` when the category is populated. |
 | `is_likely_flip` | boolean | `true` when the same address re-sold within ~3 years for a large uplift. |
 | `floor_area_sqft` | number \| null | Floor area in square feet where known. |
 | `floor_area_source` | string | `measured`, `building_estimate`, `unverified` or `absent`. See **Floor area and £/sqft** below. |

@@ -5,7 +5,7 @@ description: Aggregate sold-price statistics for a UK postcode or outcode from H
 
 # Sold prices
 
-Returns aggregate **sold-price** statistics for a UK postcode or outcode, sourced from **HM Land Registry Price Paid Data** (~5M transactions, 1995–present). Unlike [asking prices](./prices), these are realised transaction values, so they are the firmer basis for a valuation.
+Returns aggregate **sold-price** statistics for a UK postcode or outcode, sourced from **HM Land Registry Price Paid Data** (31M+ transactions, 1995–present). Unlike [asking prices](./prices), these are realised transaction values, so they are the firmer basis for a valuation.
 
 **Required scope:** `market-data:read` · **Cost:** 1 request
 
@@ -86,6 +86,7 @@ console.log(`Median sold price: £${data.median_price.toLocaleString()}`);
 | `area` | string | The postcode or outcode the aggregate was computed for. |
 | `basis` | string | Always `sold` for this endpoint (HM Land Registry transactions). |
 | `sample_size` | integer | Number of sold transactions in the aggregate. |
+| `reason` | string \| null | Set when `sample_size` is `0` and the silence has an explanation. `jurisdiction_not_covered` — the area is outside England and Wales, so HM Land Registry Price Paid Data holds nothing for it and never will (Scotland and Northern Ireland keep their own registers). `null` when the register covers the area and simply recorded no eligible sale in the window. |
 | `average_price` | number | Mean sold price in £. |
 | `median_price` | number | Median sold price in £. |
 | `p25_price` | number | 25th-percentile sold price in £. |

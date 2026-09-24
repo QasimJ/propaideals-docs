@@ -80,6 +80,8 @@ console.log(`${data.area}: ${data.yoy_growth_pct}% YoY`);
 | `median_last_12m` | number | Median sold price over the last 12 months, in £. |
 | `median_prior_12m` | number | Median sold price over the preceding 12 months, in £. |
 | `sample_size` | integer | Total transactions across both windows. |
+| `property_type` | string \| null | Always `null`. Growth is measured over **all** stock, whatever type was requested — see the note below. |
+| `note` | string | States that the growth medians are not type-filtered, so they are not comparable like-for-like with the type-filtered median from [sold prices](./sold-prices) in the same area answer. |
 | `source` | string | Always `Land Registry sold prices (median, YoY)`. |
 
 ## Methodology & caveats

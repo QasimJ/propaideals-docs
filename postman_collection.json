@@ -200,7 +200,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/download-report",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -273,9 +273,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/rematch",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -314,9 +314,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/investment-score",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -355,7 +355,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/actual-rental-data",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -396,9 +396,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/bmv-assessment",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -437,9 +437,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/brownfield-nearby",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -555,9 +555,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/listed-conservation",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -684,7 +684,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/amenities",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -725,9 +725,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/pd-potential",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -928,7 +928,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/agent",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -969,7 +969,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/features",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1010,9 +1010,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/fhrs",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -1051,7 +1051,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/floor-plans",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1092,7 +1092,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/lha-rates",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1139,7 +1139,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/market-analysis",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1180,9 +1180,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/rates",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -1221,7 +1221,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/rental-estimate",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1329,7 +1329,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/virtual-tours",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1482,7 +1482,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/similar",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1598,7 +1598,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/area-demographics",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1737,7 +1737,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/price-history-enhanced",
               "variable": [
                 {
-                  "description": "Property UUID",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1778,9 +1778,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/investment-bundle",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -1819,9 +1819,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/market-data",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -1860,9 +1860,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/match-status",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -1901,7 +1901,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/ownership",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -1980,9 +1980,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/price-history",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -2021,9 +2021,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/sale-history",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -2068,9 +2068,9 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/comparables",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -2109,7 +2109,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/yield-comparables",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -2151,7 +2151,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/price-history-enhanced/health",
               "variable": [
                 {
-                  "description": "Property UUID",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -2285,7 +2285,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/similar-lenses",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -2509,7 +2509,7 @@
               "raw": "{{baseUrl}}/api/v1/properties/:property_id/refresh-yield",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6414,6 +6414,12 @@
                 {
                   "description": "",
                   "disabled": true,
+                  "key": "property_id",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
                   "key": "user_id",
                   "value": ""
                 }
@@ -6485,7 +6491,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/history-comprehensive",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6526,7 +6532,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/cross-listings",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6641,7 +6647,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/comparables-enhanced",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6738,7 +6744,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/nearby-listings",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6779,7 +6785,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/nearby-schools",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6820,7 +6826,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/nearby-transport",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6861,7 +6867,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/ni-area-prices",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6940,7 +6946,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/price-accuracy",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -6999,7 +7005,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/comparables",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7064,7 +7070,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/comparables-v2",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7110,7 +7116,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7195,7 +7201,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/r2r-market-data",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7266,7 +7272,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/rental-comparables",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7413,7 +7419,7 @@
               "raw": "{{baseUrl}}/api/v1/market-data/:property_id/sold-on-street",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7590,9 +7596,9 @@
               "raw": "{{baseUrl}}/api/v1/investment/property/:property_id/analysis",
               "variable": [
                 {
-                  "description": "Property ID to analyze",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -7686,7 +7692,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/calculate-brrr/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7834,7 +7840,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/calculate-hmo/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -7927,7 +7933,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/calculate/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8111,7 +8117,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/calculate-sa/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8203,7 +8209,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/calculate-flip/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8250,9 +8256,9 @@
               "raw": "{{baseUrl}}/api/v1/investment/property/:property_id/mortgage-comparison",
               "variable": [
                 {
-                  "description": "Property ID to analyze",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -8304,7 +8310,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/compare-strategies/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8467,7 +8473,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/ai-analysis/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8612,7 +8618,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/refurb-estimate/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8659,7 +8665,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/refurb-scan/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8734,7 +8740,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/property/:property_id/roi-scenarios",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -8745,7 +8751,7 @@
         {
           "name": "Get Strategy Scores",
           "request": {
-            "description": "Per-strategy ML scores, cross-checked against the playbook verdicts and\nthe unified rent resolver before publication.\n\nTwo read-time consistency guards (B3, pre-release audit 2026-08-14 - 26\nHamnett Street published best_strategy \"HMO\" at 75 while playbook-tiers\nsaid hmo_conversion was `excluded` in the same payload family):\n\n1. A strategy whose playbook counterpart stored the `excluded` verdict\n   does not publish a score (null, reason in `suppressed`), and can never\n   be best_strategy.\n2. When the rent resolver declines to defend a rent for the subject (the\n   same machinery /api/v1/rental-estimate and the deal-score Yield factor\n   publish from), the rental strategies carry a `rent_unverified` marker\n   and best_strategy falls back to the best non-rental strategy - or\n   abstains when none clears the viability floor. Cost: up to 4 extra\n   reads, the same reconciliation the deal-score endpoint performs.",
+            "description": "Per-strategy ML scores, cross-checked against the playbook verdicts and\nthe unified rent resolver before publication. THE canonical best_strategy.\n\nThin wrapper over the importable reconciliation engine\n(app/services/strategy/published_strategy.py::get_published_strategy_scores),\nextracted so non-HTTP callers (Archie) can publish the same headline\nstrategy this endpoint (and, transitively, MCP's score_deal tool) does —\nsee that module's docstring for the two read-time consistency guards (B3,\npre-release audit 2026-08-14) and the SOURCE_OF_TRUTH.md strategy-playbooks\naudit (2026-09-23) this closes.",
             "header": [
               {
                 "key": "Accept",
@@ -8819,7 +8825,7 @@
               "raw": "{{baseUrl}}/api/v1/investment/ultimate-ai-analysis/:property_id",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
                   "value": "<property_id>"
                 }
@@ -9570,6 +9576,123 @@
           }
         },
         {
+          "name": "Get Area Service Analytics",
+          "request": {
+            "description": "Neutral area facts for a seller pre-valuation pack.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nProjects six blocks from AreaAnalyticsService (epc_mix, council_tax_mix,\nsold_vs_asking, days_on_market, price_trend, transaction_volume) plus the\nservice's overall confidence / sample_size / asking_price_sample_size /\ngenerated_at, and adds nearby schools and flood zone when the postcode has\na GB centroid. Rent, yield, BMV, investor activity, tier mix and demand are\ndeliberately never returned: the reader is a homeowner, not an investor.\n\nEvery block is either ``{\"available\": true, \"sample_size\": n, ...}`` or\n``{\"available\": false, \"reason\": ...}``. Reasons: ``no_data`` (the source\nholds nothing here), ``lookup_failed`` (the source errored or timed out, or\na loader feeding the block failed), ``no_centroid`` (postcode not in\nos_postcodes, so no point to measure from), ``not_covered_northern_ireland``\nand ``not_covered_wales`` (the flood service has no source for that\nnation), ``country_unknown`` (no recognised nation for the centroid, so no\nflood source can be chosen), ``source_not_available`` (surface water, which\nno source we query publishes). No block failure raises: the route returns\n200 with markers. confidence / sample_size / asking_price_sample_size are\nnull when a loader they are computed from failed.\n\nAvailable analytics blocks carry their scope, from the input actually used:\n``source`` (sale_comparables | sold_listings), ``geography``\n(within_0_5_miles | outcode_prefix for comparables; outcode for sold\nlistings and council tax -- outcode_prefix is the ranker's no-coordinates\nfallback and may include neighbouring districts sharing the prefix),\n``window`` (10_years | 12_months | all_time) and ``counts``\n(comparables_capped_500 | sold_listings_capped_5000); price_trend and\ntransaction_volume add ``max_points`` (60). A scope value is null when the\nservice did not record it. council_tax_mix carries basis / geography /\nwindow only.\n\nCoverage: sold prices come from HM Land Registry (England and Wales) and\nZoopla sold records (Scotland); Northern Ireland has only asking prices,\ncounted in ``asking_price_sample_size``. Council tax bands are\nlisting-derived. os_postcodes holds no Northern Irish rows, so NI never\ngets schools. Flood covers England (EA) and Scotland (SEPA) only.\n\nThe request's database session is released before the flood lookup, which\nruns without it under a ``_FLOOD_TIMEOUT_SECONDS`` bound.\n\nRaises:\n    HTTPException: 400 if the postcode is not a full UK postcode. FastAPI\n        answers 422 before this handler runs when the postcode is missing\n        or outside 2-10 characters.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "area",
+                "service-analytics"
+              ],
+              "query": [
+                {
+                  "description": "FULL UK postcode ('LS1 4DY' or 'LS14DY'). A sector has no centroid and is rejected.",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/area/service-analytics?postcode="
+            }
+          }
+        },
+        {
+          "name": "Get Area Service Local Context",
+          "request": {
+            "description": "Area facts a potential seller's BUYERS will check: broadband and links.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nDeliberately SEPARATE from ``/service-postcode-summary`` rather than folded\ninto it. That endpoint 404s when it holds no sold prices, which is every\nScottish sector Zoopla missed and all of Northern Ireland -- exactly the\nsellers who most need something honest on the page. Bolting this on there\nwould have made the two fail together; here they fail independently.\n\nBroadband is averaged over the postcode SECTOR (Ofcom Connected Nations),\nnot the single postcode: a sector is the right grain for \"your area\", it is\nless identifying, and it rescues a postcode whose own row Ofcom never\nmeasured. Rows that are all-zero across all four percentages are dropped as\nno-data rather than averaged in -- see ``aggregate_broadband``.\n\nTransport needs a centroid from os_postcodes and is therefore GB-only by\nconstruction; a Northern Irish postcode returns ``[]`` here and still gets\nits broadband.\n\nRaises:\n    HTTPException: 400 if the postcode cannot be parsed, 404 if neither\n        broadband nor transport could be resolved for it.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "area",
+                "service-local-context"
+              ],
+              "query": [
+                {
+                  "description": "UK postcode SECTOR ('LS1 4') or full postcode ('LS1 4DY').",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/area/service-local-context?postcode="
+            }
+          }
+        },
+        {
+          "name": "Get Area Service Postcode Summary",
+          "request": {
+            "description": "Land-Registry sold medians for a postcode SECTOR and its parent outcode.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nUnlike ``/service-summary`` -- which reads a materialized view built from\nlive ASKING prices -- every figure here is a median of registered SOLD\nprices from ``land_registry_transactions``, restricted to established homes\nand standard transactions (``old_new='N'``, ``ppd_category_type='A'``) in a\nGBP 10,000-5,000,000 band. The sector and outcode figures come from one\nquery so they are directly comparable.\n\n``sample_ok`` is false when fewer than ``SECTOR_SAMPLE_MIN`` eligible sales\nlanded in the sector in 12 months. The COUNT is still returned in that case\n-- \"only 4 homes sold near you this year\" is a real answer -- but the median\nis nulled, because a median over four sales is noise wearing a number's\nclothes.\n\nLand Registry price-paid covers England and Wales only. A Scottish or\nNorthern Irish postcode is well-formed and simply has no rows; it returns\n404, the same as any sector we hold nothing for.\n\nRaises:\n    HTTPException: 400 if the postcode is not a sector or full postcode,\n        404 if no eligible sales exist for it.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "area",
+                "service-postcode-summary"
+              ],
+              "query": [
+                {
+                  "description": "UK postcode SECTOR ('LS1 4') or full postcode ('LS1 4AB'). The space is required in the sector form.",
+                  "disabled": false,
+                  "key": "postcode",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/area/service-postcode-summary?postcode="
+            }
+          }
+        },
+        {
           "name": "Get Area Service Summary",
           "request": {
             "description": "Compact hyper-local district summary for a trusted partner service.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nRaises:\n    HTTPException: 404 if the district has no data in\n        mv_postcode_district_metrics.",
@@ -9759,6 +9882,12 @@
                   "description": "Restrict both counts to listings with this bedroom count.",
                   "disabled": true,
                   "key": "bedrooms",
+                  "value": ""
+                },
+                {
+                  "description": "Restrict both counts to this property type (same filter as /prices).",
+                  "disabled": true,
+                  "key": "type",
                   "value": ""
                 },
                 {
@@ -10964,9 +11093,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/applications-paginated",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -11017,9 +11146,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/applications-geometry",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -11058,9 +11187,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/article4-status",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -11099,9 +11228,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/conservation-geojson",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -11308,9 +11437,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/heritage-status",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -11355,9 +11484,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/applications",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }
@@ -11402,9 +11531,9 @@
               "raw": "{{baseUrl}}/api/v1/planning/:property_id/nearby-applications",
               "variable": [
                 {
-                  "description": "",
+                  "description": "Property UUID or external listing id",
                   "key": "property_id",
-                  "value": "00000000-0000-0000-0000-000000000000"
+                  "value": "<property_id>"
                 }
               ]
             }

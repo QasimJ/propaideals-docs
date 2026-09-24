@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Prop AI Deals",
-  "description": "REST API for UK property data, market intelligence, investment analysis, and AI-powered search. Access 2.1M+ live and sold UK properties with PostGIS spatial search, BMV scoring, rental yields, and HM Land Registry history.",
+  "description": "REST API for UK property data, market intelligence, investment analysis, and AI-powered search. Access 4.9M+ live and sold UK properties with PostGIS spatial search, BMV scoring, rental yields, and HM Land Registry history.",
   "colors": {
     "primary": "#0F4C81",
     "light": "#2563EB",

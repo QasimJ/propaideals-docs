@@ -150,6 +150,11 @@
       },
       "AreaAnalyticsResponse": {
         "properties": {
+          "asking_price_sample_size": {
+            "default": 0,
+            "title": "Asking Price Sample Size",
+            "type": "integer"
+          },
           "bmv_distribution": {
             "$ref": "#/components/schemas/BmvDistribution"
           },
@@ -172,6 +177,17 @@
             "title": "Cache Hit",
             "type": "boolean"
           },
+          "comparables_geography": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparables Geography"
+          },
           "confidence": {
             "default": "low",
             "title": "Confidence",
@@ -187,11 +203,29 @@
             "title": "Days On Market",
             "type": "array"
           },
+          "days_on_market_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days On Market Source"
+          },
           "demand": {
             "$ref": "#/components/schemas/AreaDemand"
           },
           "epc_mix": {
             "$ref": "#/components/schemas/EpcMix"
+          },
+          "failed_loaders": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Loaders",
+            "type": "array"
           },
           "generated_at": {
             "title": "Generated At",
@@ -227,6 +261,17 @@
           },
           "sold_vs_asking": {
             "$ref": "#/components/schemas/SoldVsAsking"
+          },
+          "sold_vs_asking_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Vs Asking Source"
           },
           "stock_turnover": {
             "$ref": "#/components/schemas/StockTurnover"
@@ -658,6 +703,7 @@
           "avg_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -670,6 +716,7 @@
           "max_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -682,6 +729,7 @@
           "min_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1008,6 +1056,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -1022,10 +1071,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 1.5,
+            "default": "1.5",
             "description": "Bridge finance arrangement fee (%)",
             "title": "Arrangement Fee Percentage"
           },
@@ -1045,10 +1095,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 0.75,
+            "default": "0.75",
             "description": "Monthly bridge finance interest rate (% per month, 0 for self-funded)",
             "title": "Bridge Finance Rate"
           },
@@ -1060,10 +1111,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 70.0,
+            "default": "70.0",
             "description": "Bridge loan LTV on purchase price (50-80% typical, 0 for self-funded)",
             "title": "Bridge Ltv"
           },
@@ -1075,10 +1127,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 25.0,
+            "default": "25.0",
             "description": "Deposit as percentage of purchase price",
             "title": "Deposit Percentage"
           },
@@ -1090,18 +1143,55 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 1.0,
+            "default": "1.0",
             "description": "Bridge finance exit fee (%)",
             "title": "Exit Fee Percentage"
+          },
+          "insurance_pct": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Landlord insurance (% of ARV per year)",
+            "title": "Insurance Pct"
           },
           "interest_only": {
             "default": false,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
+          },
+          "legal_fees": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purchase legal fees (GBP)",
+            "title": "Legal Fees"
           },
           "location": {
             "anyOf": [
@@ -1117,6 +1207,60 @@
             "description": "Property location/postcode (optional if property_id provided)",
             "title": "Location"
           },
+          "maintenance_monthly": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maintenance allowance in GBP per month. Wins over maintenance_pct; 0 means the user budgets maintenance elsewhere.",
+            "title": "Maintenance Monthly"
+          },
+          "maintenance_pct": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maintenance allowance (% of ARV per year)",
+            "title": "Maintenance Pct"
+          },
+          "management_fee_pct": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Letting agent fee (% of rent)",
+            "title": "Management Fee Pct"
+          },
           "monthly_rent": {
             "anyOf": [
               {
@@ -1125,6 +1269,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1142,10 +1287,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 4.5,
+            "default": "4.5",
             "description": "Annual mortgage interest rate (%)",
             "title": "Mortgage Rate"
           },
@@ -1177,6 +1323,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1194,10 +1341,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 75.0,
+            "default": "75.0",
             "description": "Refinance Loan-to-Value percentage (75-80% typical)",
             "title": "Refinance Ltv"
           },
@@ -1208,6 +1356,7 @@
                   "type": "number"
                 },
                 {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                   "type": "string"
                 }
               ]
@@ -1226,6 +1375,42 @@
               }
             ],
             "description": "Optional sourcing fee added at acquisition. Affects initial investment / ROI / cash-left-in-deal but never the rental yield denominator, refinance LTV, or per-night break-even."
+          },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees (GBP)",
+            "title": "Survey Fees"
+          },
+          "void_pct": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Void allowance (% of rent)",
+            "title": "Void Pct"
           }
         },
         "required": [
@@ -1274,17 +1459,20 @@
         "properties": {
           "after_repair_value": {
             "description": "After Repair Value (ARV) (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "After Repair Value",
             "type": "string"
           },
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "annual_net_income": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1294,29 +1482,60 @@
             "description": "Annual net income after all costs (GBP)",
             "title": "Annual Net Income"
           },
+          "bridge_cash_cost": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Bridge arrangement fee + interest, i.e. the bridge cost funded from pocket. Excludes the exit fee, which is paid out of the refinance.",
+            "title": "Bridge Cash Cost"
+          },
           "bridge_finance_cost": {
             "description": "Total bridge finance costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Bridge Finance Cost",
             "type": "string"
           },
           "capital_efficiency_percentage": {
             "description": "Annual rent / Cash left in deal (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Capital Efficiency Percentage",
             "type": "string"
           },
           "cash_left_in_deal": {
             "description": "Net cash left in deal after refinance (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Cash Left In Deal",
             "type": "string"
           },
+          "cash_released": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Refinance loan less bridge payoff and refinance costs (GBP)",
+            "title": "Cash Released"
+          },
           "equity_released": {
             "description": "Equity released through refinance (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Equity Released",
             "type": "string"
           },
           "gross_cashflow_monthly": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1328,17 +1547,85 @@
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
+          "investor_deposit": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The part of the purchase price the investor funds (GBP)",
+            "title": "Investor Deposit"
+          },
+          "legal_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purchase legal fees used (GBP)",
+            "title": "Legal Fees"
+          },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
+          },
+          "monthly_insurance": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Landlord insurance (GBP/month)",
+            "title": "Monthly Insurance"
+          },
+          "monthly_maintenance": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maintenance allowance (GBP/month)",
+            "title": "Monthly Maintenance"
+          },
+          "monthly_management": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Letting agent fee (GBP/month)",
+            "title": "Monthly Management"
           },
           "monthly_mortgage": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1348,9 +1635,36 @@
             "description": "Monthly mortgage payment (GBP)",
             "title": "Monthly Mortgage"
           },
+          "monthly_operating_costs": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sum of the four operating-cost lines (GBP/month)",
+            "title": "Monthly Operating Costs"
+          },
+          "monthly_void": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Void allowance (GBP/month)",
+            "title": "Monthly Void"
+          },
           "net_cashflow_monthly": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1362,12 +1676,14 @@
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1379,27 +1695,45 @@
           },
           "purchase_price": {
             "description": "Initial purchase price (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Purchase Price",
             "type": "string"
           },
           "refinance_amount": {
             "description": "Refinance amount (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Refinance Amount",
             "type": "string"
           },
+          "refinance_costs": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Refinance legal + valuation fees deducted from the new loan (GBP)",
+            "title": "Refinance Costs"
+          },
           "roce_percentage": {
             "description": "Return on Capital Employed (ROCE) (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roce Percentage",
             "type": "string"
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1409,13 +1743,41 @@
             "description": "GBP value of the sourcing fee that was factored into total_investment / ROI. None or 0 when no fee was applied.",
             "title": "Sourcing Fee"
           },
+          "stamp_duty": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stamp duty / LBTT / LTT on purchase (GBP)",
+            "title": "Stamp Duty"
+          },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees used (GBP)",
+            "title": "Survey Fees"
+          },
           "total_investment": {
             "description": "Total capital invested (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           },
           "total_refurb_costs": {
             "description": "Total refurbishment costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Refurb Costs",
             "type": "string"
           }
@@ -1445,16 +1807,19 @@
         "properties": {
           "btl_monthly_rent_estimate": {
             "description": "Estimated BTL monthly rent (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Btl Monthly Rent Estimate",
             "type": "string"
           },
           "sa_monthly_income": {
             "description": "SA monthly net income (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sa Monthly Income",
             "type": "string"
           },
           "sa_vs_btl_multiplier": {
             "description": "SA income multiplier vs BTL",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sa Vs Btl Multiplier",
             "type": "string"
           }
@@ -1478,10 +1843,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 25.0,
+            "default": "25.0",
             "description": "Deposit as percentage of purchase price",
             "title": "Deposit Percentage"
           },
@@ -1513,10 +1879,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 4.5,
+            "default": "4.5",
             "description": "Annual mortgage interest rate (%)",
             "title": "Mortgage Rate"
           },
@@ -1548,6 +1915,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -1612,6 +1980,28 @@
               }
             ],
             "title": "Median Psqft"
+          },
+          "p25_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P25 Price"
+          },
+          "p75_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P75 Price"
           },
           "sample_size": {
             "default": 0,
@@ -2710,6 +3100,30 @@
             "description": "EPC band A-G",
             "title": "Energy Rating"
           },
+          "excluded_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The exclusion reason in plain words, with its figures.",
+            "title": "Excluded Note"
+          },
+          "excluded_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why confidence_tier is 'excluded', null otherwise: 'price_outlier' (the sale price sits beyond 3x / 0.33x of this comparable set's median - a real sale, kept for transparency, but no evidence of this subject's value) | 'low_similarity' (the similarity score is below the floor for the lowest usable tier). Read excluded_note for the figures.",
+            "title": "Excluded Reason"
+          },
           "floor_area_source": {
             "default": "absent",
             "description": "measured | building_estimate | unverified | absent. 'measured' means the EPC certificate behind this size was matched to THIS address (Land Registry `uprn_match_method='epc_exact'`). 'building_estimate' means it was attached by whole-address similarity, which every flat in one block passes - 11.5% of Land Registry floor areas. 'unverified' means the source records nothing about how the certificate was chosen, which is every Zoopla row.",
@@ -2909,8 +3323,20 @@
                 "type": "null"
               }
             ],
-            "description": "standard / non_standard",
+            "description": "standard / non_standard, from HM Land Registry's Price Paid Data category ('B' = repossession, right-to-buy, auction, family transfer). A sale listed by both an aggregated source and HM Land Registry is published once, carrying the Land Registry category. Null when no PPD category backs this row — which is EVERY row outside England and Wales, because PPD covers England and Wales only. A null is 'not recorded', never 'checked and ordinary'; where the jurisdiction is the reason, transaction_category_note says so.",
             "title": "Transaction Category"
+          },
+          "transaction_category_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why transaction_category is withheld when the jurisdiction is the reason. Populated for Scottish rows only — Registers of Scotland publishes no PPD-equivalent category, so the flag can never exist there.",
+            "title": "Transaction Category Note"
           }
         },
         "required": [
@@ -3227,6 +3653,16 @@
               }
             ]
           },
+          "bathroom_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "damp_signs": {
             "items": {
               "$ref": "#/components/schemas/StructuralConcern"
@@ -3238,6 +3674,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decoration_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
               },
               {
                 "type": "null"
@@ -3265,10 +3711,30 @@
               }
             ]
           },
+          "external_walls_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "flooring_grade": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "flooring_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
               },
               {
                 "type": "null"
@@ -3321,6 +3787,16 @@
               }
             ]
           },
+          "garden_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "interior_photos_detected": {
             "default": true,
             "title": "Interior Photos Detected",
@@ -3330,6 +3806,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kitchen_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
               },
               {
                 "type": "null"
@@ -3377,6 +3863,16 @@
               }
             ]
           },
+          "roof_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "room_assessments": {
             "items": {
               "$ref": "#/components/schemas/RoomAssessment"
@@ -3402,6 +3898,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RoomConditionGrade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "windows_works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
               },
               {
                 "type": "null"
@@ -4303,6 +4809,18 @@
             "description": "'seller', 'balanced' or 'buyer' derived from the turnover ratio; 'insufficient_data' when active_listings + sold_last_90d < 10.",
             "title": "Demand Rating",
             "type": "string"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Property-type filter applied to both counts, echoed back. Null = all types.",
+            "title": "Property Type"
           },
           "sold_last_90d": {
             "title": "Sold Last 90D",
@@ -5373,66 +5891,6 @@
         "title": "ErrorResponse",
         "type": "object"
       },
-      "FeedbackRequest": {
-        "description": "Thumbs-up/down feedback on an Archie AI response.",
-        "properties": {
-          "comment": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Comment"
-          },
-          "message_index": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "0-based index of the assistant message in the session",
-            "title": "Message Index"
-          },
-          "rating": {
-            "enum": [
-              "up",
-              "down"
-            ],
-            "title": "Rating",
-            "type": "string"
-          },
-          "response_text_excerpt": {
-            "anyOf": [
-              {
-                "maxLength": 500,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Response Text Excerpt"
-          },
-          "session_id": {
-            "description": "Chat session id",
-            "title": "Session Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "session_id",
-          "rating"
-        ],
-        "title": "FeedbackRequest",
-        "type": "object"
-      },
       "FlipCalculationRequest": {
         "description": "Property flipping investment calculation request.",
         "example": {
@@ -5459,10 +5917,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 1.5,
+            "default": "1.5",
             "description": "Estate agent sale fee percentage (1-3% typical, up to 10-15% for specialist/auction agents)",
             "title": "Agent Fee Percentage"
           },
@@ -5473,6 +5932,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5490,10 +5950,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 0.75,
+            "default": "0.75",
             "description": "Monthly bridge finance interest rate (%, 0 for self-funded)",
             "title": "Bridge Finance Rate"
           },
@@ -5505,10 +5966,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 150.0,
+            "default": "150.0",
             "description": "Monthly council tax",
             "title": "Council Tax Monthly"
           },
@@ -5520,6 +5982,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -5542,10 +6005,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 50.0,
+            "default": "50.0",
             "description": "Monthly insurance",
             "title": "Insurance Monthly"
           },
@@ -5557,10 +6021,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 1500.0,
+            "default": "1500.0",
             "description": "Legal fees for purchase",
             "title": "Legal Fees Purchase"
           },
@@ -5572,10 +6037,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 1000.0,
+            "default": "1000.0",
             "description": "Legal fees for sale",
             "title": "Legal Fees Sale"
           },
@@ -5594,6 +6060,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -5607,6 +6074,7 @@
                   "type": "number"
                 },
                 {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                   "type": "string"
                 }
               ]
@@ -5634,6 +6102,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5651,10 +6120,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 100.0,
+            "default": "100.0",
             "description": "Monthly utilities",
             "title": "Utilities Monthly"
           }
@@ -5715,12 +6185,14 @@
         "properties": {
           "annualized_return_percentage": {
             "description": "Annualized return (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annualized Return Percentage",
             "type": "string"
           },
           "bridge_finance_costs": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5730,8 +6202,35 @@
             "description": "Bridge finance costs (GBP)",
             "title": "Bridge Finance Costs"
           },
+          "council_tax_monthly": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Council tax charged per month while holding (GBP)",
+            "title": "Council Tax Monthly"
+          },
+          "council_tax_total": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Council tax over the whole holding period (GBP)",
+            "title": "Council Tax Total"
+          },
           "expected_sale_price": {
             "description": "Expected sale price (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Expected Sale Price",
             "type": "string"
           },
@@ -5740,9 +6239,36 @@
             "title": "Holding Period Months",
             "type": "integer"
           },
+          "insurance_monthly": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Insurance charged per month while holding (GBP)",
+            "title": "Insurance Monthly"
+          },
+          "insurance_total": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Insurance over the whole holding period (GBP)",
+            "title": "Insurance Total"
+          },
           "legal_fees_purchase": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5752,34 +6278,66 @@
             "description": "Legal fees for purchase (GBP)",
             "title": "Legal Fees Purchase"
           },
+          "legal_fees_sale": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Legal fees on the sale (GBP)",
+            "title": "Legal Fees Sale"
+          },
           "net_profit": {
             "description": "Net profit (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Profit",
             "type": "string"
           },
           "profit_on_cost_percentage": {
             "description": "Profit on Cost (POC) (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Profit On Cost Percentage",
             "type": "string"
           },
           "purchase_price": {
             "description": "Purchase price (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Purchase Price",
             "type": "string"
           },
+          "sale_agent_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Estate agent fee on the sale (GBP)",
+            "title": "Sale Agent Fees"
+          },
           "sale_costs": {
             "description": "Total sale costs (agent, legal) (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sale Costs",
             "type": "string"
           },
           "sale_proceeds": {
             "description": "Net sale proceeds after costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sale Proceeds",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5792,6 +6350,7 @@
           "stamp_duty": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5804,6 +6363,7 @@
           "survey_fees": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -5827,23 +6387,53 @@
           },
           "total_costs": {
             "description": "Total project costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Costs",
             "type": "string"
           },
           "total_finance_costs": {
             "description": "Total finance costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Finance Costs",
             "type": "string"
           },
           "total_holding_costs": {
             "description": "Total holding costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Holding Costs",
             "type": "string"
           },
           "total_renovation_costs": {
             "description": "Total renovation costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Renovation Costs",
             "type": "string"
+          },
+          "utilities_monthly": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Utilities charged per month while holding (GBP)",
+            "title": "Utilities Monthly"
+          },
+          "utilities_total": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Utilities over the whole holding period (GBP)",
+            "title": "Utilities Total"
           }
         },
         "required": [
@@ -6014,6 +6604,12 @@
             "description": "Same basis as median_last_12m, for the preceding 12 months.",
             "title": "Median Prior 12M"
           },
+          "note": {
+            "default": "These medians and the growth figure cover ALL property types in the outcode: this block is never type-filtered, so a property_type applied to the asking-price or sold-price figures beside it does NOT apply here, and the two medians are not comparable like-for-like.",
+            "description": "Always present, whatever was asked for: states that these medians are measured over all stock, so they are not like-for-like against a type-filtered sold-price median in the same payload.",
+            "title": "Note",
+            "type": "string"
+          },
           "price_band_max": {
             "default": 5000000,
             "description": "Upper bound of the price band the medians are taken over. Sales at or above this are excluded, so BOTH medians and the YoY figure are truncated in a market that transacts near or above it. Measured on production 2026-08-13 across the 2,151 outcodes that publish a figure: 102 have a median moved by this band and 20 have their YoY moved by a percentage point or more. Central London is where it bites — W8's last-12m median reads 1,057,500 banded against 1,300,000 unbanded, SW1X 1,550,000 against 2,150,000. Treat a figure from such an outcode as a lower bound.",
@@ -6025,6 +6621,18 @@
             "description": "Lower bound of the price band the medians are taken over. Sales at or below this are excluded.",
             "title": "Price Band Min",
             "type": "integer"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Always null. This endpoint takes no property_type at all, so the medians describe every kind of dwelling in the outcode even when a type filter was applied to the blocks published beside them. See note.",
+            "title": "Property Type"
           },
           "reason": {
             "anyOf": [
@@ -6123,11 +6731,30 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
             "description": "Monthly cleaning costs for common areas",
             "title": "Cleaning Monthly"
+          },
+          "council_tax_monthly": {
+            "anyOf": [
+              {
+                "maximum": 2000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Monthly council tax (landlord pays it in an HMO)",
+            "title": "Council Tax Monthly"
           },
           "deposit_percentage": {
             "anyOf": [
@@ -6137,10 +6764,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 25.0,
+            "default": "25.0",
             "description": "Deposit as percentage of purchase price",
             "title": "Deposit Percentage"
           },
@@ -6152,10 +6780,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 3.5,
+            "default": "3.5",
             "description": "Insurance cost multiplier vs standard BTL (3-5x typical)",
             "title": "Enhanced Insurance Multiplier"
           },
@@ -6167,10 +6796,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 500.0,
+            "default": "500.0",
             "description": "HMO license fee (GBP 100-1000 in Scotland)",
             "title": "Hmo License Cost"
           },
@@ -6180,11 +6810,47 @@
             "title": "Include Mortgage",
             "type": "boolean"
           },
+          "insurance_percentage": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual insurance as % of purchase price (0.2-0.5% typical for HMO)",
+            "title": "Insurance Percentage"
+          },
           "interest_only": {
             "default": false,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
+          },
+          "legal_fees": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Conveyancing / legal fees. Omit to use the GBP 1,500-or-1%-of-price floor.",
+            "title": "Legal Fees"
           },
           "location": {
             "anyOf": [
@@ -6200,6 +6866,24 @@
             "description": "Property location/postcode (optional if property_id provided)",
             "title": "Location"
           },
+          "maintenance_percentage": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual maintenance allowance as % of purchase price (1-2% typical for HMO)",
+            "title": "Maintenance Percentage"
+          },
           "management_fee_percentage": {
             "anyOf": [
               {
@@ -6208,10 +6892,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 12.0,
+            "default": "12.0",
             "description": "Property management fee (% of gross rent, 10-15% typical)",
             "title": "Management Fee Percentage"
           },
@@ -6223,10 +6908,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 4.5,
+            "default": "4.5",
             "description": "Annual mortgage interest rate (%)",
             "title": "Mortgage Rate"
           },
@@ -6246,10 +6932,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 85.0,
+            "default": "85.0",
             "description": "Average occupancy rate across all rooms (%)",
             "title": "Occupancy Rate"
           },
@@ -6273,6 +6960,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6281,6 +6969,24 @@
             ],
             "description": "Property purchase price in GBP (can be below market for HMO)",
             "title": "Purchase Price"
+          },
+          "refurbishment_costs": {
+            "anyOf": [
+              {
+                "maximum": 5000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One-off refurbishment budget added to cash invested",
+            "title": "Refurbishment Costs"
           },
           "rooms": {
             "description": "Individual room configurations (min 2 to calculate; most councils license HMOs from 3+ occupants - the service flags this)",
@@ -6299,10 +7005,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 500.0,
+            "default": "500.0",
             "description": "Annual safety compliance costs (fire doors, alarms, etc.)",
             "title": "Safety Compliance Annual"
           },
@@ -6317,6 +7024,24 @@
             ],
             "description": "Optional sourcing fee added at acquisition. Affects initial investment / ROI / cash-left-in-deal but never the rental yield denominator, refinance LTV, or per-night break-even."
           },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees. Omit to use the service default (GBP 0).",
+            "title": "Survey Fees"
+          },
           "utilities_monthly": {
             "anyOf": [
               {
@@ -6325,6 +7050,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -6404,12 +7130,14 @@
         "properties": {
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "annual_gross_income": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6422,6 +7150,7 @@
           "annual_mortgage": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6433,22 +7162,52 @@
           },
           "average_rent_per_room": {
             "description": "Average monthly rent per room (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Average Rent Per Room",
             "type": "string"
           },
           "cleaning_cost_monthly": {
             "description": "Monthly cleaning costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Cleaning Cost Monthly",
             "type": "string"
           },
+          "council_tax_monthly": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Monthly council tax deducted from rent (GBP)",
+            "title": "Council Tax Monthly"
+          },
+          "deposit_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cash put in at purchase: the deposit when mortgaged, the full purchase price when not (GBP)",
+            "title": "Deposit Amount"
+          },
           "enhanced_insurance_cost_monthly": {
             "description": "Monthly enhanced insurance cost (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Enhanced Insurance Cost Monthly",
             "type": "string"
           },
           "gross_cashflow_annual": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6461,6 +7220,7 @@
           "gross_cashflow_monthly": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6472,22 +7232,65 @@
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
           "hmo_license_cost_monthly": {
             "description": "Monthly HMO license cost (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Hmo License Cost Monthly",
             "type": "string"
           },
+          "insurance_cost_monthly": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Monthly insurance allowance (% of price / 12) (GBP)",
+            "title": "Insurance Cost Monthly"
+          },
+          "legal_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Legal fees in cash invested (GBP)",
+            "title": "Legal Fees"
+          },
+          "maintenance_cost_monthly": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Monthly maintenance allowance (% of price / 12) (GBP)",
+            "title": "Maintenance Cost Monthly"
+          },
           "management_fee_monthly": {
             "description": "Monthly management fee (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Management Fee Monthly",
             "type": "string"
           },
           "monthly_cash_flow": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6499,12 +7302,14 @@
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "monthly_mortgage": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6517,6 +7322,7 @@
           "net_annual_income": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6529,6 +7335,7 @@
           "net_cashflow_annual": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6541,6 +7348,7 @@
           "net_cashflow_monthly": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6552,17 +7360,20 @@
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "occupancy_adjusted_rent": {
             "description": "Rent adjusted for occupancy rate (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Occupancy Adjusted Rent",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6572,8 +7383,22 @@
             "description": "Investment payback period in years",
             "title": "Payback Period Years"
           },
+          "refurbishment_costs": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Refurbishment budget in cash invested (GBP)",
+            "title": "Refurbishment Costs"
+          },
           "roi_percentage": {
             "description": "Return on Investment (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
@@ -6585,6 +7410,7 @@
           "sourcing_fee": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6594,9 +7420,36 @@
             "description": "GBP value of the sourcing fee that was factored into total_investment / ROI. None or 0 when no fee was applied.",
             "title": "Sourcing Fee"
           },
+          "stamp_duty": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stamp duty / LBTT / LTT (GBP)",
+            "title": "Stamp Duty"
+          },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees in cash invested (GBP)",
+            "title": "Survey Fees"
+          },
           "total_annual_costs": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -6608,16 +7461,19 @@
           },
           "total_investment": {
             "description": "Total capital invested (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           },
           "total_room_rent": {
             "description": "Total monthly room rents (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Room Rent",
             "type": "string"
           },
           "utilities_cost_monthly": {
             "description": "Monthly utility costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Utilities Cost Monthly",
             "type": "string"
           }
@@ -7571,6 +8427,7 @@
             "type": "array"
           },
           "price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Price",
             "type": "string"
           },
@@ -7625,6 +8482,7 @@
           "avg_comparable_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -7685,7 +8543,7 @@
         "description": "Request schema for creating a lead generator.",
         "properties": {
           "alert_enabled": {
-            "default": false,
+            "default": true,
             "description": "Enable alert notifications",
             "title": "Alert Enabled",
             "type": "boolean"
@@ -9294,7 +10152,7 @@
         "description": "Request schema for creating an off-market lead generator.",
         "properties": {
           "alert_enabled": {
-            "default": false,
+            "default": true,
             "description": "Enable alert notifications",
             "title": "Alert Enabled",
             "type": "boolean"
@@ -10269,7 +11127,7 @@
           },
           "evaluated": {
             "default": 0,
-            "description": "qualified + excluded.",
+            "description": "qualified + excluded + withheld.",
             "title": "Evaluated",
             "type": "integer"
           },
@@ -10281,7 +11139,7 @@
           },
           "not_evaluated": {
             "default": 0,
-            "description": "Playbooks with no stored result for this property.",
+            "description": "Playbooks with no stored result for this property. Playbook coverage only - unrelated to whether the same-named strategy is scored on /api/v1/strategy-scores.",
             "title": "Not Evaluated",
             "type": "integer"
           },
@@ -10289,7 +11147,7 @@
             "additionalProperties": {
               "type": "integer"
             },
-            "description": "Counts of not-evaluated playbooks by category: 'sweep_not_reached' (population-wide sweeps that have not reached this property yet) and 'restricted_population' (playbooks that only evaluate a restricted population, where absence commonly means the property is outside it). Always present; {} when everything is evaluated.",
+            "description": "Counts of not-evaluated playbooks by category: 'sweep_not_reached' (population-wide playbooks whose coverage is partial and still being filled, so absence carries no timescale) and 'restricted_population' (playbooks that only evaluate a restricted population, where absence commonly means the property is outside it). Always present; {} when everything is evaluated.",
             "title": "Not Evaluated By Reason",
             "type": "object"
           },
@@ -10303,6 +11161,12 @@
             "default": 0,
             "description": "Playbooks with a gold/silver/bronze tier.",
             "title": "Qualified",
+            "type": "integer"
+          },
+          "withheld": {
+            "default": 0,
+            "description": "Evaluated playbooks whose tiers lack publication evidence.",
+            "title": "Withheld",
             "type": "integer"
           }
         },
@@ -10321,6 +11185,14 @@
             "title": "Evaluated Count",
             "type": "integer"
           },
+          "evidence_notes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Evidence limitations and tier caps by playbook.",
+            "title": "Evidence Notes",
+            "type": "object"
+          },
           "excluded": {
             "description": "Playbooks evaluated against this property and ruled out. A negative result, not a missing one.",
             "items": {
@@ -10330,7 +11202,7 @@
             "type": "array"
           },
           "not_evaluated": {
-            "description": "Playbooks that have never been scored for this property, so nothing is known either way. Each playbook is backfilled by its own rollup cron and they run at different depths through the estate, so this list is normally non-empty and its size varies from property to property. Absence from `tiers` on its own has never meant 'does not qualify' - read this list before concluding anything from a short `tiers`.",
+            "description": "Playbooks that have never been scored for this property, so nothing is known either way. Each playbook is backfilled by its own rollup cron and they run at different depths through the estate, so this list is normally non-empty and its size varies from property to property. Absence from `tiers` on its own has never meant 'does not qualify' - read this list before concluding anything from a short `tiers`. This is PLAYBOOK coverage only: a slug here says nothing about the same-named strategy on /api/v1/strategy-scores, which is produced by a different engine and is usually scored when the playbook is not (that endpoint's `not_applicable` is the strategy-side channel).",
             "items": {
               "type": "string"
             },
@@ -10344,6 +11216,18 @@
             "description": "For each slug in `not_evaluated`, what a missing result means for THAT playbook - several playbooks only ever evaluate a restricted population (e.g. lease_extension: leasehold sale listings only), so absence can mean 'outside the population', not just 'the sweep has not arrived'.",
             "title": "Not Evaluated Reasons",
             "type": "object"
+          },
+          "planning": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planning"
           },
           "playbook_count": {
             "default": 20,
@@ -10361,6 +11245,14 @@
             },
             "description": "Playbooks this property QUALIFIES for, slug -> gold | silver | bronze. Playbooks that were evaluated and ruled out are in `excluded`, not here.",
             "title": "Tiers",
+            "type": "object"
+          },
+          "withheld": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Stored tiers withheld from publication and why; these are evaluated, not excluded.",
+            "title": "Withheld",
             "type": "object"
           }
         },
@@ -10873,9 +11765,33 @@
             "description": "The type filter that was ACTUALLY applied, echoed back. Null when no filter ran — including when a requested type could not be mapped to a Land Registry class on basis='sold' (see note). An echo of an unapplied filter would mislabel a whole-area aggregate as type-specific.",
             "title": "Property Type"
           },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sold basis only: set when sample_size is 0 and the silence has an explanation. 'jurisdiction_not_covered' — the area is outside England and Wales, so HM Land Registry Price Paid Data holds nothing for it and never will (Scotland and Northern Ireland keep their own registers). The same reason, from the same test, that the /growth block of an area answer already publishes. Null when an empty window has no such explanation: the register covers the area and simply recorded no eligible sale in the window.",
+            "title": "Reason"
+          },
           "sample_size": {
             "title": "Sample Size",
             "type": "integer"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What a sold-price aggregate is drawn from. Null on asking prices.",
+            "title": "Source"
           },
           "window_from": {
             "anyOf": [
@@ -10934,6 +11850,7 @@
           "amount_1yr": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -10946,6 +11863,7 @@
           "amount_5yr": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -12893,6 +13811,18 @@
             "description": "Auction date",
             "title": "Auction Date"
           },
+          "auction_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Auction type: modern_method, traditional, online, timed_online, livestream",
+            "title": "Auction Type"
+          },
           "available_from": {
             "anyOf": [
               {
@@ -13173,7 +14103,7 @@
                 "type": "null"
               }
             ],
-            "description": "Optimistic discount — listing vs band.low",
+            "description": "Optimistic discount — listing vs band.high",
             "title": "Bmv Discount Pct Best"
           },
           "bmv_discount_pct_worst": {
@@ -13185,7 +14115,7 @@
                 "type": "null"
               }
             ],
-            "description": "Conservative discount — listing vs band.high",
+            "description": "Conservative discount — listing vs band.low",
             "title": "Bmv Discount Pct Worst"
           },
           "bmv_discount_percentage": {
@@ -13470,6 +14400,30 @@
             "description": "Annual business rates payable (£/yr)",
             "title": "Business Rates Pa"
           },
+          "buyer_fee_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reservation fee / buyer premium payable on top of the price (GBP)",
+            "title": "Buyer Fee Amount"
+          },
+          "buyer_fee_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The same fee where the listing quotes it as a percentage",
+            "title": "Buyer Fee Percent"
+          },
           "cash_buyer_only": {
             "anyOf": [
               {
@@ -13529,6 +14483,18 @@
             ],
             "description": "Character property",
             "title": "Character Property"
+          },
+          "cladding_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "clear|affected - this building's EWS1 position, from the listing",
+            "title": "Cladding Status"
           },
           "commercial": {
             "anyOf": [
@@ -14057,6 +15023,7 @@
           "estimated_value_lower": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14081,6 +15048,7 @@
           "estimated_value_radius_miles": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14117,6 +15085,7 @@
           "estimated_value_upper": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -14398,6 +15367,30 @@
             "description": "Annual ground rent",
             "title": "Ground Rent Annual"
           },
+          "ground_rent_doubles": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The lease doubles the ground rent (a standard mortgage refusal)",
+            "title": "Ground Rent Doubles"
+          },
+          "ground_rent_review_years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How often the ground rent is reviewed, in years",
+            "title": "Ground Rent Review Years"
+          },
           "guide_price": {
             "anyOf": [
               {
@@ -14635,6 +15628,19 @@
             ],
             "description": "HMO licensed",
             "title": "Hmo Licensed"
+          },
+          "hmo_planning": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "HMO Article 4 coverage from property_evidence.get_hmo_planning, the same read MCP strategy caveats and playbook tiers use. article_4.hmo is true when a precise direction covers the address, null when coverage is unverified. Absent when the lookup failed.",
+            "title": "Hmo Planning"
           },
           "hmo_potential": {
             "anyOf": [
@@ -16430,6 +17436,7 @@
           "rent_pcm_central": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -16466,6 +17473,7 @@
           "rent_pcm_lower": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -16502,6 +17510,7 @@
           "rent_pcm_radius_miles": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -16538,6 +17547,7 @@
           "rent_pcm_upper": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -16620,6 +17630,19 @@
             ],
             "description": "Last rental data update",
             "title": "Rental Data Updated"
+          },
+          "rental_estimate": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The unified rent resolver's published answer for this property (rent_estimate_pcm, implied_gross_yield_pct, rent_scope, floor_area_sqft/_source, yield_suppressed_reason), built by the same function as /api/v1/rental-estimate and MCP get_property_details. Absent on rental listings or when the lookup failed; a present block with a null yield means withheld.",
+            "title": "Rental Estimate"
           },
           "rental_estimation_source": {
             "anyOf": [
@@ -17230,6 +18253,22 @@
             "description": "Property title",
             "title": "Title",
             "type": "string"
+          },
+          "top_comps": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The three comparable sales behind this property's BMV, ranked by similarity (not distance), trimmed to price / distance_miles / sale_date / bedrooms for the grid card. Null when fewer than three are available.",
+            "title": "Top Comps"
           },
           "total_price_reduction_pct": {
             "anyOf": [
@@ -18376,6 +19415,7 @@
           },
           "price": {
             "description": "Sale price in GBP",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Price",
             "type": "string"
           },
@@ -18837,6 +19877,18 @@
             ],
             "description": "Filter for ex-council properties",
             "title": "Ex Local Authority"
+          },
+          "exclude_auction": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Exclude auction properties",
+            "title": "Exclude Auction"
           },
           "exclude_keywords": {
             "anyOf": [
@@ -20657,6 +21709,11 @@
       },
       "PropertyTypeBand": {
         "properties": {
+          "asking_price_sample_size": {
+            "default": 0,
+            "title": "Asking Price Sample Size",
+            "type": "integer"
+          },
           "median_price": {
             "anyOf": [
               {
@@ -22029,6 +23086,18 @@
             ],
             "description": "Filter for ex-council properties",
             "title": "Ex Local Authority"
+          },
+          "exclude_auction": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Exclude auction properties",
+            "title": "Exclude Auction"
           },
           "exclude_keywords": {
             "anyOf": [
@@ -24744,6 +25813,18 @@
             "title": "Confidence",
             "type": "string"
           },
+          "floor_area_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Address-match provenance and limitations of the resolved area.",
+            "title": "Floor Area Note"
+          },
           "floor_area_source": {
             "default": "absent",
             "description": "measured | building_estimate | unverified | absent (see app/services/property_area/floor_area_provenance.py). 'building_estimate' means one EPC certificate was fanned across the whole building - 231,406 of the 595,694 active listings that carry an area, 38.9%, measured 2026-08-13.",
@@ -24773,6 +25854,11 @@
             ],
             "description": "Gross yield. Null when it would exceed the published ceiling of 12% - see `yield_suppressed_reason`.",
             "title": "Implied Gross Yield Pct"
+          },
+          "methodology_version": {
+            "default": "v6_rent_quality",
+            "title": "Methodology Version",
+            "type": "string"
           },
           "notes": {
             "description": "Every widening, fallback and suppression, in plain words.",
@@ -24816,6 +25902,12 @@
             "title": "Property Id",
             "type": "string"
           },
+          "rent_data_source": {
+            "default": "advertised_monthly_rents",
+            "description": "Asking rents from active and recent let-agreed listings; not achieved tenancy rents.",
+            "title": "Rent Data Source",
+            "type": "string"
+          },
           "rent_estimate_pcm": {
             "anyOf": [
               {
@@ -24848,7 +25940,7 @@
           },
           "sample_size": {
             "default": 0,
-            "description": "Comparable lets behind the estimate, at the rung named below.",
+            "description": "Comparable lets behind the PUBLISHED figure, at the rung named below — which pool that is depends on `basis`. For rent_psf_x_floor_area it counts the lets that carry a floor area, the ones the median rent per sqft was measured over; most lets carry none, so this is a fraction of the rung and it is the same number `notes` quotes. For rent_psf_clamped_to_band and beds_median_rent the figure is a statistic of the rung's whole rent pool (the interquartile band, and the median), so this counts that pool.",
             "title": "Sample Size",
             "type": "integer"
           },
@@ -25037,6 +26129,16 @@
             "description": "kitchen | bathroom_N | bedroom_N | living_room_N | hallway | exterior | garden | other_N",
             "title": "Room Key",
             "type": "string"
+          },
+          "works_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorksScope"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -25046,7 +26148,7 @@
         "type": "object"
       },
       "RoomConditionGrade": {
-        "description": "Per-room condition grade returned by the GPT-4o-mini photo pass.\n\nMapped to refurb spec_tier values inside\n`app/services/refurb/condition_to_spec_mapper.py` (Phase 4):\n\n  excellent  -> turn-key, no work needed\n  good       -> light cosmetic only (decoration tier)\n  fair       -> mid-range refresh (kitchen/bathroom dated)\n  needs_work -> full refit on the affected room\n  poor       -> major works including likely structural/damp",
+        "description": "Per-room condition grade returned by the GPT-4o-mini photo pass.\n\nThis describes what the element LOOKS LIKE, not what it costs. The\ncosted decision is `WorksScope` below, which the model returns\nseparately - see that docstring for why the two are not the same\nquestion.\n\n  excellent  -> turn-key, modern, no visible defects\n  good       -> tired but functional, no structural concerns\n  fair       -> dated but functional; some elements need replacement\n  needs_work -> failing or non-functional on the affected element\n  poor       -> major works, likely structural and/or damp",
         "enum": [
           "excellent",
           "good",
@@ -25112,6 +26214,17 @@
             "default": 0,
             "title": "Total Min",
             "type": "integer"
+          },
+          "works_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Works Scope"
           }
         },
         "required": [
@@ -25143,6 +26256,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -25258,10 +26372,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 3.0,
+            "default": "3.0",
             "description": "Average guest stay duration in nights (1-365)",
             "title": "Average Stay Nights"
           },
@@ -25273,10 +26388,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 40.0,
+            "default": "40.0",
             "description": "Cleaning cost per guest turnover (GBP 30-60 typical)",
             "title": "Cleaning Cost Per Booking"
           },
@@ -25288,10 +26404,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 100.0,
+            "default": "100.0",
             "description": "Monthly consumables (toiletries, WiFi, welcome pack)",
             "title": "Consumables Monthly"
           },
@@ -25303,10 +26420,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 125.0,
+            "default": "125.0",
             "description": "Monthly council tax (Band D average £125, business rates may apply if >140 days occupied)",
             "title": "Council Tax Monthly"
           },
@@ -25318,10 +26436,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 25.0,
+            "default": "25.0",
             "description": "Deposit as percentage of purchase price",
             "title": "Deposit Percentage"
           },
@@ -25331,11 +26450,47 @@
             "title": "Include Mortgage",
             "type": "boolean"
           },
+          "insurance_annual": {
+            "anyOf": [
+              {
+                "maximum": 50000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual buildings/contents + short-let insurance premium (GBP). None keeps the 0.2%-of-purchase-price default.",
+            "title": "Insurance Annual"
+          },
           "interest_only": {
             "default": false,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
+          },
+          "legal_fees": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Conveyancing / legal fees (GBP). None keeps the auto floor.",
+            "title": "Legal Fees"
           },
           "license_cost_annual": {
             "anyOf": [
@@ -25345,10 +26500,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 500.0,
+            "default": "500.0",
             "description": "Annual short-term let license cost (Scotland 2025 requirement)",
             "title": "License Cost Annual"
           },
@@ -25366,6 +26522,22 @@
             "description": "Property location/postcode (optional if property_id provided)",
             "title": "Location"
           },
+          "maintenance_percentage": {
+            "anyOf": [
+              {
+                "maximum": 25.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "8.0",
+            "description": "Maintenance and repairs as a % of gross booking revenue (default 8% — sa_economics.MAINTENANCE_PCT)",
+            "title": "Maintenance Percentage"
+          },
           "management_fee_percentage": {
             "anyOf": [
               {
@@ -25374,10 +26546,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 0.0,
+            "default": "0.0",
             "description": "Management fee if outsourced (0 if self-managed, 15-25% typical)",
             "title": "Management Fee Percentage"
           },
@@ -25389,10 +26562,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 4.5,
+            "default": "4.5",
             "description": "Annual mortgage interest rate (%)",
             "title": "Mortgage Rate"
           },
@@ -25412,6 +26586,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -25426,10 +26601,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 75.0,
+            "default": "75.0",
             "description": "Average annual occupancy rate (% of nights booked)",
             "title": "Occupancy Rate"
           },
@@ -25441,6 +26617,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25458,6 +26635,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25475,6 +26653,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25492,6 +26671,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25509,10 +26689,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 3.0,
+            "default": "3.0",
             "description": "Platform fee (Airbnb 3%, Booking.com 15-18%)",
             "title": "Platform Fee Percentage"
           },
@@ -25536,6 +26717,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25553,6 +26735,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25562,6 +26745,24 @@
             "description": "Rateable value (GBP) — enables FHL business-rates modelling",
             "title": "Rateable Value"
           },
+          "refurbishment_costs": {
+            "anyOf": [
+              {
+                "maximum": 5000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One-off refurbishment budget (GBP), added to cash invested.",
+            "title": "Refurbishment Costs"
+          },
           "shoulder_nightly_rate": {
             "anyOf": [
               {
@@ -25570,6 +26771,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25587,6 +26789,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25607,6 +26810,24 @@
             ],
             "description": "Optional sourcing fee added at acquisition. Affects initial investment / ROI / cash-left-in-deal but never the rental yield denominator, refinance LTV, or per-night break-even."
           },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees (GBP). None keeps the GBP 0 default.",
+            "title": "Survey Fees"
+          },
           "use_seasonal_model": {
             "default": false,
             "description": "Whether to use seasonal occupancy modeling",
@@ -25621,10 +26842,11 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
-            "default": 150.0,
+            "default": "150.0",
             "description": "Monthly utilities (landlord pays all for SA)",
             "title": "Utilities Monthly"
           }
@@ -25693,12 +26915,14 @@
         "properties": {
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "annual_mortgage": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25715,17 +26939,33 @@
           },
           "cleaning_costs_annual": {
             "description": "Annual cleaning costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Cleaning Costs Annual",
             "type": "string"
           },
           "consumables_annual": {
             "description": "Annual consumables cost (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Consumables Annual",
             "type": "string"
+          },
+          "deposit_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deposit (or full price when unfinanced) (GBP)",
+            "title": "Deposit Amount"
           },
           "gross_cashflow_annual": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25738,6 +26978,7 @@
           "gross_cashflow_monthly": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25749,27 +26990,71 @@
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
+          "insurance_annual": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual insurance premium (GBP)",
+            "title": "Insurance Annual"
+          },
+          "legal_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Legal and conveyancing fees (GBP)",
+            "title": "Legal Fees"
+          },
           "license_cost_annual": {
             "description": "Annual license cost (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "License Cost Annual",
             "type": "string"
           },
+          "maintenance_annual": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual maintenance and repairs (GBP)",
+            "title": "Maintenance Annual"
+          },
           "management_fee_annual": {
             "description": "Annual management fee if outsourced (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Management Fee Annual",
             "type": "string"
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "monthly_mortgage": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25782,6 +27067,7 @@
           "net_cashflow_annual": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25794,6 +27080,7 @@
           "net_cashflow_monthly": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25805,32 +27092,38 @@
           },
           "net_revenue": {
             "description": "Net revenue after all SA-specific costs (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Revenue",
             "type": "string"
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "nightly_rate": {
             "description": "Average Daily Rate (ADR) (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Nightly Rate",
             "type": "string"
           },
           "occupancy_adjusted_revenue": {
             "description": "Revenue adjusted for occupancy (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Occupancy Adjusted Revenue",
             "type": "string"
           },
           "occupancy_rate": {
             "description": "Occupancy rate (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Occupancy Rate",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25842,27 +27135,58 @@
           },
           "platform_fees": {
             "description": "Annual platform fees (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Platform Fees",
             "type": "string"
           },
           "potential_annual_revenue": {
             "description": "Revenue at 100% occupancy (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Potential Annual Revenue",
             "type": "string"
           },
+          "property_tax_annual": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual council tax, or business rates when the FHL test is met (GBP)",
+            "title": "Property Tax Annual"
+          },
+          "refurbishment_costs": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One-off refurbishment budget (GBP)",
+            "title": "Refurbishment Costs"
+          },
           "revpan": {
             "description": "Revenue per Available Night (RevPAN) (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Revpan",
             "type": "string"
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -25872,13 +27196,54 @@
             "description": "GBP value of the sourcing fee that was factored into total_investment / ROI. None or 0 when no fee was applied.",
             "title": "Sourcing Fee"
           },
+          "stamp_duty": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stamp duty / LBTT / LTT (GBP)",
+            "title": "Stamp Duty"
+          },
+          "survey_fees": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey fees (GBP)",
+            "title": "Survey Fees"
+          },
           "total_investment": {
             "description": "Total capital invested (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           },
+          "total_operating_costs": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sum of the operating-cost lines deducted from gross revenue (platform, cleaning, management, maintenance, utilities, consumables, insurance, property tax). Excludes the licence fee and the mortgage.",
+            "title": "Total Operating Costs"
+          },
           "utilities_annual": {
             "description": "Annual utilities (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Utilities Annual",
             "type": "string"
           }
@@ -26625,12 +27990,20 @@
             "title": "Neighbour Sales",
             "type": "array"
           },
+          "neighbour_sources_used": {
+            "description": "Sources behind neighbour_sales, which usually differ from sources_used.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Neighbour Sources Used",
+            "type": "array"
+          },
           "property_id": {
             "title": "Property Id",
             "type": "string"
           },
           "sold_history": {
-            "description": "Sales matched to THIS property. Not the street.",
+            "description": "Sales matched to THIS property. Not the street. Each row's price_change / price_change_percent is measured against the most recent OLDER sale of the same property that clears the GBP 10,000 plausibility floor, so it is not always the row directly below: a sale under that floor (part-shares, deed transfers, data errors) carries implausible_price AND skipped_as_price_change_basis, and differencing consecutive rows past it gives a different, wrong answer.",
             "items": {
               "additionalProperties": true,
               "type": "object"
@@ -26639,6 +28012,7 @@
             "type": "array"
           },
           "sources_used": {
+            "description": "Sources behind sold_history (the subject's own sales) only.",
             "items": {
               "type": "string"
             },
@@ -26707,6 +28081,7 @@
                 "type": "number"
               },
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               }
             ],
@@ -27088,7 +28463,7 @@
                 "type": "null"
               }
             ],
-            "description": "Set when the stored best strategy was invalidated at read time (excluded by its playbook, or a rental strategy with no verified rent) - explains the replacement or the abstention. Null when the stored best stands.",
+            "description": "Set when the stored best strategy did not survive read time - excluded by its playbook, a rental strategy with no verified rent, or outranked once the published scores are weighted by their hard-playbook tiers the way the deal score weights them. Explains the replacement or the abstention. Null when the stored best stands.",
             "title": "Best Strategy Note"
           },
           "best_strategy_score": {
@@ -27101,6 +28476,22 @@
               }
             ],
             "title": "Best Strategy Score"
+          },
+          "caveats": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Strategy key -> a planning constraint on a score that is still published. 'hmo' is set when an HMO Article 4 direction covers the property (C3 to C4 needs planning permission): the HMO score stays the unconstrained economics, and HMO is never named best_strategy. Always present; {} when nothing applies.",
+            "title": "Caveats",
+            "type": "object"
+          },
+          "not_applicable": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Strategy key -> why its published 0 is a structural inapplicability rather than a weak verdict. The scorer zeroes a strategy the listing type rules out: btl/brrr/flip all start with buying the property, so they are 0 on a rental listing, and rent-to-rent starts with an existing tenancy, so it is 0 on a sale listing. The 0 is still published and still carries its weight in `overall` - it is a real stored value, not a gap - but it is not a judgement of this property. Zeros with any other cause are NOT listed here (a BTL 0 for an EPC F or G, which cannot legally be let, is a real and important negative). Distinct from `not_evaluated` on /api/v1/playbook-tiers, which is about playbook sweep coverage, not strategy scoring. Always present; {} when nothing is structurally inapplicable.",
+            "title": "Not Applicable",
+            "type": "object"
           },
           "overall_basis": {
             "anyOf": [
@@ -27374,6 +28765,7 @@
           "street_avg_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -27386,6 +28778,7 @@
           "street_median_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -28657,6 +30050,17 @@
         "title": "WatchResponse",
         "type": "object"
       },
+      "WorksScope": {
+        "description": "Which rate-card package an element actually needs.\n\nReturned per element by the photo pass alongside the condition\ngrade, and resolved by `app/services/refurb/works_scope.py`.\n\n  none       -> no works. The element is priced at GBP 0 and left\n                unticked in the estimator (the user can still tick\n                it if they disagree).\n  cosmetic   -> the category's cosmetic tier\n  mid_range  -> the category's mid_range tier\n  full_refit -> the category's full_refit tier\n\nWHY THIS IS SEPARATE FROM THE GRADE. A 5-point adjective scale\ncannot carry a costing decision. Collapsing it onto the 3 priced\ntiers was wrong at both ends:\n\n  - It had no way to say \"nothing needed\", so an excellent kitchen\n    was priced a cosmetic refresh while the room panel beside it\n    read \"No spend / excluded\".\n  - It forced needs_work -> full_refit, so a kitchen with sound\n    carcasses and a dead worktop was quoted the same GBP 11k-20k\n    rip-out as one with water-damaged units - a 4x overstatement\n    the model's own observations already contradicted.\n\nScope answers the costing question directly, against the real\npackage labels in REFURB_CATEGORIES, so the same grade can carry\ndifferent costs when the photos justify it. The grade stays for\ndisplay (\"Archie's verdict\"); the scope drives the money.\n\nNone means the model did not supply a scope - every payload\npersisted before 2026-09-16, plus any element the model declined to\nscope. Those fall back to GRADE_TO_WORKS_SCOPE.",
+        "enum": [
+          "none",
+          "cosmetic",
+          "mid_range",
+          "full_refit"
+        ],
+        "title": "WorksScope",
+        "type": "string"
+      },
       "YieldComparablesResponse": {
         "description": "Response containing all comparables used for yield calculation.",
         "properties": {
@@ -28927,6 +30331,18 @@
             ],
             "title": "Deal Score"
           },
+          "deal_score_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when deal_score is null although a scores row exists: why no score is published (no factor breakdown held yet, or a stored 0 queued for re-scoring). An absence, never a score of zero.",
+            "title": "Deal Score Note"
+          },
           "factors": {
             "additionalProperties": true,
             "title": "Factors",
@@ -28996,7 +30412,7 @@
                 "type": "null"
               }
             ],
-            "description": "Confidence band for the estimate",
+            "description": "Confidence band for the sale estimate: high | medium | low, LOWER-CASE, the one convention every enum-like field on this surface uses (rent_confidence, bmv_confidence_level, confidence_tier). ValuationService's own enum is upper-case and is normalised at this boundary, so a caller can compare this against rent_confidence without case-folding first.",
             "title": "Confidence"
           },
           "gross_yield_pct": {
@@ -29069,7 +30485,7 @@
                 "type": "null"
               }
             ],
-            "description": "Comparable lets behind the rent estimate",
+            "description": "Comparable lets behind the PUBLISHED rent, not the rung's whole pool where the two differ. This endpoint has no subject dwelling and so no floor area, so the rent is always the rung's bedroom-keyed median and this always counts every let in that rung. /api/v1/rental-estimate, which does have a floor area, can publish a per-sqft figure instead — there this counts only the lets that carry a floor area, the number its notes quote.",
             "title": "Rent Sample Size"
           },
           "rent_scope": {
@@ -29093,7 +30509,7 @@
                 "type": "null"
               }
             ],
-            "description": "Geography the estimate was computed over: postcode | sector | outcode",
+            "description": "Geography the sale estimate was computed over: postcode | sector | outcode. NULL means this vocabulary does not describe the answer, NOT that the geography is unknown, and it has exactly two causes: the sale estimate was suppressed, so no rung answered (valuation_scope is null too and valuation_notes says so); or the payload is property-scoped (valuation_scope 'property', from /api/v1/property-pack and the MCP get_property_report), where the answering engine walks its own ladder of exact postcode -> sector -> escalating radii and stating one of these three values would misdescribe it. Read valuation_scope and valuation_methodology for what the figure is about in that case.",
             "title": "Resolution Level"
           },
           "sale_estimate": {
@@ -29230,6 +30646,66 @@
         "title": "StampDutyRequest",
         "type": "object"
       },
+      "app__routers__ultimate_ai_chat__FeedbackRequest": {
+        "description": "Thumbs-up/down feedback on an Archie AI response.",
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "message_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "0-based index of the assistant message in the session",
+            "title": "Message Index"
+          },
+          "rating": {
+            "enum": [
+              "up",
+              "down"
+            ],
+            "title": "Rating",
+            "type": "string"
+          },
+          "response_text_excerpt": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Text Excerpt"
+          },
+          "session_id": {
+            "description": "Chat session id",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "rating"
+        ],
+        "title": "FeedbackRequest",
+        "type": "object"
+      },
       "app__schemas__investment__PriceHistoryPoint": {
         "description": "Individual price history data point.",
         "properties": {
@@ -29276,27 +30752,32 @@
         "properties": {
           "annual_cashflow": {
             "description": "Annual net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Annual Cashflow",
             "type": "string"
           },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Gross Yield Percentage",
             "type": "string"
           },
           "monthly_cashflow": {
             "description": "Monthly net cash flow (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Monthly Cashflow",
             "type": "string"
           },
           "net_yield_percentage": {
             "description": "Net rental yield (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
           },
           "payback_period_years": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -29308,12 +30789,14 @@
           },
           "roi_percentage": {
             "description": "Return on Investment (%)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Roi Percentage",
             "type": "string"
           },
           "sourcing_fee": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -29325,6 +30808,7 @@
           },
           "total_investment": {
             "description": "Total capital invested (GBP)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Investment",
             "type": "string"
           }
@@ -29938,7 +31422,7 @@
                 "type": "null"
               }
             ],
-            "description": "Optimistic discount — listing vs band.low",
+            "description": "Optimistic discount — listing vs band.high",
             "title": "Bmv Discount Pct Best"
           },
           "bmv_discount_pct_worst": {
@@ -29950,7 +31434,7 @@
                 "type": "null"
               }
             ],
-            "description": "Conservative discount — listing vs band.high",
+            "description": "Conservative discount — listing vs band.low",
             "title": "Bmv Discount Pct Worst"
           },
           "bmv_discount_percentage": {
@@ -30672,6 +32156,7 @@
           "estimated_value_lower": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -30696,6 +32181,7 @@
           "estimated_value_radius_miles": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -30732,6 +32218,7 @@
           "estimated_value_upper": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -32329,6 +33816,7 @@
           "rent_pcm_central": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -32365,6 +33853,7 @@
           "rent_pcm_lower": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -32401,6 +33890,7 @@
           "rent_pcm_radius_miles": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -32437,6 +33927,7 @@
           "rent_pcm_upper": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -32924,6 +34415,22 @@
             "title": "Title",
             "type": "string"
           },
+          "top_comps": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The three comparable sales behind this property's BMV, ranked by similarity (not distance), trimmed to price / distance_miles / sale_date / bedrooms for the grid card. Null when fewer than three are available.",
+            "title": "Top Comps"
+          },
           "total_price_reduction_pct": {
             "anyOf": [
               {
@@ -33183,12 +34690,14 @@
         "properties": {
           "asking_price": {
             "description": "Current asking price",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Asking Price",
             "type": "string"
           },
           "bmv_amount": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -33213,6 +34722,7 @@
           "comparable_avg_price": {
             "anyOf": [
               {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
               {
@@ -33357,7 +34867,7 @@
       "name": "Prop AI Deals API support",
       "url": "https://docs.propaideals.co.uk"
     },
-    "description": "REST API for UK property data, market intelligence, investment analysis, and AI-powered search. Access 2.1M+ live and sold UK properties with PostGIS spatial search, BMV scoring, rental yields, HM Land Registry history, EPC certificates, planning + environmental constraints, and a multi-agent AI chat system.\n\n**Authentication:** send your key as `Authorization: Bearer paid_...`. A free tier (200 credits/month, no card) is issued instantly from the dashboard; paid plans start at GBP 29/month. Responses are wrapped in a `{ data, meta }` envelope. See https://docs.propaideals.co.uk for guides, rate limits, and error codes.",
+    "description": "REST API for UK property data, market intelligence, investment analysis, and AI-powered search. Access 4.9M+ live and sold UK properties with PostGIS spatial search, BMV scoring, rental yields, HM Land Registry history, EPC certificates, planning + environmental constraints, and a multi-agent AI chat system.\n\n**Authentication:** send your key as `Authorization: Bearer paid_...`. A free tier (200 credits/month, no card) is issued instantly from the dashboard; paid plans start at GBP 29/month. Responses are wrapped in a `{ data, meta }` envelope. See https://docs.propaideals.co.uk for guides, rate limits, and error codes.",
     "termsOfService": "https://propaideals.co.uk/terms",
     "title": "Prop AI Deals API",
     "version": "1.0.0"
@@ -34217,6 +35727,201 @@
         ]
       }
     },
+    "/api/v1/area/service-analytics": {
+      "get": {
+        "description": "Neutral area facts for a seller pre-valuation pack.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nProjects six blocks from AreaAnalyticsService (epc_mix, council_tax_mix,\nsold_vs_asking, days_on_market, price_trend, transaction_volume) plus the\nservice's overall confidence / sample_size / asking_price_sample_size /\ngenerated_at, and adds nearby schools and flood zone when the postcode has\na GB centroid. Rent, yield, BMV, investor activity, tier mix and demand are\ndeliberately never returned: the reader is a homeowner, not an investor.\n\nEvery block is either ``{\"available\": true, \"sample_size\": n, ...}`` or\n``{\"available\": false, \"reason\": ...}``. Reasons: ``no_data`` (the source\nholds nothing here), ``lookup_failed`` (the source errored or timed out, or\na loader feeding the block failed), ``no_centroid`` (postcode not in\nos_postcodes, so no point to measure from), ``not_covered_northern_ireland``\nand ``not_covered_wales`` (the flood service has no source for that\nnation), ``country_unknown`` (no recognised nation for the centroid, so no\nflood source can be chosen), ``source_not_available`` (surface water, which\nno source we query publishes). No block failure raises: the route returns\n200 with markers. confidence / sample_size / asking_price_sample_size are\nnull when a loader they are computed from failed.\n\nAvailable analytics blocks carry their scope, from the input actually used:\n``source`` (sale_comparables | sold_listings), ``geography``\n(within_0_5_miles | outcode_prefix for comparables; outcode for sold\nlistings and council tax -- outcode_prefix is the ranker's no-coordinates\nfallback and may include neighbouring districts sharing the prefix),\n``window`` (10_years | 12_months | all_time) and ``counts``\n(comparables_capped_500 | sold_listings_capped_5000); price_trend and\ntransaction_volume add ``max_points`` (60). A scope value is null when the\nservice did not record it. council_tax_mix carries basis / geography /\nwindow only.\n\nCoverage: sold prices come from HM Land Registry (England and Wales) and\nZoopla sold records (Scotland); Northern Ireland has only asking prices,\ncounted in ``asking_price_sample_size``. Council tax bands are\nlisting-derived. os_postcodes holds no Northern Irish rows, so NI never\ngets schools. Flood covers England (EA) and Scotland (SEPA) only.\n\nThe request's database session is released before the flood lookup, which\nruns without it under a ``_FLOOD_TIMEOUT_SECONDS`` bound.\n\nRaises:\n    HTTPException: 400 if the postcode is not a full UK postcode. FastAPI\n        answers 422 before this handler runs when the postcode is missing\n        or outside 2-10 characters.",
+        "operationId": "get_area_service_analytics_api_v1_area_service_analytics_get",
+        "parameters": [
+          {
+            "description": "FULL UK postcode ('LS1 4DY' or 'LS14DY'). A sector has no centroid and is rejected.",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "FULL UK postcode ('LS1 4DY' or 'LS14DY'). A sector has no centroid and is rejected.",
+              "maxLength": 10,
+              "minLength": 2,
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Area Service Analytics Api V1 Area Service Analytics Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Area Service Analytics",
+        "tags": [
+          "Area & market intelligence"
+        ]
+      }
+    },
+    "/api/v1/area/service-local-context": {
+      "get": {
+        "description": "Area facts a potential seller's BUYERS will check: broadband and links.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nDeliberately SEPARATE from ``/service-postcode-summary`` rather than folded\ninto it. That endpoint 404s when it holds no sold prices, which is every\nScottish sector Zoopla missed and all of Northern Ireland -- exactly the\nsellers who most need something honest on the page. Bolting this on there\nwould have made the two fail together; here they fail independently.\n\nBroadband is averaged over the postcode SECTOR (Ofcom Connected Nations),\nnot the single postcode: a sector is the right grain for \"your area\", it is\nless identifying, and it rescues a postcode whose own row Ofcom never\nmeasured. Rows that are all-zero across all four percentages are dropped as\nno-data rather than averaged in -- see ``aggregate_broadband``.\n\nTransport needs a centroid from os_postcodes and is therefore GB-only by\nconstruction; a Northern Irish postcode returns ``[]`` here and still gets\nits broadband.\n\nRaises:\n    HTTPException: 400 if the postcode cannot be parsed, 404 if neither\n        broadband nor transport could be resolved for it.",
+        "operationId": "get_area_service_local_context_api_v1_area_service_local_context_get",
+        "parameters": [
+          {
+            "description": "UK postcode SECTOR ('LS1 4') or full postcode ('LS1 4DY').",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "UK postcode SECTOR ('LS1 4') or full postcode ('LS1 4DY').",
+              "maxLength": 10,
+              "minLength": 2,
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Area Service Local Context Api V1 Area Service Local Context Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Area Service Local Context",
+        "tags": [
+          "Area & market intelligence"
+        ]
+      }
+    },
+    "/api/v1/area/service-postcode-summary": {
+      "get": {
+        "description": "Land-Registry sold medians for a postcode SECTOR and its parent outcode.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nUnlike ``/service-summary`` -- which reads a materialized view built from\nlive ASKING prices -- every figure here is a median of registered SOLD\nprices from ``land_registry_transactions``, restricted to established homes\nand standard transactions (``old_new='N'``, ``ppd_category_type='A'``) in a\nGBP 10,000-5,000,000 band. The sector and outcode figures come from one\nquery so they are directly comparable.\n\n``sample_ok`` is false when fewer than ``SECTOR_SAMPLE_MIN`` eligible sales\nlanded in the sector in 12 months. The COUNT is still returned in that case\n-- \"only 4 homes sold near you this year\" is a real answer -- but the median\nis nulled, because a median over four sales is noise wearing a number's\nclothes.\n\nLand Registry price-paid covers England and Wales only. A Scottish or\nNorthern Irish postcode is well-formed and simply has no rows; it returns\n404, the same as any sector we hold nothing for.\n\nRaises:\n    HTTPException: 400 if the postcode is not a sector or full postcode,\n        404 if no eligible sales exist for it.",
+        "operationId": "get_area_service_postcode_summary_api_v1_area_service_postcode_summary_get",
+        "parameters": [
+          {
+            "description": "UK postcode SECTOR ('LS1 4') or full postcode ('LS1 4AB'). The space is required in the sector form.",
+            "in": "query",
+            "name": "postcode",
+            "required": true,
+            "schema": {
+              "description": "UK postcode SECTOR ('LS1 4') or full postcode ('LS1 4AB'). The space is required in the sector form.",
+              "maxLength": 10,
+              "minLength": 2,
+              "title": "Postcode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Area Service Postcode Summary Api V1 Area Service Postcode Summary Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Area Service Postcode Summary",
+        "tags": [
+          "Area & market intelligence"
+        ]
+      }
+    },
     "/api/v1/area/service-summary": {
       "get": {
         "description": "Compact hyper-local district summary for a trusted partner service.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nRaises:\n    HTTPException: 404 if the district has no data in\n        mv_postcode_district_metrics.",
@@ -34996,6 +36701,22 @@
           },
           {
             "in": "query",
+            "name": "property_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Property Id"
+            }
+          },
+          {
+            "in": "query",
             "name": "user_id",
             "required": false,
             "schema": {
@@ -35142,6 +36863,24 @@
               ],
               "description": "Restrict both counts to listings with this bedroom count.",
               "title": "Bedrooms"
+            }
+          },
+          {
+            "description": "Restrict both counts to this property type (same filter as /prices).",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Restrict both counts to this property type (same filter as /prices).",
+              "title": "Type"
             }
           },
           {
@@ -35808,10 +37547,12 @@
         "operationId": "get_ai_investment_analysis_api_v1_investment_ai_analysis__property_id__get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -35951,10 +37692,12 @@
         "operationId": "calculate_brrr_metrics_api_v1_investment_calculate_brrr__property_id__post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -36090,10 +37833,12 @@
         "operationId": "calculate_flip_metrics_api_v1_investment_calculate_flip__property_id__post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -36229,10 +37974,12 @@
         "operationId": "calculate_hmo_metrics_api_v1_investment_calculate_hmo__property_id__post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -36398,10 +38145,12 @@
         "operationId": "calculate_sa_metrics_api_v1_investment_calculate_sa__property_id__post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -36472,10 +38221,12 @@
         "operationId": "calculate_investment_metrics_api_v1_investment_calculate__property_id__post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -36625,10 +38376,12 @@
         "operationId": "compare_investment_strategies_api_v1_investment_compare_strategies__property_id__post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -37167,13 +38920,12 @@
         "operationId": "analyze_property_investment_api_v1_investment_property__property_id__analysis_get",
         "parameters": [
           {
-            "description": "Property ID to analyze",
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "description": "Property ID to analyze",
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -37313,13 +39065,12 @@
         "operationId": "compare_mortgage_scenarios_api_v1_investment_property__property_id__mortgage_comparison_post",
         "parameters": [
           {
-            "description": "Property ID to analyze",
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "description": "Property ID to analyze",
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -37377,10 +39128,12 @@
         "operationId": "get_roi_scenarios_api_v1_investment_property__property_id__roi_scenarios_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -37537,10 +39290,12 @@
         "operationId": "get_refurb_estimate_api_v1_investment_refurb_estimate__property_id__get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -37652,10 +39407,12 @@
         "operationId": "get_refurb_scan_api_v1_investment_refurb_scan__property_id__get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -37834,10 +39591,12 @@
         "operationId": "get_ultimate_ai_investment_analysis_api_v1_investment_ultimate_ai_analysis__property_id__get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -39364,10 +41123,12 @@
         "operationId": "get_property_market_data_api_v1_market_data__property_id__get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -39442,10 +41203,12 @@
         "operationId": "get_property_comparables_api_v1_market_data__property_id__comparables_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -39546,10 +41309,12 @@
         "operationId": "get_enhanced_comparables_api_v1_market_data__property_id__comparables_enhanced_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -39706,10 +41471,12 @@
         "operationId": "get_property_comparables_v2_api_v1_market_data__property_id__comparables_v2_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -39824,10 +41591,12 @@
         "operationId": "get_cross_listings_api_v1_market_data__property_id__cross_listings_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -39890,10 +41659,12 @@
         "operationId": "get_comprehensive_history_api_v1_market_data__property_id__history_comprehensive_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40026,10 +41797,12 @@
         "operationId": "get_nearby_listings_api_v1_market_data__property_id__nearby_listings_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40132,10 +41905,12 @@
         "operationId": "get_nearby_schools_endpoint_api_v1_market_data__property_id__nearby_schools_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40193,10 +41968,12 @@
         "operationId": "get_nearby_transport_endpoint_api_v1_market_data__property_id__nearby_transport_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40254,10 +42031,12 @@
         "operationId": "get_ni_area_prices_api_v1_market_data__property_id__ni_area_prices_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40315,10 +42094,12 @@
         "operationId": "get_price_accuracy_api_v1_market_data__property_id__price_accuracy_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40381,10 +42162,12 @@
         "operationId": "get_r2r_market_data_api_v1_market_data__property_id__r2r_market_data_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40461,10 +42244,12 @@
         "operationId": "get_rental_comparables_api_v1_market_data__property_id__rental_comparables_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -40607,10 +42392,12 @@
         "operationId": "get_sold_on_street_api_v1_market_data__property_id__sold_on_street_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43214,11 +45001,12 @@
         "operationId": "get_planning_applications_api_v1_planning__property_id__applications_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43288,11 +45076,12 @@
         "operationId": "get_applications_by_geometry_api_v1_planning__property_id__applications_geometry_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43377,11 +45166,12 @@
         "operationId": "get_all_applications_paginated_api_v1_planning__property_id__applications_paginated_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43453,11 +45243,12 @@
         "operationId": "get_article4_status_api_v1_planning__property_id__article4_status_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43513,11 +45304,12 @@
         "operationId": "get_conservation_area_geojson_api_v1_planning__property_id__conservation_geojson_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43575,11 +45367,12 @@
         "operationId": "get_heritage_status_api_v1_planning__property_id__heritage_status_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -43635,11 +45428,12 @@
         "operationId": "get_nearby_applications_api_v1_planning__property_id__nearby_applications_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -52591,10 +54385,12 @@
         "operationId": "get_actual_rental_data_api_v1_properties__property_id__actual_rental_data_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -52657,10 +54453,12 @@
         "operationId": "get_property_agent_api_v1_properties__property_id__agent_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -52723,10 +54521,12 @@
         "operationId": "get_nearby_amenities_api_v1_properties__property_id__amenities_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -52850,10 +54650,12 @@
         "operationId": "get_property_area_demographics_api_v1_properties__property_id__area_demographics_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -52914,11 +54716,12 @@
         "operationId": "get_bmv_assessment_api_v1_properties__property_id__bmv_assessment_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -52981,11 +54784,12 @@
         "operationId": "get_brownfield_nearby_for_property_api_v1_properties__property_id__brownfield_nearby_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53048,11 +54852,12 @@
         "operationId": "get_property_comparables_api_v1_properties__property_id__comparables_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53127,10 +54932,12 @@
         "operationId": "download_property_report_api_v1_properties__property_id__download_report_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53184,10 +54991,12 @@
         "operationId": "get_property_features_api_v1_properties__property_id__features_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53252,11 +55061,12 @@
         "operationId": "get_property_fhrs_api_v1_properties__property_id__fhrs_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53319,10 +55129,12 @@
         "operationId": "get_property_floor_plans_api_v1_properties__property_id__floor_plans_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53388,11 +55200,12 @@
         "operationId": "get_investment_bundle_api_v1_properties__property_id__investment_bundle_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53455,11 +55268,12 @@
         "operationId": "get_investment_score_api_v1_properties__property_id__investment_score_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53520,10 +55334,12 @@
         "operationId": "get_property_lha_rates_api_v1_properties__property_id__lha_rates_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53586,11 +55402,12 @@
         "operationId": "get_listed_conservation_api_v1_properties__property_id__listed_conservation_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53653,10 +55470,12 @@
         "operationId": "get_property_market_analysis_api_v1_properties__property_id__market_analysis_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53729,11 +55548,12 @@
         "operationId": "get_market_data_api_v1_properties__property_id__market_data_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53794,11 +55614,12 @@
         "operationId": "get_match_status_api_v1_properties__property_id__match_status_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53859,10 +55680,12 @@
         "operationId": "get_property_ownership_api_v1_properties__property_id__ownership_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -53925,11 +55748,12 @@
         "operationId": "get_pd_potential_api_v1_properties__property_id__pd_potential_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54058,11 +55882,12 @@
         "operationId": "get_price_history_api_v1_properties__property_id__price_history_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54123,15 +55948,12 @@
         "operationId": "get_enhanced_price_history_api_v1_properties__property_id__price_history_enhanced_get",
         "parameters": [
           {
-            "description": "Property UUID",
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "description": "Property UUID",
-              "examples": [
-                "123e4567-e89b-12d3-a456-426614174000"
-              ],
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54250,12 +56072,12 @@
         "operationId": "check_price_history_availability_api_v1_properties__property_id__price_history_enhanced_health_get",
         "parameters": [
           {
-            "description": "Property UUID",
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "description": "Property UUID",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54318,11 +56140,12 @@
         "operationId": "get_property_rates_api_v1_properties__property_id__rates_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54385,10 +56208,12 @@
         "operationId": "refresh_yield_api_v1_properties__property_id__refresh_yield_post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54445,11 +56270,12 @@
         "operationId": "trigger_property_rematch_api_v1_properties__property_id__rematch_post",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54494,10 +56320,12 @@
         "operationId": "get_property_rental_estimate_api_v1_properties__property_id__rental_estimate_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54560,11 +56388,12 @@
         "operationId": "get_property_sale_history_api_v1_properties__property_id__sale_history_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
-              "format": "uuid",
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54625,10 +56454,12 @@
         "operationId": "get_similar_properties_api_v1_properties__property_id__similar_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54737,10 +56568,12 @@
         "operationId": "get_similar_lenses_api_v1_properties__property_id__similar_lenses_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -54957,10 +56790,12 @@
         "operationId": "get_property_virtual_tours_api_v1_properties__property_id__virtual_tours_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -55191,10 +57026,12 @@
         "operationId": "get_yield_comparables_api_v1_properties__property_id__yield_comparables_get",
         "parameters": [
           {
+            "description": "Property UUID or external listing id",
             "in": "path",
             "name": "property_id",
             "required": true,
             "schema": {
+              "description": "Property UUID or external listing id",
               "title": "Property Id",
               "type": "string"
             }
@@ -57551,7 +59388,7 @@
     },
     "/api/v1/strategy-scores": {
       "get": {
-        "description": "Per-strategy ML scores, cross-checked against the playbook verdicts and\nthe unified rent resolver before publication.\n\nTwo read-time consistency guards (B3, pre-release audit 2026-08-14 - 26\nHamnett Street published best_strategy \"HMO\" at 75 while playbook-tiers\nsaid hmo_conversion was `excluded` in the same payload family):\n\n1. A strategy whose playbook counterpart stored the `excluded` verdict\n   does not publish a score (null, reason in `suppressed`), and can never\n   be best_strategy.\n2. When the rent resolver declines to defend a rent for the subject (the\n   same machinery /api/v1/rental-estimate and the deal-score Yield factor\n   publish from), the rental strategies carry a `rent_unverified` marker\n   and best_strategy falls back to the best non-rental strategy - or\n   abstains when none clears the viability floor. Cost: up to 4 extra\n   reads, the same reconciliation the deal-score endpoint performs.",
+        "description": "Per-strategy ML scores, cross-checked against the playbook verdicts and\nthe unified rent resolver before publication. THE canonical best_strategy.\n\nThin wrapper over the importable reconciliation engine\n(app/services/strategy/published_strategy.py::get_published_strategy_scores),\nextracted so non-HTTP callers (Archie) can publish the same headline\nstrategy this endpoint (and, transitively, MCP's score_deal tool) does —\nsee that module's docstring for the two read-time consistency guards (B3,\npre-release audit 2026-08-14) and the SOURCE_OF_TRUTH.md strategy-playbooks\naudit (2026-09-23) this closes.",
         "operationId": "get_strategy_scores_api_v1_strategy_scores_get",
         "parameters": [
           {
@@ -57928,7 +59765,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackRequest"
+                "$ref": "#/components/schemas/app__routers__ultimate_ai_chat__FeedbackRequest"
               }
             }
           },
