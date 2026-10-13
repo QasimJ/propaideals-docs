@@ -7,6 +7,18 @@ description: Prop AI Deals API release notes, breaking changes, and deprecation 
 
 This page lists user-visible changes to the Prop AI Deals API. We follow [SemVer](https://semver.org/) at the API level — breaking changes are versioned (`/api/v2/`) and announced at least 90 days in advance.
 
+## 2026-09-29 — `net_yield_percentage` is net yield before finance (breaking)
+
+**Changed:**
+- `net_yield_percentage` on the HMO, serviced-accommodation and BRRR calculations under `/api/v1/investment/*` now means **net yield before finance**: rent less operating costs, over the purchase price. It used to subtract the mortgage too, which is the cash yield, not the net yield.
+
+**New:**
+- **`cash_yield_percentage`** carries the old figure: net cash flow after the mortgage, over the purchase price.
+
+**Migration:** if you relied on the after-finance figure, read `cash_yield_percentage` instead. For a financed purchase, `net_yield_percentage` is now higher by roughly the annual mortgage cost over the price.
+
+**Why:** "net yield" is before finance everywhere else in UK property and everywhere else in this API and the app, so the same name meant two things. The same exception to the notice period as 2026-08-13 applies.
+
 ## 2026-08-14 — Free tier, two new plans, and a rename
 
 **New:**

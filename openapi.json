@@ -150,6 +150,27 @@
       },
       "AreaAnalyticsResponse": {
         "properties": {
+          "asking_median_by_beds": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asking Median By Beds"
+          },
           "asking_price_sample_size": {
             "default": 0,
             "title": "Asking Price Sample Size",
@@ -234,6 +255,16 @@
           "investor_activity": {
             "$ref": "#/components/schemas/InvestorActivity"
           },
+          "market_verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketVerdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "new_vs_reduced": {
             "$ref": "#/components/schemas/NewVsReduced"
           },
@@ -258,6 +289,17 @@
             "default": 0,
             "title": "Sample Size",
             "type": "integer"
+          },
+          "sold_or_under_offer_90d": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Or Under Offer 90D"
           },
           "sold_vs_asking": {
             "$ref": "#/components/schemas/SoldVsAsking"
@@ -1175,6 +1217,12 @@
             "title": "Interest Only",
             "type": "boolean"
           },
+          "is_additional_property": {
+            "default": true,
+            "description": "Stamp duty status. True (default) charges the higher rates for an additional property; False is a buyer's only property.",
+            "title": "Is Additional Property",
+            "type": "boolean"
+          },
           "legal_fees": {
             "anyOf": [
               {
@@ -1526,6 +1574,19 @@
             "description": "Refinance loan less bridge payoff and refinance costs (GBP)",
             "title": "Cash Released"
           },
+          "cash_yield_percentage": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cash yield after finance (%): net cash flow after the mortgage, over price",
+            "title": "Cash Yield Percentage"
+          },
           "equity_released": {
             "description": "Equity released through refinance (GBP)",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -1675,7 +1736,7 @@
             "title": "Net Cashflow Monthly"
           },
           "net_yield_percentage": {
-            "description": "Net rental yield (%)",
+            "description": "Net rental yield before finance (%): rent less operating costs, over price",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
@@ -1855,6 +1916,12 @@
             "default": false,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
+            "type": "boolean"
+          },
+          "is_additional_property": {
+            "default": true,
+            "description": "Stamp duty status. True (default) charges the higher rates for an additional property; False is a buyer's only property.",
+            "title": "Is Additional Property",
             "type": "boolean"
           },
           "location": {
@@ -2458,6 +2525,84 @@
           "matches"
         ],
         "title": "BuildCostResponse",
+        "type": "object"
+      },
+      "BuildingSale": {
+        "description": "One recorded sale of a sibling flat.",
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "date": {
+            "description": "Sale date, ISO YYYY-MM-DD where known",
+            "title": "Date",
+            "type": "string"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Type"
+          }
+        },
+        "required": [
+          "date",
+          "address",
+          "price"
+        ],
+        "title": "BuildingSale",
+        "type": "object"
+      },
+      "BuildingSales": {
+        "description": "Same-building sales, newest first.",
+        "properties": {
+          "may_include_subject": {
+            "default": false,
+            "title": "May Include Subject",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "no_flat_identity",
+                  "not_covered_region",
+                  "not_a_flat"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "sales": {
+            "items": {
+              "$ref": "#/components/schemas/BuildingSale"
+            },
+            "title": "Sales",
+            "type": "array"
+          },
+          "supported": {
+            "title": "Supported",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "supported"
+        ],
+        "title": "BuildingSales",
         "type": "object"
       },
       "CalculatorType": {
@@ -3313,6 +3458,18 @@
             ],
             "description": "Why tenure reads the way it does when the jurisdiction changed it. Populated for Scottish rows only.",
             "title": "Tenure Note"
+          },
+          "tier_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the sale's AGE caps confidence_tier (over 3 years: at most silver; over 5: bronze; over 7: supporting). Null for recent sales.",
+            "title": "Tier Note"
           },
           "transaction_category": {
             "anyOf": [
@@ -5925,6 +6082,22 @@
             "description": "Estate agent sale fee percentage (1-3% typical, up to 10-15% for specialist/auction agents)",
             "title": "Agent Fee Percentage"
           },
+          "arrangement_fee_percentage": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "1.5",
+            "description": "Bridge arrangement fee (% of the bridge loan)",
+            "title": "Arrangement Fee Percentage"
+          },
           "bridge_finance_amount": {
             "anyOf": [
               {
@@ -5974,6 +6147,22 @@
             "description": "Monthly council tax",
             "title": "Council Tax Monthly"
           },
+          "exit_fee_percentage": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "1.0",
+            "description": "Bridge exit fee (% of the bridge loan)",
+            "title": "Exit Fee Percentage"
+          },
           "expected_sale_price": {
             "anyOf": [
               {
@@ -6012,6 +6201,12 @@
             "default": "50.0",
             "description": "Monthly insurance",
             "title": "Insurance Monthly"
+          },
+          "is_additional_property": {
+            "default": true,
+            "description": "Stamp duty status. True (default) charges the higher rates for an additional property; False is a buyer's only property.",
+            "title": "Is Additional Property",
+            "type": "boolean"
           },
           "legal_fees_purchase": {
             "anyOf": [
@@ -6834,6 +7029,12 @@
             "title": "Interest Only",
             "type": "boolean"
           },
+          "is_additional_property": {
+            "default": true,
+            "description": "Stamp duty status. True (default) charges the higher rates for an additional property; False is a buyer's only property.",
+            "title": "Is Additional Property",
+            "type": "boolean"
+          },
           "legal_fees": {
             "anyOf": [
               {
@@ -6899,6 +7100,24 @@
             "default": "12.0",
             "description": "Property management fee (% of gross rent, 10-15% typical)",
             "title": "Management Fee Percentage"
+          },
+          "mortgage_amount": {
+            "anyOf": [
+              {
+                "maximum": 50000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Loan in GBP, used instead of the deposit percentage. Bridge -> Mortgage sends the refinance loan (valuation x LTV).",
+            "title": "Mortgage Amount"
           },
           "mortgage_rate": {
             "anyOf": [
@@ -7166,6 +7385,19 @@
             "title": "Average Rent Per Room",
             "type": "string"
           },
+          "cash_yield_percentage": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cash yield after finance (%): net cash flow after the mortgage, over price",
+            "title": "Cash Yield Percentage"
+          },
           "cleaning_cost_monthly": {
             "description": "Monthly cleaning costs (GBP)",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -7359,7 +7591,7 @@
             "title": "Net Cashflow Monthly"
           },
           "net_yield_percentage": {
-            "description": "Net rental yield (%)",
+            "description": "Net rental yield before finance (%): rent less operating costs, over price",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
@@ -9650,6 +9882,30 @@
         "title": "MarketDemandDetails",
         "type": "object"
       },
+      "MarketVerdict": {
+        "description": "The investor pack's buyers'/sellers'/balanced reading, for the area.\n\n``months_of_supply`` is the ratio the verdict was read from: outcode sale\nstock / (Land Registry sales in 12 months / 12), rounded to 1dp exactly as\n``build_market_activity_summary`` rounds it.",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "months_of_supply": {
+            "title": "Months Of Supply",
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "months_of_supply"
+        ],
+        "title": "MarketVerdict",
+        "type": "object"
+      },
       "MortgageComparisonResponse": {
         "description": "Response model for mortgage scenario comparison.",
         "properties": {
@@ -10120,6 +10376,74 @@
           "count"
         ],
         "title": "NearbyApplicationsResponse",
+        "type": "object"
+      },
+      "NearbyCounts": {
+        "additionalProperties": false,
+        "description": "Counts behind the property page's \"Explore nearby\" links.\n\nThe page hides a link whose count is 0. ``None`` means \"not known\" (no\noutcode / street / coordinates, or the count query timed out): keep the\nlink. Counts exclude the subject itself and read canonical rows only.",
+        "properties": {
+          "outcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Subject outcode the counts are scoped to (e.g. 'E20').",
+            "title": "Outcode"
+          },
+          "outcode_auction_lots": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Active auction lots for sale in the outcode ('Auction lots in {outcode}').",
+            "title": "Outcode Auction Lots"
+          },
+          "outcode_same_type": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Other active listings in the outcode with the subject's property_type and listing_type (the '{type} for sale in {outcode}' link).",
+            "title": "Outcode Same Type"
+          },
+          "street": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Title-cased street the street count used (e.g. 'Glasshouse Gardens').",
+            "title": "Street"
+          },
+          "street_sold_prices": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Land Registry sales on the subject's street, in its outcode, within 0.5 mi of it ('Sold prices on {street}').",
+            "title": "Street Sold Prices"
+          }
+        },
+        "title": "NearbyCounts",
         "type": "object"
       },
       "NewVsReduced": {
@@ -13598,6 +13922,80 @@
         "title": "PropertyCreateResponse",
         "type": "object"
       },
+      "PropertyDataQuality": {
+        "properties": {
+          "assessed_at": {
+            "format": "date",
+            "title": "Assessed At",
+            "type": "string"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/PropertyDataQualityCheck"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "version": {
+            "const": "1",
+            "default": "1",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assessed_at",
+          "checks"
+        ],
+        "title": "PropertyDataQuality",
+        "type": "object"
+      },
+      "PropertyDataQualityCheck": {
+        "properties": {
+          "metric": {
+            "pattern": "^(identity|valuation|rent|gross_yield|floor_area|source_read|source_sync|projections|projection:[a-z0-9_]+)$",
+            "title": "Metric",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "status": {
+            "enum": [
+              "not_applicable",
+              "unknown",
+              "missing",
+              "review",
+              "consistent"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric",
+          "status",
+          "reason_codes"
+        ],
+        "title": "PropertyDataQualityCheck",
+        "type": "object"
+      },
       "PropertyDetail": {
         "description": "Detailed property information.",
         "properties": {
@@ -13810,6 +14208,18 @@
             ],
             "description": "Auction date",
             "title": "Auction Date"
+          },
+          "auction_priced": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether the price is valued as an auction lot (no BMV, no yield). is_auction, except that a TypeSafe 'fixed_price' verdict lifts it under ENABLE_TYPESAFE_AUCTION_PRICE_BASIS_GATE; null with the gate off.",
+            "title": "Auction Priced"
           },
           "auction_type": {
             "anyOf": [
@@ -14130,6 +14540,26 @@
             "description": "Percentage below market average",
             "title": "Bmv Discount Percentage"
           },
+          "bmv_evidence_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evidence completeness: unavailable, needs_review, or supported; not valuation accuracy",
+            "title": "Bmv Evidence Status"
+          },
+          "bmv_evidence_warnings": {
+            "description": "Machine-readable reasons the market estimate needs verification",
+            "items": {
+              "type": "string"
+            },
+            "title": "Bmv Evidence Warnings",
+            "type": "array"
+          },
           "bmv_last_calculated_at": {
             "anyOf": [
               {
@@ -14237,7 +14667,7 @@
                 "type": "null"
               }
             ],
-            "description": "Confidence in the corrected value: high (small correction, fresh model), medium, or low. Null when no corrected value is available.",
+            "description": "Residual-model agreement: high (small correction), medium, or low. Does not measure sale-evidence quality or model freshness. Null when no corrected value is available.",
             "title": "Bmv Reliability Tier"
           },
           "bmv_residual_model_version": {
@@ -14263,6 +14693,18 @@
             ],
             "description": "Signed residual the model applied (%). >0 means the raw market average over-estimated; corrected = market_avg / (1 + pct/100).",
             "title": "Bmv Residual Pct"
+          },
+          "bmv_street_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Same-postcode Land Registry check on the fair value: 'consistent' | 'contradicted' (withheld by the display gate) | null (not judged).",
+            "title": "Bmv Street Verdict"
           },
           "broadband_speed_mbps": {
             "anyOf": [
@@ -14692,6 +15134,17 @@
             "description": "Damp issues detected",
             "title": "Damp Issues"
           },
+          "data_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PropertyDataQuality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Automated checks of stored property-source evidence; not a verified valuation"
+          },
           "days_on_market": {
             "anyOf": [
               {
@@ -14728,6 +15181,18 @@
             ],
             "description": "Factors contributing to deal score",
             "title": "Deal Score Factors"
+          },
+          "deal_score_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the published deal_score is null although a scores row exists (the same note GET /api/v1/deal-score and MCP score_deal publish).",
+            "title": "Deal Score Note"
           },
           "deposit_amount": {
             "anyOf": [
@@ -14776,6 +15241,30 @@
             ],
             "description": "Formatted display address",
             "title": "Display Address"
+          },
+          "display_gross_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The card's gross yield as stored for the For You sort; null = no figure",
+            "title": "Display Gross Yield Pct"
+          },
+          "display_roce_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The card's BTL ROCE as stored for the For You sort; null = no figure",
+            "title": "Display Roce Pct"
           },
           "documents": {
             "description": "Property documents",
@@ -15390,6 +15879,18 @@
             ],
             "description": "How often the ground rent is reviewed, in years",
             "title": "Ground Rent Review Years"
+          },
+          "ground_rent_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "listing|typesafe - where ground_rent came from; set only under ENABLE_TYPESAFE_LEASE_TERMS_GATE (None otherwise)",
+            "title": "Ground Rent Source"
           },
           "guide_price": {
             "anyOf": [
@@ -16327,6 +16828,30 @@
             ],
             "description": "Listing type: sale, rent, auction",
             "title": "Listing Type"
+          },
+          "local_rent_median_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Median rent pcm, same outcode and bedroom count",
+            "title": "Local Rent Median Pcm"
+          },
+          "local_rent_sample_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rents behind local_rent_median_pcm",
+            "title": "Local Rent Sample Size"
           },
           "location_context": {
             "anyOf": [
@@ -17433,11 +17958,34 @@
             "description": "Number of reception rooms",
             "title": "Reception Rooms"
           },
+          "rent_evidence_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical rental evidence basis, e.g. beds_median_rent",
+            "title": "Rent Evidence Basis"
+          },
+          "rent_evidence_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical rent scope, e.g. area_typical; absent means unknown",
+            "title": "Rent Evidence Scope"
+          },
           "rent_pcm_central": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
+                "type": "number"
               },
               {
                 "type": "null"
@@ -17606,6 +18154,18 @@
             "description": "SPEC-101 Rent-to-Rent tier. Anchors the R2R strategy-fit score on PropertyPageV3 once the R2R evaluator rolls out.",
             "title": "Rent To Rent Tier"
           },
+          "rent_vs_local_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Asking rent vs local_rent_median_pcm, % (negative = below)",
+            "title": "Rent Vs Local Pct"
+          },
           "rental_data_source": {
             "anyOf": [
               {
@@ -17714,6 +18274,21 @@
             ],
             "description": "Repossessed property",
             "title": "Repossessed"
+          },
+          "requirement_matches": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Labels of the caller's saved requirements this property matches. Only with use_requirements=true.",
+            "title": "Requirement Matches"
           },
           "reserve_price": {
             "anyOf": [
@@ -17896,6 +18471,18 @@
             ],
             "description": "Annual commercial service charge (£/yr)",
             "title": "Service Charge Pa"
+          },
+          "service_charge_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "listing|typesafe - where service_charge came from; set only under ENABLE_TYPESAFE_LEASE_TERMS_GATE (None otherwise)",
+            "title": "Service Charge Source"
           },
           "serviced_accommodation_tier": {
             "anyOf": [
@@ -19088,6 +19675,16 @@
       },
       "PropertyPackResponse": {
         "properties": {
+          "data_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PropertyDataQuality"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "deal_score": {
             "anyOf": [
               {
@@ -21642,6 +22239,7 @@
           "primelocation",
           "spareroom",
           "propertypal",
+          "auctionhouse",
           "auction_house_london",
           "sdl_auctions",
           "future_property_auctions",
@@ -25803,7 +26401,7 @@
         "properties": {
           "basis": {
             "default": "none",
-            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | none",
+            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | none",
             "title": "Basis",
             "type": "string"
           },
@@ -25934,7 +26532,7 @@
           },
           "rung": {
             "default": "none",
-            "description": "Geography and bedroom filter that answered: sector_beds | outcode_beds | outcode_beds_widened | none",
+            "description": "Geography and bedroom filter that answered: sector_beds | outcode_beds | outcode_beds_widened | listing_stated (the listing's own stated rent) | none",
             "title": "Rung",
             "type": "string"
           },
@@ -26474,6 +27072,12 @@
             "title": "Interest Only",
             "type": "boolean"
           },
+          "is_additional_property": {
+            "default": true,
+            "description": "Stamp duty status. True (default) charges the higher rates for an additional property; False is a buyer's only property.",
+            "title": "Is Additional Property",
+            "type": "boolean"
+          },
           "legal_fees": {
             "anyOf": [
               {
@@ -26553,6 +27157,24 @@
             "default": "0.0",
             "description": "Management fee if outsourced (0 if self-managed, 15-25% typical)",
             "title": "Management Fee Percentage"
+          },
+          "mortgage_amount": {
+            "anyOf": [
+              {
+                "maximum": 50000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Loan in GBP, used instead of the deposit percentage. Bridge -> Mortgage sends the refinance loan (valuation x LTV).",
+            "title": "Mortgage Amount"
           },
           "mortgage_rate": {
             "anyOf": [
@@ -26937,6 +27559,19 @@
             "title": "Bookings Per Year",
             "type": "integer"
           },
+          "cash_yield_percentage": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cash yield after finance (%): net cash flow after the mortgage, over price",
+            "title": "Cash Yield Percentage"
+          },
           "cleaning_costs_annual": {
             "description": "Annual cleaning costs (GBP)",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -27097,7 +27732,7 @@
             "type": "string"
           },
           "net_yield_percentage": {
-            "description": "Net rental yield (%)",
+            "description": "Net rental yield before finance (%): rent less operating costs, over price",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
@@ -27846,6 +28481,16 @@
             },
             "title": "Lenses",
             "type": "object"
+          },
+          "nearby_counts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NearbyCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -27910,6 +28555,17 @@
               }
             ],
             "title": "Image Url"
+          },
+          "listing_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Type"
           },
           "price": {
             "title": "Price",
@@ -28793,6 +29449,63 @@
           "sales"
         ],
         "title": "StreetSalesHistory",
+        "type": "object"
+      },
+      "StreetViewResponse": {
+        "properties": {
+          "heading": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heading"
+          },
+          "pano_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pano Id"
+          },
+          "pano_lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pano Lat"
+          },
+          "pano_lng": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pano Lng"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "StreetViewResponse",
         "type": "object"
       },
       "StructuralConcern": {
@@ -30412,7 +31125,7 @@
                 "type": "null"
               }
             ],
-            "description": "Confidence band for the sale estimate: high | medium | low, LOWER-CASE, the one convention every enum-like field on this surface uses (rent_confidence, bmv_confidence_level, confidence_tier). ValuationService's own enum is upper-case and is normalised at this boundary, so a caller can compare this against rent_confidence without case-folding first.",
+            "description": "Confidence band for the sale estimate: high | medium | low, LOWER-CASE, the one convention every enum-like field on this surface uses (rent_confidence, bmv_confidence_level, confidence_tier). ValuationService's own enum is upper-case and is normalised at this boundary, so a caller can compare this against rent_confidence without case-folding first. What sets it: how closely the sample's estimates AGREE (their relative inter-quartile range), not how many there are - measured against achieved Land Registry sale prices, the spread predicts error and the head-count does not. A small sample that agrees closely can therefore be 'high'; it is capped by any widening of the question (see scope_widened) and by the source's own record confidence. Read it with sample_size.",
             "title": "Confidence"
           },
           "gross_yield_pct": {
@@ -30756,6 +31469,19 @@
             "title": "Annual Cashflow",
             "type": "string"
           },
+          "cash_yield_percentage": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cash yield after finance (%): net cash flow after the mortgage, over price",
+            "title": "Cash Yield Percentage"
+          },
           "gross_yield_percentage": {
             "description": "Gross rental yield (%)",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -30769,7 +31495,7 @@
             "type": "string"
           },
           "net_yield_percentage": {
-            "description": "Net rental yield (%)",
+            "description": "Net rental yield before finance (%): rent less operating costs, over price",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Yield Percentage",
             "type": "string"
@@ -31167,6 +31893,30 @@
             "description": "Article 4 direction blocks Class Q conversion",
             "title": "Article 4 Restricts Q"
           },
+          "auction_priced": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether the price is valued as an auction lot (no BMV, no yield). is_auction, except that a TypeSafe 'fixed_price' verdict lifts it under ENABLE_TYPESAFE_AUCTION_PRICE_BASIS_GATE; null with the gate off.",
+            "title": "Auction Priced"
+          },
+          "available_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rental availability date",
+            "title": "Available From"
+          },
           "back_on_market": {
             "anyOf": [
               {
@@ -31449,6 +32199,26 @@
             "description": "Percentage below market average",
             "title": "Bmv Discount Percentage"
           },
+          "bmv_evidence_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evidence completeness: unavailable, needs_review, or supported; not valuation accuracy",
+            "title": "Bmv Evidence Status"
+          },
+          "bmv_evidence_warnings": {
+            "description": "Machine-readable reasons the market estimate needs verification",
+            "items": {
+              "type": "string"
+            },
+            "title": "Bmv Evidence Warnings",
+            "type": "array"
+          },
           "bmv_last_calculated_at": {
             "anyOf": [
               {
@@ -31556,7 +32326,7 @@
                 "type": "null"
               }
             ],
-            "description": "Confidence in the corrected value: high (small correction, fresh model), medium, or low. Null when no corrected value is available.",
+            "description": "Residual-model agreement: high (small correction), medium, or low. Does not measure sale-evidence quality or model freshness. Null when no corrected value is available.",
             "title": "Bmv Reliability Tier"
           },
           "bmv_residual_model_version": {
@@ -31582,6 +32352,18 @@
             ],
             "description": "Signed residual the model applied (%). >0 means the raw market average over-estimated; corrected = market_avg / (1 + pct/100).",
             "title": "Bmv Residual Pct"
+          },
+          "bmv_street_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Same-postcode Land Registry check on the fair value: 'consistent' | 'contradicted' (withheld by the display gate) | null (not judged).",
+            "title": "Bmv Street Verdict"
           },
           "broadband_speed_mbps": {
             "anyOf": [
@@ -31915,6 +32697,17 @@
             "description": "Damp issues detected",
             "title": "Damp Issues"
           },
+          "data_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PropertyDataQuality"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Automated checks of stored property-source evidence; not a verified valuation"
+          },
           "days_on_market": {
             "anyOf": [
               {
@@ -31952,6 +32745,18 @@
             "description": "Factors contributing to deal score",
             "title": "Deal Score Factors"
           },
+          "deposit_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rental deposit amount",
+            "title": "Deposit Amount"
+          },
           "development_potential": {
             "anyOf": [
               {
@@ -31975,6 +32780,30 @@
             ],
             "description": "Formatted display address",
             "title": "Display Address"
+          },
+          "display_gross_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The card's gross yield as stored for the For You sort; null = no figure",
+            "title": "Display Gross Yield Pct"
+          },
+          "display_roce_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The card's BTL ROCE as stored for the For You sort; null = no figure",
+            "title": "Display Roce Pct"
           },
           "double_glazing": {
             "anyOf": [
@@ -33063,6 +33892,30 @@
             "description": "Listing type: sale, rent, auction",
             "title": "Listing Type"
           },
+          "local_rent_median_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Median rent pcm, same outcode and bedroom count",
+            "title": "Local Rent Median Pcm"
+          },
+          "local_rent_sample_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rents behind local_rent_median_pcm",
+            "title": "Local Rent Sample Size"
+          },
           "long_lease": {
             "anyOf": [
               {
@@ -33144,6 +33997,18 @@
             ],
             "description": "Preferred deal-signal slugs this property matches (catalogue order). Only with personalized=true.",
             "title": "Matched Signals"
+          },
+          "minimum_tenancy_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum tenancy in months",
+            "title": "Minimum Tenancy Months"
           },
           "mixed_use": {
             "anyOf": [
@@ -33813,11 +34678,34 @@
             "description": "Suitable for rent-to-rent",
             "title": "R2R Suitable"
           },
+          "rent_evidence_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical rental evidence basis, e.g. beds_median_rent",
+            "title": "Rent Evidence Basis"
+          },
+          "rent_evidence_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical rent scope, e.g. area_typical; absent means unknown",
+            "title": "Rent Evidence Scope"
+          },
           "rent_pcm_central": {
             "anyOf": [
               {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
+                "type": "number"
               },
               {
                 "type": "null"
@@ -33961,6 +34849,18 @@
             "description": "SPEC-101 Rent-to-Rent tier. Anchors the R2R strategy-fit score on PropertyPageV3 once the R2R evaluator rolls out.",
             "title": "Rent To Rent Tier"
           },
+          "rent_vs_local_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Asking rent vs local_rent_median_pcm, % (negative = below)",
+            "title": "Rent Vs Local Pct"
+          },
           "rental_data_source": {
             "anyOf": [
               {
@@ -34056,6 +34956,21 @@
             ],
             "description": "Repossessed property",
             "title": "Repossessed"
+          },
+          "requirement_matches": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Labels of the caller's saved requirements this property matches. Only with use_requirements=true.",
+            "title": "Requirement Matches"
           },
           "retirement_property": {
             "anyOf": [
@@ -40417,7 +41332,7 @@
             }
           },
           {
-            "description": "Sort: newest, oldest, price_asc, price_desc, highest_yield, best_bmv, best_investment, best_btl, best_hmo, best_brrr, best_flip, best_sa, best_r2r, bedroom_potential, most_motivated, recently_reduced, best_match",
+            "description": "Sort: newest, oldest, price_asc, price_desc, highest_yield, highest_roce, best_bmv, best_investment, best_btl, best_hmo, best_brrr, best_flip, best_sa, best_r2r, bedroom_potential, most_motivated, recently_reduced, best_match",
             "in": "query",
             "name": "sort_by",
             "required": false,
@@ -40430,7 +41345,7 @@
                   "type": "null"
                 }
               ],
-              "description": "Sort: newest, oldest, price_asc, price_desc, highest_yield, best_bmv, best_investment, best_btl, best_hmo, best_brrr, best_flip, best_sa, best_r2r, bedroom_potential, most_motivated, recently_reduced, best_match",
+              "description": "Sort: newest, oldest, price_asc, price_desc, highest_yield, highest_roce, best_bmv, best_investment, best_btl, best_hmo, best_brrr, best_flip, best_sa, best_r2r, bedroom_potential, most_motivated, recently_reduced, best_match",
               "title": "Sort By"
             }
           },
@@ -40930,6 +41845,28 @@
             }
           },
           {
+            "description": "Planning status: granted or none (no planning yet)",
+            "in": "query",
+            "name": "planning",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "granted",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Planning status: granted or none (no planning yet)",
+              "title": "Planning"
+            }
+          },
+          {
             "description": "Property category: residential, commercial",
             "in": "query",
             "name": "property_category",
@@ -41192,6 +42129,72 @@
           }
         ],
         "summary": "Get Property Market Data",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
+    "/api/v1/market-data/{property_id}/building-sales": {
+      "get": {
+        "description": "Recorded sales of the other flats in this property's building.\n\n``supported=False`` with a ``reason`` (``not_a_flat``,\n``not_covered_region``, ``no_flat_identity``) when the panel cannot be\nbuilt. A database error degrades to ``supported=True`` with no sales.\nThe 30s statement budget is the ``propai_api`` role cap (a ``SET LOCAL``\nis a no-op on the AUTOCOMMIT read session).",
+        "operationId": "get_building_sales_api_v1_market_data__property_id__building_sales_get",
+        "parameters": [
+          {
+            "description": "Property UUID or external listing id",
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Property UUID or external listing id",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingSales"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Building Sales",
         "tags": [
           "Market data"
         ]
@@ -49003,6 +50006,11 @@
             "description": "Internal server error"
           }
         },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
         "summary": "Get Property Search Cache Statistics",
         "tags": [
           "Properties"
@@ -49436,7 +50444,7 @@
     },
     "/api/v1/properties/featured": {
       "get": {
-        "description": "Get featured properties for anonymous homepage display (PUBLIC endpoint).\n\nReturns up to 12 featured properties with high yields (10%+) mixed by property type.\nUses indexed query on rental_yield for sub-50ms performance.",
+        "description": "Get featured properties for anonymous homepage display (PUBLIC endpoint).\n\nReturns up to 12 featured properties with high yields (10%+) mixed by property type.\nUses indexed query on rental_yield for sub-50ms performance. The yield\nfigures themselves are redacted for callers who may not see them.",
         "operationId": "get_featured_properties_api_v1_properties_featured_get",
         "parameters": [
           {
@@ -49506,6 +50514,11 @@
             "description": "Internal Server Error"
           }
         },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
         "summary": "Get Featured Properties",
         "tags": [
           "Properties"
@@ -49905,6 +50918,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
         "summary": "Get Rental Estimates Batch",
         "tags": [
           "Properties"
@@ -52468,6 +53486,18 @@
             }
           },
           {
+            "description": "Apply the caller's saved requirements (Pro)",
+            "in": "query",
+            "name": "use_requirements",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Apply the caller's saved requirements (Pro)",
+              "title": "Use Requirements",
+              "type": "boolean"
+            }
+          },
+          {
             "description": "ISO datetime ceiling for stable pagination",
             "in": "query",
             "name": "listed_before",
@@ -53905,7 +54935,7 @@
         },
         "security": [
           {
-            "Optional Bearer Token": []
+            "Bearer Token": []
           }
         ],
         "summary": "Natural Language Property Search",
@@ -53952,7 +54982,7 @@
         },
         "security": [
           {
-            "Optional Bearer Token": []
+            "Bearer Token": []
           }
         ],
         "summary": "Streamlined Natural Search",
@@ -54373,6 +55403,11 @@
             "description": "Internal server error"
           }
         },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
         "summary": "Get Property",
         "tags": [
           "Properties"
@@ -56450,7 +57485,7 @@
     },
     "/api/v1/properties/{property_id}/similar": {
       "get": {
-        "description": "Get similar properties using PostGIS geographic distance matching.\n\nNew in v2:\n- Real distance calculations (\"1.2 miles away\")\n- Configurable search radius (0.5-10 miles)\n- Adjustable price tolerance (10-50%)\n- Multi-tier fallback strategy\n\nOptional Authentication: Enhanced data for authenticated users.",
+        "description": "Get similar properties using PostGIS geographic distance matching.\n\nNew in v2:\n- Real distance calculations (\"1.2 miles away\")\n- Configurable search radius (0.5-10 miles)\n- Adjustable price tolerance (10-50%)\n- Multi-tier fallback strategy\n\nCard yield / rent / investment analysis are paywalled by caller tier\n(app/services/property_field_access.py), after the cache, which keeps the\nfull response for every viewer.",
         "operationId": "get_similar_properties_api_v1_properties__property_id__similar_get",
         "parameters": [
           {
@@ -56564,7 +57599,7 @@
     },
     "/api/v1/properties/{property_id}/similar-lenses": {
       "get": {
-        "description": "Return up to 4 lens groups of similar properties.\n\nPublic endpoint (no auth required) — same cacheability as /similar.\nCommercial properties return all-null lenses (frontend hides section).",
+        "description": "Return up to 4 lens groups of similar properties.\n\nPublic endpoint (no auth required). Card yield / BMV and the yield lens's\nband are paid data: only an is_entitled caller receives them\n(app/services/property_field_access.py). Redaction runs after the cache,\nwhich holds the full response for every viewer.",
         "operationId": "get_similar_lenses_api_v1_properties__property_id__similar_lenses_get",
         "parameters": [
           {
@@ -56617,6 +57652,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
         "summary": "Multi-lens similar properties for the v3 property page section",
         "tags": [
           "Properties"
@@ -56738,6 +57778,67 @@
           }
         ],
         "summary": "Put Property Strategy Tags",
+        "tags": [
+          "Properties"
+        ]
+      }
+    },
+    "/api/v1/properties/{property_id}/street-view": {
+      "get": {
+        "description": "Public: Street View is public information and the response has no paid data.",
+        "operationId": "get_property_street_view_api_v1_properties__property_id__street_view_get",
+        "parameters": [
+          {
+            "description": "Property UUID or external listing id",
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Property UUID or external listing id",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreetViewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Property Street View",
         "tags": [
           "Properties"
         ]

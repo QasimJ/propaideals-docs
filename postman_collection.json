@@ -486,7 +486,7 @@
         {
           "name": "Get Featured Properties",
           "request": {
-            "description": "Get featured properties for anonymous homepage display (PUBLIC endpoint).\n\nReturns up to 12 featured properties with high yields (10%+) mixed by property type.\nUses indexed query on rental_yield for sub-50ms performance.",
+            "description": "Get featured properties for anonymous homepage display (PUBLIC endpoint).\n\nReturns up to 12 featured properties with high yields (10%+) mixed by property type.\nUses indexed query on rental_yield for sub-50ms performance. The yield\nfigures themselves are redacted for callers who may not see them.",
             "header": [
               {
                 "key": "Accept",
@@ -1297,6 +1297,47 @@
           }
         },
         {
+          "name": "Get Property Street View",
+          "request": {
+            "description": "Public: Street View is public information and the response has no paid data.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "properties",
+                ":property_id",
+                "street-view"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/properties/:property_id/street-view",
+              "variable": [
+                {
+                  "description": "Property UUID or external listing id",
+                  "key": "property_id",
+                  "value": "<property_id>"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Get Property Virtual Tours",
           "request": {
             "description": "Get virtual tours for a property.\n\nOptional Authentication: Enhanced data for authenticated users.",
@@ -1428,7 +1469,7 @@
         {
           "name": "Get Similar Properties",
           "request": {
-            "description": "Get similar properties using PostGIS geographic distance matching.\n\nNew in v2:\n- Real distance calculations (\"1.2 miles away\")\n- Configurable search radius (0.5-10 miles)\n- Adjustable price tolerance (10-50%)\n- Multi-tier fallback strategy\n\nOptional Authentication: Enhanced data for authenticated users.",
+            "description": "Get similar properties using PostGIS geographic distance matching.\n\nNew in v2:\n- Real distance calculations (\"1.2 miles away\")\n- Configurable search radius (0.5-10 miles)\n- Adjustable price tolerance (10-50%)\n- Multi-tier fallback strategy\n\nCard yield / rent / investment analysis are paywalled by caller tier\n(app/services/property_field_access.py), after the cache, which keeps the\nfull response for every viewer.",
             "header": [
               {
                 "key": "Accept",
@@ -2255,7 +2296,7 @@
         {
           "name": "Multi-lens similar properties for the v3 property page section",
           "request": {
-            "description": "Return up to 4 lens groups of similar properties.\n\nPublic endpoint (no auth required) — same cacheability as /similar.\nCommercial properties return all-null lenses (frontend hides section).",
+            "description": "Return up to 4 lens groups of similar properties.\n\nPublic endpoint (no auth required). Card yield / BMV and the yield lens's\nband are paid data: only an is_entitled caller receives them\n(app/services/property_field_access.py). Redaction runs after the cache,\nwhich holds the full response for every viewer.",
             "header": [
               {
                 "key": "Accept",
@@ -2931,6 +2972,12 @@
                   "description": "Apply personalization",
                   "disabled": true,
                   "key": "personalized",
+                  "value": ""
+                },
+                {
+                  "description": "Apply the caller's saved requirements (Pro)",
+                  "disabled": true,
+                  "key": "use_requirements",
                   "value": ""
                 },
                 {
@@ -6357,6 +6404,47 @@
                 }
               ],
               "raw": "{{baseUrl}}/api/v1/prices?postcode="
+            }
+          }
+        },
+        {
+          "name": "Get Building Sales",
+          "request": {
+            "description": "Recorded sales of the other flats in this property's building.\n\n``supported=False`` with a ``reason`` (``not_a_flat``,\n``not_covered_region``, ``no_flat_identity``) when the panel cannot be\nbuilt. A database error degrades to ``supported=True`` with no sales.\nThe 30s statement budget is the ``propai_api`` role cap (a ``SET LOCAL``\nis a no-op on the AUTOCOMMIT read session).",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "market-data",
+                ":property_id",
+                "building-sales"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/market-data/:property_id/building-sales",
+              "variable": [
+                {
+                  "description": "Property UUID or external listing id",
+                  "key": "property_id",
+                  "value": "<property_id>"
+                }
+              ]
             }
           }
         },
@@ -12197,7 +12285,7 @@
                   "value": ""
                 },
                 {
-                  "description": "Sort: newest, oldest, price_asc, price_desc, highest_yield, best_bmv, best_investment, best_btl, best_hmo, best_brrr, best_flip, best_sa, best_r2r, bedroom_potential, most_motivated, recently_reduced, best_match",
+                  "description": "Sort: newest, oldest, price_asc, price_desc, highest_yield, highest_roce, best_bmv, best_investment, best_btl, best_hmo, best_brrr, best_flip, best_sa, best_r2r, bedroom_potential, most_motivated, recently_reduced, best_match",
                   "disabled": true,
                   "key": "sort_by",
                   "value": ""
@@ -12369,6 +12457,12 @@
                   "disabled": true,
                   "key": "exclude_shared_ownership",
                   "value": ""
+                },
+                {
+                  "description": "Planning status: granted or none (no planning yet)",
+                  "disabled": true,
+                  "key": "planning",
+                  "value": "granted"
                 },
                 {
                   "description": "Property category: residential, commercial",
