@@ -40,6 +40,31 @@ Claude is told to treat them with caution when averaging, so a headline
 A draw that comes back entirely `supporting` is therefore a real answer about
 a hard-to-match subject, not an empty result.
 
+## Manage your account from Claude
+
+When account actions are switched on for the connector, Claude can also work
+inside **your own** PAID account: read and save properties, add them to your
+deal pipeline and move deals between stages, create target scanners, update
+your preferences, add portfolio properties and rent, import a listing from a
+URL, and create a property pack.
+
+| Ask | Claude uses |
+|---|---|
+| "What's in my pipeline?" | `get_my_pipeline` |
+| "What have I saved? What alerts do I have?" | `get_my_saved_properties`, `get_my_alerts` |
+| "Show my preferences / change my budget" | `get_my_preferences`, `update_my_preferences` |
+| "Save this one" | `save_property` |
+| "Add it to my pipeline / move it to Negotiation" | `add_to_pipeline`, `move_deal_stage` |
+| "Alert me to deals like this" | `create_target_scanner` |
+| "Import this Rightmove link" | `import_property_from_url` |
+| "Add this to my portfolio / update its rent" | `add_portfolio_property`, `update_portfolio_rent` |
+| "Make a pack for this property" | `create_property_pack` |
+
+Account actions cost **no credits**, but they are rate limited. They only ever
+act on the account you signed in with, and what each one can do follows your
+plan, exactly as it does in the app. Sending email, sending from your inbox
+and broadcasting are never available from Claude.
+
 ## Connect from claude.ai
 
 <Steps>
@@ -60,7 +85,7 @@ a hard-to-match subject, not an empty result.
     Claude opens the PAID sign-in page (our authorisation is handled by Clerk,
     the same provider that signs you into the dashboard). Sign in if you
     aren't already, review the consent screen, and approve. You are returned
-    to Claude with the seven tools available. The token Claude receives works
+    to Claude with the property data tools available. The token Claude receives works
     **only** against the MCP server — it cannot be replayed against your
     dashboard session.
   </Step>
