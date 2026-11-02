@@ -136,7 +136,7 @@ const { data } = await res.json();
 | Field | Type | Description |
 |---|---|---|
 | `property_id` | string | The property's UUID |
-| `valuation` | object \| null | Same shape as [`/api/v1/valuation`](./valuation) |
+| `valuation` | object \| null | Same shape as [`/api/v1/valuation`](./valuation). When the property's page publishes a value, `sale_estimate` is that value (`valuation_scope: "property"`, with `bmv_discount_pct`, `value_indicative` and `published_value_note`), the same figure as `/api/v1/valuation?property_id=` and `published_value` on `/api/v1/properties/{property_id}`. When the page withholds it, or the caller is on the free plan (the listing's own value is paid data), the slice is the postcode answer (`valuation_scope: "postcode"`) with `published_value_note` saying why: an area estimate, not the home's value |
 | `deal_score` | object \| null | Same shape as [`/api/v1/deal-score`](./deal-score) |
 | `motivation` | object \| null | Same shape as [`/api/v1/motivation-score`](./motivation-score) |
 | `sold_history` | object \| null | Same shape as the market-data sold-history endpoint |

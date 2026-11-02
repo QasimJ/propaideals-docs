@@ -18,7 +18,7 @@ GET /api/v1/yields/area/{outcode}
 
 **Required scope:** `areas:read`
 
-Aggregates gross rental yield across all sale listings in an outcode. Returns mean, median, p25, and p75 alongside the underlying sample size.
+Gross rental yield for an outcode. `median_gross_yield_pct` is our area gross yield: the median, over active sale listings, of each listing's own gross yield (its bedroom-matched local rent over its asking price). It is the same figure our location and property pages show. The mean, p25 and p75 describe the spread of those listing yields.
 
 ### Request
 
@@ -44,7 +44,7 @@ curl https://api.propaideals.co.uk/api/v1/yields/area/M1 \
 }
 ```
 
-Yields above 25% are excluded as data quality outliers (typically a missing decimal point in the source rent estimate). If `sample_size` is `0`, the area has no live sale listings with usable rent estimates — try a wider outcode or use the [search endpoint](./properties) directly.
+Every yield field is `null` when fewer than 15 listings carry a yield, or when the area median is 12% or more (at that level the rents and prices are not describing the same homes). `sample_size` is the number of listings behind the median. Listing yields of 12% or more are left out of the spread.
 
 ## Rents by area
 

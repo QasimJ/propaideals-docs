@@ -27,6 +27,7 @@ arithmetic.
 | "Is this a good deal?" | `score_deal` |
 | "What has it sold for before, and which strategies does it fit?" | `get_property_details` |
 | "Give me everything on this property" | `get_property_report` |
+| "Show me your shortlist with notes" | `present_properties` (interactive list in hosts that support MCP Apps) |
 
 The comparables are the part worth knowing about: every comparable carries a
 confidence tier — `gold`, `silver`, `bronze`, `supporting` or `excluded` — and
@@ -44,8 +45,9 @@ a hard-to-match subject, not an empty result.
 
 When account actions are switched on for the connector, Claude can also work
 inside **your own** PAID account: read and save properties, add them to your
-deal pipeline and move deals between stages, create target scanners, update
-your preferences, add portfolio properties and rent, import a listing from a
+deal pipeline and move deals between stages, create and pause target scanners,
+unsave properties, update your preferences, read your portfolio, add portfolio
+properties and rent, import a listing from a
 URL, and create a property pack.
 
 | Ask | Claude uses |
@@ -53,10 +55,11 @@ URL, and create a property pack.
 | "What's in my pipeline?" | `get_my_pipeline` |
 | "What have I saved? What alerts do I have?" | `get_my_saved_properties`, `get_my_alerts` |
 | "Show my preferences / change my budget" | `get_my_preferences`, `update_my_preferences` |
-| "Save this one" | `save_property` |
+| "Save this one / unsave it" | `save_property`, `unsave_property` |
 | "Add it to my pipeline / move it to Negotiation" | `add_to_pipeline`, `move_deal_stage` |
-| "Alert me to deals like this" | `create_target_scanner` |
+| "Alert me to deals like this / pause that scanner" | `create_target_scanner`, `pause_target_scanner` |
 | "Import this Rightmove link" | `import_property_from_url` |
+| "What do I own?" | `get_my_portfolio` |
 | "Add this to my portfolio / update its rent" | `add_portfolio_property`, `update_portfolio_rent` |
 | "Make a pack for this property" | `create_property_pack` |
 
@@ -147,6 +150,7 @@ share one cost table, so there is nothing separate to learn):
 | Tool | Credits |
 |---|---|
 | `search_properties` | 1 |
+| `present_properties` | 1 |
 | `get_comparables` | 1 |
 | `value_property` | 2 |
 | `get_property_details` | 3 |

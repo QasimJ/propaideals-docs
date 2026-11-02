@@ -19,7 +19,8 @@ paid_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
 - 32 hex characters of cryptographic randomness after the prefix
 - Hashed with HMAC-SHA256 in our database — we cannot recover a lost key
 - Cached in Redis for sub-millisecond validation
-- One key carries the full plan and scope set of the user who created it
+- One key carries the read scopes of the creator's plan, plus the matching write
+  scopes only if **Allow changes** was ticked when it was created
 
 ## Creating an API key
 
@@ -70,7 +71,8 @@ requests.get(
 
 ## Scopes
 
-Each plan grants a set of scopes. The middleware checks the request path against the required scope:
+Each plan grants a set of read scopes. The middleware checks the request method and path
+against the required scope: `GET`, `HEAD` and `OPTIONS` need the read scope below.
 
 | Scope | Endpoint prefix | What it grants |
 |---|---|---|
@@ -84,6 +86,29 @@ Each plan grants a set of scopes. The middleware checks the request path against
 | `epc:read` | `/api/v1/epc`, `/api/v1/uprn` | EPC certificates and UPRN lookups |
 | `build-cost:read` | `/api/v1/build-cost` | Build cost estimates (Spon's 2026) |
 | `ai:chat` | `/api/v1/ultimate-ai` | Conversational AI (cost: 5 per request) |
+
+### Write scopes
+
+`POST`, `PUT`, `PATCH` and `DELETE` need the family's write scope, so a read-only key can
+never change or delete your data. Write scopes exist for five families:
+
+| Write scope | What it grants |
+|---|---|
+| `properties:write` | Watch / unwatch properties, strategy tags, comparison share links |
+| `investment:write` | Save, update and delete saved calculations |
+| `areas:write` | Create and delete area report subscriptions |
+| `leads:write` | Create, update, delete, check and toggle lead generators and off-market lead generators, and generate letters |
+| `ai:write` | Star or delete AI conversations and send chat feedback |
+
+A key gets write scopes only when you tick **Allow changes** while creating it (or send
+`"allow_write": true` to `POST /api/v1/api-keys`), and only for families your plan can read.
+Keys created before 24 October 2026 were given the write scope for each read scope they
+already held, so they keep working as before.
+
+`POST` endpoints that only read data accept the read scope: property, spatial and
+natural-language search, the investment calculators, location comparison, area pack
+generation, lead-generator preview, and AI chat (`/chat`, `/chat-stream`, `/show-more`).
+A method that is not on the public API returns `403 method_not_in_public_api`.
 
 Requests to a path your key doesn't have scope for return:
 

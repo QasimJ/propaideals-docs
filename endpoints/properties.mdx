@@ -208,6 +208,9 @@ Use these for niche / non-standard listings (block sales, commercial use classes
         "estimated_rental_pcm": 1850,
         "estimated_rental_yield": 5.62,
         "bmv_discount_percentage": 8.5,
+        "published_value": 405000,
+        "published_bmv_discount_pct": 2.5,
+        "published_value_indicative": false,
         "deal_score": 78,
         "investment_score": 82,
 
@@ -234,6 +237,19 @@ Use these for niche / non-standard listings (block sales, commercial use classes
   "meta": { /* request metadata */ }
 }
 ```
+
+### The home's value
+
+Each property carries the value its property page publishes, so one home has one number across the API:
+
+| Field | Type | Description |
+|---|---|---|
+| `published_value` | integer \| null | The home's value in £ as its property page publishes it. Null when the page withholds it |
+| `published_bmv_discount_pct` | number \| null | The published discount of the asking price below `published_value` (positive = below value, negative = above). Null when withheld or when the value is indicative only |
+| `published_value_indicative` | boolean \| null | `true` when the page shows the value as indicative (few or low-confidence comparables). Null when no value is published |
+| `published_value_note` | string \| null | Why the value or discount is withheld or indicative |
+
+Use these for any figure you show or act on. `bmv_discount_percentage` and `bmv_market_average` are the raw area-average inputs to the valuation, not the home's value or its published discount, and `bmv_corrected_value` is shown here even where the page withholds it. The same value is `sale_estimate` on [`/api/v1/valuation`](./valuation) with `property_id` and on [`/api/v1/property-pack`](./property-pack).
 
 ## Get property by ID
 

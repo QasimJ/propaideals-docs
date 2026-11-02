@@ -944,6 +944,7 @@
                 "type": "null"
               }
             ],
+            "description": "Mean listing gross yield, excluding yields of 12% or more",
             "title": "Average Gross Yield Pct"
           },
           "average_monthly_rent": {
@@ -988,6 +989,7 @@
                 "type": "null"
               }
             ],
+            "description": "25th percentile, over the same listings as the median",
             "title": "P25 Gross Yield Pct"
           },
           "p75_gross_yield_pct": {
@@ -999,6 +1001,7 @@
                 "type": "null"
               }
             ],
+            "description": "75th percentile, over the same listings as the median",
             "title": "P75 Gross Yield Pct"
           },
           "sample_size": {
@@ -2096,6 +2099,20 @@
             ],
             "title": "Bedroom Type"
           },
+          "bounding_box": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bounding Box"
+          },
           "confidence": {
             "anyOf": [
               {
@@ -2164,6 +2181,11 @@
               }
             ],
             "title": "Extra Bedroom Value Gbp"
+          },
+          "floor_plan_checked": {
+            "default": false,
+            "title": "Floor Plan Checked",
+            "type": "boolean"
           },
           "net_uplift_gbp": {
             "anyOf": [
@@ -3287,6 +3309,12 @@
             "description": "Floor area (sqft)",
             "title": "Floor Area Sqft"
           },
+          "is_asking_price": {
+            "default": false,
+            "description": "True when `price` is an estate agent's asking price, not a completed sale (Northern Ireland: no completed-sale source exists). sale_date is null on these rows.",
+            "title": "Is Asking Price",
+            "type": "boolean"
+          },
           "is_likely_flip": {
             "anyOf": [
               {
@@ -3323,6 +3351,18 @@
             "description": "Latitude",
             "title": "Latitude"
           },
+          "listing_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Portal status of the listing behind an asking-price row, when known.",
+            "title": "Listing Status"
+          },
           "longitude": {
             "anyOf": [
               {
@@ -3340,6 +3380,12 @@
             "title": "Price",
             "type": "integer"
           },
+          "price_basis": {
+            "default": "sold",
+            "description": "'asking' when is_asking_price is true, otherwise 'sold'.",
+            "title": "Price Basis",
+            "type": "string"
+          },
           "price_per_bedroom": {
             "anyOf": [
               {
@@ -3349,7 +3395,7 @@
                 "type": "null"
               }
             ],
-            "description": "Price per bedroom (GBP)",
+            "description": "Price per bedroom (GBP). Computed from `price`, so when price_basis is 'asking' it is an asking price per bedroom.",
             "title": "Price Per Bedroom"
           },
           "price_per_sqft": {
@@ -3468,7 +3514,7 @@
                 "type": "null"
               }
             ],
-            "description": "Set when the sale's AGE caps confidence_tier (over 3 years: at most silver; over 5: bronze; over 7: supporting). Null for recent sales.",
+            "description": "Set when the sale's AGE caps confidence_tier (over 3 years: at most silver; over 5: bronze; over 7: supporting), or when its price is an outlier for the set (capped at bronze: still used, at a lower weight in the valuation). Null otherwise.",
             "title": "Tier Note"
           },
           "transaction_category": {
@@ -3480,7 +3526,7 @@
                 "type": "null"
               }
             ],
-            "description": "standard / non_standard, from HM Land Registry's Price Paid Data category ('B' = repossession, right-to-buy, auction, family transfer). A sale listed by both an aggregated source and HM Land Registry is published once, carrying the Land Registry category. Null when no PPD category backs this row — which is EVERY row outside England and Wales, because PPD covers England and Wales only. A null is 'not recorded', never 'checked and ordinary'; where the jurisdiction is the reason, transaction_category_note says so.",
+            "description": "standard / investor_purchase / non_standard, from HM Land Registry's Price Paid Data category ('B' = repossession, right-to-buy, auction, family transfer, buy-to-let or company purchase). investor_purchase (only with the Category B split on) is a 'B' sale priced like an open-market purchase: usable, capped at silver, explained in tier_note; a 'B' sale priced far below the set stays non_standard. A sale listed by both an aggregated source and HM Land Registry is published once, carrying the Land Registry category. Null when no PPD category backs this row — which is EVERY row outside England and Wales, because PPD covers England and Wales only. A null is 'not recorded', never 'checked and ordinary'; where the jurisdiction is the reason, transaction_category_note says so.",
             "title": "Transaction Category"
           },
           "transaction_category_note": {
@@ -3519,6 +3565,24 @@
             "description": "Number of comparables returned",
             "title": "Count",
             "type": "integer"
+          },
+          "excluded_count": {
+            "default": 0,
+            "description": "Comparables whose confidence_tier is 'excluded' (price_outlier or low_similarity). usable_count + excluded_count == count.",
+            "title": "Excluded Count",
+            "type": "integer"
+          },
+          "no_data_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why no comparables were searched, when the search could not run.",
+            "title": "No Data Reason"
           },
           "postcode": {
             "description": "Normalised postcode the comparables are for",
@@ -3559,7 +3623,7 @@
           },
           "subject_floor_area_source": {
             "default": "absent",
-            "description": "measured | building_estimate | absent. A postcode-level lookup is always building_estimate: it returns the same size for every property in the postcode regardless of bedroom count.",
+            "description": "measured | building_estimate | unverified | user_supplied | absent. user_supplied is the caller's own subject_floor_area_sqft, not verified. A postcode-level lookup is always building_estimate: it returns the same size for every property in the postcode regardless of bedroom count.",
             "title": "Subject Floor Area Source",
             "type": "string"
           },
@@ -3574,6 +3638,12 @@
             ],
             "description": "The subject floor area the ranker scored against. Resolved from the POSTCODE, not from an address — read subject_floor_area_source before using it as a divisor.",
             "title": "Subject Floor Area Sqft"
+          },
+          "usable_count": {
+            "default": 0,
+            "description": "Comparables whose confidence_tier is gold, silver, bronze or supporting - the rows that can evidence a value. `count` is every row returned, including excluded ones; a response with count > 0 and usable_count 0 holds NO usable evidence.",
+            "title": "Usable Count",
+            "type": "integer"
           }
         },
         "required": [
@@ -4748,6 +4818,20 @@
             ],
             "description": "Signature block text for letter PDFs (newline-separated)",
             "title": "Signature Block"
+          },
+          "sourcing_fee_percent": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sourcer's standard fee as a percentage (0-100, e.g. 2.5)",
+            "title": "Sourcing Fee Percent"
           },
           "strapline": {
             "anyOf": [
@@ -7344,6 +7428,299 @@
         "title": "HMOCalculationResponse",
         "type": "object"
       },
+      "HMOConversionCostRequest": {
+        "description": "Inputs to cost_model.estimate_conversion_cost (calculator helper).",
+        "properties": {
+          "existing_bathrooms": {
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Existing Bathrooms",
+            "type": "integer"
+          },
+          "existing_bedrooms": {
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Existing Bedrooms",
+            "type": "integer"
+          },
+          "include_ensuites": {
+            "default": false,
+            "title": "Include Ensuites",
+            "type": "boolean"
+          },
+          "target_hmo_rooms": {
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Target Hmo Rooms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "existing_bedrooms",
+          "existing_bathrooms",
+          "target_hmo_rooms"
+        ],
+        "title": "HMOConversionCostRequest",
+        "type": "object"
+      },
+      "HMOCostBreakdownDTO": {
+        "description": "Output of cost_model.estimate_conversion_cost.",
+        "properties": {
+          "added_rooms": {
+            "title": "Added Rooms",
+            "type": "integer"
+          },
+          "bathroom_additions_gbp": {
+            "title": "Bathroom Additions Gbp",
+            "type": "integer"
+          },
+          "bathrooms_added": {
+            "title": "Bathrooms Added",
+            "type": "integer"
+          },
+          "emergency_lighting_gbp": {
+            "title": "Emergency Lighting Gbp",
+            "type": "integer"
+          },
+          "ensuites_gbp": {
+            "title": "Ensuites Gbp",
+            "type": "integer"
+          },
+          "fire_doors_gbp": {
+            "title": "Fire Doors Gbp",
+            "type": "integer"
+          },
+          "fixed_costs_gbp": {
+            "title": "Fixed Costs Gbp",
+            "type": "integer"
+          },
+          "insulation_gbp": {
+            "title": "Insulation Gbp",
+            "type": "integer"
+          },
+          "smoke_detection_gbp": {
+            "title": "Smoke Detection Gbp",
+            "type": "integer"
+          },
+          "total_gbp": {
+            "title": "Total Gbp",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "fixed_costs_gbp",
+          "bathroom_additions_gbp",
+          "ensuites_gbp",
+          "fire_doors_gbp",
+          "emergency_lighting_gbp",
+          "smoke_detection_gbp",
+          "insulation_gbp",
+          "total_gbp",
+          "added_rooms",
+          "bathrooms_added"
+        ],
+        "title": "HMOCostBreakdownDTO",
+        "type": "object"
+      },
+      "HMOGdvDTO": {
+        "description": "Output of gdv_model.value_hmo_investment_basis.",
+        "properties": {
+          "annual_opex_gbp": {
+            "title": "Annual Opex Gbp",
+            "type": "integer"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "bricks_and_mortar_value_gbp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bricks And Mortar Value Gbp"
+          },
+          "effective_annual_income_gbp": {
+            "title": "Effective Annual Income Gbp",
+            "type": "integer"
+          },
+          "gross_annual_income_gbp": {
+            "title": "Gross Annual Income Gbp",
+            "type": "integer"
+          },
+          "lender_basis_note": {
+            "title": "Lender Basis Note",
+            "type": "string"
+          },
+          "net_annual_income_gbp": {
+            "title": "Net Annual Income Gbp",
+            "type": "integer"
+          },
+          "rooms": {
+            "title": "Rooms",
+            "type": "integer"
+          },
+          "small_hmo": {
+            "title": "Small Hmo",
+            "type": "boolean"
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "no_rooms",
+                  "missing_rent",
+                  "invalid_yield",
+                  "non_positive_income"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          },
+          "value_high_gbp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value High Gbp"
+          },
+          "value_low_gbp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Low Gbp"
+          },
+          "value_mid_gbp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Mid Gbp"
+          },
+          "yield_high_pct": {
+            "title": "Yield High Pct",
+            "type": "number"
+          },
+          "yield_low_pct": {
+            "title": "Yield Low Pct",
+            "type": "number"
+          },
+          "yield_mid_pct": {
+            "title": "Yield Mid Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rooms",
+          "gross_annual_income_gbp",
+          "effective_annual_income_gbp",
+          "annual_opex_gbp",
+          "net_annual_income_gbp",
+          "yield_low_pct",
+          "yield_mid_pct",
+          "yield_high_pct",
+          "small_hmo",
+          "lender_basis_note"
+        ],
+        "title": "HMOGdvDTO",
+        "type": "object"
+      },
+      "HMOGdvRequest": {
+        "description": "Inputs to gdv_model.value_hmo_investment_basis.",
+        "properties": {
+          "annual_opex_gbp": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual running costs excluding finance",
+            "title": "Annual Opex Gbp"
+          },
+          "bricks_and_mortar_value_gbp": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bricks And Mortar Value Gbp"
+          },
+          "hmo_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mid valuation yield (%)",
+            "title": "Hmo Yield Pct"
+          },
+          "room_rent_pcm_gbp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Average rent per room",
+            "title": "Room Rent Pcm Gbp"
+          },
+          "rooms": {
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Rooms",
+            "type": "integer"
+          },
+          "void_pct": {
+            "default": 10.0,
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Void Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rooms"
+        ],
+        "title": "HMOGdvRequest",
+        "type": "object"
+      },
       "HMOMetrics": {
         "description": "HMO-specific investment metrics.",
         "properties": {
@@ -8774,10 +9151,28 @@
       "LeadGeneratorCreateRequest": {
         "description": "Request schema for creating a lead generator.",
         "properties": {
+          "alert_email": {
+            "default": true,
+            "description": "Email this scanner's matches",
+            "title": "Alert Email",
+            "type": "boolean"
+          },
           "alert_enabled": {
             "default": true,
             "description": "Enable alert notifications",
             "title": "Alert Enabled",
+            "type": "boolean"
+          },
+          "alert_push": {
+            "default": true,
+            "description": "Include this scanner's matches in the push sent with its email digest",
+            "title": "Alert Push",
+            "type": "boolean"
+          },
+          "alert_whatsapp": {
+            "default": true,
+            "description": "WhatsApp this scanner's matches",
+            "title": "Alert Whatsapp",
             "type": "boolean"
           },
           "map_center_lat": {
@@ -9000,6 +9395,11 @@
       "LeadGeneratorResponse": {
         "description": "Response schema for a single lead generator.",
         "properties": {
+          "alert_email": {
+            "default": true,
+            "title": "Alert Email",
+            "type": "boolean"
+          },
           "alert_enabled": {
             "default": false,
             "title": "Alert Enabled",
@@ -9015,6 +9415,16 @@
               }
             ],
             "title": "Alert Id"
+          },
+          "alert_push": {
+            "default": true,
+            "title": "Alert Push",
+            "type": "boolean"
+          },
+          "alert_whatsapp": {
+            "default": true,
+            "title": "Alert Whatsapp",
+            "type": "boolean"
           },
           "created_at": {
             "format": "date-time",
@@ -9041,6 +9451,18 @@
               }
             ],
             "title": "Last Checked At"
+          },
+          "last_emailed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Emailed At"
           },
           "map_center_lat": {
             "anyOf": [
@@ -9074,6 +9496,17 @@
               }
             ],
             "title": "Map Zoom"
+          },
+          "matches_7d": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matches 7D"
           },
           "name": {
             "title": "Name",
@@ -9148,6 +9581,17 @@
       "LeadGeneratorUpdateRequest": {
         "description": "Request schema for updating a lead generator.",
         "properties": {
+          "alert_email": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Email"
+          },
           "alert_enabled": {
             "anyOf": [
               {
@@ -9158,6 +9602,28 @@
               }
             ],
             "title": "Alert Enabled"
+          },
+          "alert_push": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Push"
+          },
+          "alert_whatsapp": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Whatsapp"
           },
           "map_center_lat": {
             "anyOf": [
@@ -10475,10 +10941,28 @@
       "OffMarketLeadGeneratorCreateRequest": {
         "description": "Request schema for creating an off-market lead generator.",
         "properties": {
+          "alert_email": {
+            "default": true,
+            "description": "Email this scanner's matches",
+            "title": "Alert Email",
+            "type": "boolean"
+          },
           "alert_enabled": {
             "default": true,
             "description": "Enable alert notifications",
             "title": "Alert Enabled",
+            "type": "boolean"
+          },
+          "alert_push": {
+            "default": true,
+            "description": "Include this scanner's matches in the push sent with its email digest",
+            "title": "Alert Push",
+            "type": "boolean"
+          },
+          "alert_whatsapp": {
+            "default": true,
+            "description": "WhatsApp this scanner's matches",
+            "title": "Alert Whatsapp",
             "type": "boolean"
           },
           "map_center_lat": {
@@ -10605,6 +11089,11 @@
       "OffMarketLeadGeneratorResponse": {
         "description": "Response schema for a single off-market lead generator.",
         "properties": {
+          "alert_email": {
+            "default": true,
+            "title": "Alert Email",
+            "type": "boolean"
+          },
           "alert_enabled": {
             "default": false,
             "title": "Alert Enabled",
@@ -10620,6 +11109,16 @@
               }
             ],
             "title": "Alert Id"
+          },
+          "alert_push": {
+            "default": true,
+            "title": "Alert Push",
+            "type": "boolean"
+          },
+          "alert_whatsapp": {
+            "default": true,
+            "title": "Alert Whatsapp",
+            "type": "boolean"
           },
           "classification_counts": {
             "anyOf": [
@@ -10753,6 +11252,17 @@
       "OffMarketLeadGeneratorUpdateRequest": {
         "description": "Request schema for updating an off-market lead generator.",
         "properties": {
+          "alert_email": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Email"
+          },
           "alert_enabled": {
             "anyOf": [
               {
@@ -10763,6 +11273,28 @@
               }
             ],
             "title": "Alert Enabled"
+          },
+          "alert_push": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Push"
+          },
+          "alert_whatsapp": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Whatsapp"
           },
           "map_center_lat": {
             "anyOf": [
@@ -12114,7 +12646,7 @@
                 "type": "null"
               }
             ],
-            "description": "What a sold-price aggregate is drawn from. Null on asking prices.",
+            "description": "What the aggregate is drawn from: Land Registry completed sales on sold prices, active portal listings on asking prices.",
             "title": "Source"
           },
           "window_from": {
@@ -12515,6 +13047,61 @@
             ],
             "title": "Bedrooms"
           },
+          "bmv_comp_count_used": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmv Comp Count Used"
+          },
+          "bmv_confidence_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmv Confidence Level"
+          },
+          "bmv_corrected_discount_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmv Corrected Discount Percentage"
+          },
+          "bmv_corrected_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmv Corrected Value"
+          },
+          "bmv_data_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmv Data Source"
+          },
           "bmv_discount_percentage": {
             "anyOf": [
               {
@@ -12525,6 +13112,17 @@
               }
             ],
             "title": "Bmv Discount Percentage"
+          },
+          "bmv_street_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmv Street Verdict"
           },
           "brrr_score": {
             "anyOf": [
@@ -13044,6 +13642,30 @@
             ],
             "description": "Agent postcode",
             "title": "Postcode"
+          },
+          "verification_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reader-facing note when verified is False",
+            "title": "Verification Note"
+          },
+          "verified": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "False when the linked agent record could not be confirmed as this listing's branch; contact details are then the listing's own only",
+            "title": "Verified"
           },
           "website": {
             "anyOf": [
@@ -14428,6 +15050,18 @@
             "description": "Genuine sold comparables used for the BMV calculation",
             "title": "Bmv Comp Count Used"
           },
+          "bmv_comp_type_shortfall": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'house' | 'flat' when fewer than 2 of the valuation's comparables are of the subject's own kind (ENABLE_BMV_COMP_TYPE_RULE): the value is then indicative and no BMV % is published. Null otherwise.",
+            "title": "Bmv Comp Type Shortfall"
+          },
           "bmv_comparable_count": {
             "anyOf": [
               {
@@ -14559,6 +15193,18 @@
             },
             "title": "Bmv Evidence Warnings",
             "type": "array"
+          },
+          "bmv_hard_label_gated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when valuations in this segment miss Land Registry sales by more than 12% (median); the display gate then shows the BMV as indicative.",
+            "title": "Bmv Hard Label Gated"
           },
           "bmv_last_calculated_at": {
             "anyOf": [
@@ -14703,7 +15349,7 @@
                 "type": "null"
               }
             ],
-            "description": "Same-postcode Land Registry check on the fair value: 'consistent' | 'contradicted' (withheld by the display gate) | null (not judged).",
+            "description": "Same-postcode Land Registry check on the fair value: 'consistent' | 'contradicted' | 'asking_contradicted' (both withheld by the display gate) | null (not judged).",
             "title": "Bmv Street Verdict"
           },
           "broadband_speed_mbps": {
@@ -15122,6 +15768,18 @@
             "description": "Occupancy status, e.g. 'Vacant', 'Let', 'Owner occupied'",
             "title": "Current Occupancy"
           },
+          "current_rent_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Passing rent a sitting tenant pays, whole GBP per month",
+            "title": "Current Rent Pcm"
+          },
           "damp_issues": {
             "anyOf": [
               {
@@ -15424,6 +16082,19 @@
             },
             "title": "Epc Certificates",
             "type": "array"
+          },
+          "epc_rating_conflict": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The listing and the EPC register name different bands: listing_band, register_band, register_date and which one energy_rating shows (app.services.epc.stated_band)",
+            "title": "Epc Rating Conflict"
           },
           "epc_score": {
             "anyOf": [
@@ -15806,6 +16477,18 @@
             "title": "Floor Plans",
             "type": "array"
           },
+          "flying_freehold": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stated flying freehold",
+            "title": "Flying Freehold"
+          },
           "for_you_score": {
             "anyOf": [
               {
@@ -16140,7 +16823,7 @@
                 "type": "null"
               }
             ],
-            "description": "HMO Article 4 coverage from property_evidence.get_hmo_planning, the same read MCP strategy caveats and playbook tiers use. article_4.hmo is true when a precise direction covers the address, null when coverage is unverified. Absent when the lookup failed.",
+            "description": "HMO Article 4 coverage from property_evidence.get_hmo_planning, the same read MCP strategy caveats and playbook tiers use. article_4.hmo is true when a precise direction covers the address, null when coverage is unverified. With no direction held at the address, article_4.council_coverage is 'trusted' when the council's HMO Article 4 coverage is one we vouch for, else 'unverified'. Absent when the lookup failed.",
             "title": "Hmo Planning"
           },
           "hmo_potential": {
@@ -16362,6 +17045,18 @@
             "description": "Bungalow (single-storey home)",
             "title": "Is Bungalow"
           },
+          "is_business_sale": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the asking price buys a business (goodwill, trade, a lease), not a property. The address is area-level only and no fair value, BMV, rent, yield or deal score is published for it. Null when not flagged.",
+            "title": "Is Business Sale"
+          },
           "is_dual_listed": {
             "anyOf": [
               {
@@ -16547,6 +17242,18 @@
             ],
             "description": "SSSI protected area",
             "title": "Is Sssi"
+          },
+          "is_student_accommodation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purpose-built student accommodation or a student studio",
+            "title": "Is Student Accommodation"
           },
           "is_top_floor": {
             "anyOf": [
@@ -17235,6 +17942,18 @@
             "description": "Has new roof",
             "title": "New Roof"
           },
+          "non_standard_construction": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stated non-standard construction with no repair certificate",
+            "title": "Non Standard Construction"
+          },
           "number_of_floorplans": {
             "anyOf": [
               {
@@ -17804,6 +18523,54 @@
               }
             ],
             "description": "Property type"
+          },
+          "published_bmv_discount_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The published discount of the asking price below published_value (positive = below value, negative = above). Null when withheld or indicative-only.",
+            "title": "Published Bmv Discount Pct"
+          },
+          "published_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The home's value as its property page publishes it (GBP): the corrected value through the published-BMV gate. Null when withheld; published_value_note says why.",
+            "title": "Published Value"
+          },
+          "published_value_indicative": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the page shows the value muted as indicative (few or low-confidence comparables). Null when no value is published.",
+            "title": "Published Value Indicative"
+          },
+          "published_value_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the value or discount is withheld or indicative.",
+            "title": "Published Value Note"
           },
           "quick_sale": {
             "anyOf": [
@@ -18637,6 +19404,18 @@
             "description": "ISO datetime when property entered its current status",
             "title": "Status Changed At"
           },
+          "status_inferred": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when a sold_stc status is our inference from the listing being absent from its portal, not the agent's label (status_is_absence_inferred): show 'No longer listed', never 'Sold STC'. False when the portal said so; None when unknown or not sold_stc",
+            "title": "Status Inferred"
+          },
           "stc_fall_through": {
             "anyOf": [
               {
@@ -18977,6 +19756,31 @@
             "description": "Vacant possession",
             "title": "Vacant Possession"
           },
+          "valuation_absent": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the stored row has neither a corrected value nor a raw BMV discount. Input to the page's no-valuation verdict cap.",
+            "title": "Valuation Absent"
+          },
+          "valuation_evidence": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What moved the fair value away from the model (investor audit 2.2/2.4/2.5): anchor {type own_sale|same_building|same_street, date, price, indexed_price, weight, sales[]} to list first among the comparables, tenanted investment value, Scottish offers-over basis. Null unless ENABLE_VALUATION_ANCHORS is on and the corrected value is shown.",
+            "title": "Valuation Evidence"
+          },
           "vat_applicable": {
             "anyOf": [
               {
@@ -19024,6 +19828,21 @@
             ],
             "description": "AI verdict: pursue | watch | pass | insufficient_data",
             "title": "Verdict"
+          },
+          "verdict_blocked_by": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PursueBlockReason"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the Pursue evidence gate held this home at watch (ENABLE_VERDICT_EVIDENCE_GATE); null when nothing held it.",
+            "title": "Verdict Blocked By"
           },
           "verdict_score": {
             "anyOf": [
@@ -23011,6 +23830,25 @@
         "title": "PsqftHeatmapResponse",
         "type": "object"
       },
+      "PursueBlockReason": {
+        "description": "One reason the Pursue evidence gate held a home at watch\n(verdict_engine.pursue_blocked_by).",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "PursueBlockReason",
+        "type": "object"
+      },
       "QueryProcessingMetadata": {
         "description": "Metadata about query processing and parsing.",
         "example": {
@@ -26401,7 +27239,7 @@
         "properties": {
           "basis": {
             "default": "none",
-            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | none",
+            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | property_estimate (this home's own algorithmic estimate, used over a low- or medium-confidence area median) | verify_cap_comparable_median (a per-sqft, band-edge, thin-sample or verify-labelled rent held at the median of the same-bedroom comparable lets) | none",
             "title": "Basis",
             "type": "string"
           },
@@ -26830,6 +27668,169 @@
           "display_name"
         ],
         "title": "RoomQuote",
+        "type": "object"
+      },
+      "RoomRentDemand": {
+        "description": "Area median room rent + indicative room income + HMO demand drivers.\n\n``area_median_room_rent_pcm`` is the postcode-AREA median (e.g. ``LS``),\nnot this property's rent. ``eligible=False`` with a ``reason``\n(``not_for_sale``, ``too_few_bedrooms``, ``no_area_rent``) when the panel\nshould not render figures.",
+        "properties": {
+          "already_hmo": {
+            "default": false,
+            "title": "Already Hmo",
+            "type": "boolean"
+          },
+          "area_median_room_rent_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Median Room Rent Pcm"
+          },
+          "article_4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Article 4"
+          },
+          "demand_drivers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Demand Drivers",
+            "type": "array"
+          },
+          "demand_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demand Label"
+          },
+          "demand_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demand Score"
+          },
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "indicative_total_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indicative Total Pcm"
+          },
+          "postcode_area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode Area"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "room_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Count"
+          },
+          "room_count_capped": {
+            "default": false,
+            "title": "Room Count Capped",
+            "type": "boolean"
+          },
+          "sample_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Count"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "eligible"
+        ],
+        "title": "RoomRentDemand",
         "type": "object"
       },
       "RoomRentalSchema": {
@@ -27315,8 +28316,8 @@
                 "type": "string"
               }
             ],
-            "default": "3.0",
-            "description": "Platform fee (Airbnb 3%, Booking.com 15-18%)",
+            "default": "15.5",
+            "description": "Platform fee (Airbnb UK host-only 15.5%, Booking.com 15-18%)",
             "title": "Platform Fee Percentage"
           },
           "property_type": {
@@ -28830,6 +29831,11 @@
             "title": "Back On Market",
             "type": "integer"
           },
+          "new_since_check": {
+            "default": 0,
+            "title": "New Since Check",
+            "type": "integer"
+          },
           "reduced": {
             "default": 0,
             "title": "Reduced",
@@ -28848,6 +29854,16 @@
           "sold_stc": {
             "default": 0,
             "title": "Sold Stc",
+            "type": "integer"
+          },
+          "under_offer": {
+            "default": 0,
+            "title": "Under Offer",
+            "type": "integer"
+          },
+          "withdrawn": {
+            "default": 0,
+            "title": "Withdrawn",
             "type": "integer"
           }
         },
@@ -31056,6 +32072,30 @@
             "description": "Set when deal_score is null although a scores row exists: why no score is published (no factor breakdown held yet, or a stored 0 queued for re-scoring). An absence, never a score of zero.",
             "title": "Deal Score Note"
           },
+          "evidence_capped": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Capped below the Pursue bar: 25+ factor points unscored, or the BMV or Yield factor unscored (evidence_capped_reason).",
+            "title": "Evidence Capped"
+          },
+          "evidence_capped_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "valuation_or_yield_unscored | unscored_points_25_plus, when capped.",
+            "title": "Evidence Capped Reason"
+          },
           "factors": {
             "additionalProperties": true,
             "title": "Factors",
@@ -31080,6 +32120,30 @@
             ],
             "title": "Is Hot Deal"
           },
+          "points_available": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Factor points the score was judged on (the denominator).",
+            "title": "Points Available"
+          },
+          "points_unscored": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Factor points not scored because the input is withheld or missing.",
+            "title": "Points Unscored"
+          },
           "predicted_reduction_likelihood": {
             "anyOf": [
               {
@@ -31094,6 +32158,74 @@
           "property_id": {
             "title": "Property Id",
             "type": "string"
+          },
+          "pursue_deal_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when deal_score is evidence-capped: today's pre-flag score, which the verdict's Pursue bars read instead, so a capped score opens no Pursue route.",
+            "title": "Pursue Deal Score"
+          },
+          "risk_items": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The risk deductions: name, deduction, severity, description.",
+            "title": "Risk Items"
+          },
+          "total_risk_deduction": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Points deducted for listing risks (flood zone, short lease...).",
+            "title": "Total Risk Deduction"
+          },
+          "uncapped_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The rescaled score before the cap: display only, never ranked.",
+            "title": "Uncapped Score"
+          },
+          "unscored_factors": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unscored factors: name, reason code, label, max_score, reason.",
+            "title": "Unscored Factors"
           }
         },
         "required": [
@@ -31115,6 +32247,18 @@
             ],
             "description": "Area average sale value (GBP), from the SAME engine as sale_estimate: the postcode AVM mean when valuation_scope is 'postcode', the property's comparable-market average when it is 'property'. Never read it against a sale_estimate from the other scope — the gap would be an artefact of mixing engines, not a discount to the local market.",
             "title": "Area Average"
+          },
+          "bmv_discount_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Property-scoped only: the published discount of the asking price below sale_estimate (positive = below value). Null when none is published, including the indicative case.",
+            "title": "Bmv Discount Pct"
           },
           "confidence": {
             "anyOf": [
@@ -31144,6 +32288,43 @@
             "description": "Normalised postcode this answer was computed over. It does NOT mean the figures describe a dwelling in it — read valuation_scope, which says whether they describe the postcode or one property.",
             "title": "Postcode",
             "type": "string"
+          },
+          "postcode_estimate": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Present when valuation_scope is 'property': the postcode-level Zoopla AVM figures (sale_estimate, sale_lower, sale_upper, area_average, valuation_scope, resolution_level, sample_size) that this answer replaced as the primary value. A secondary area context, not the property's value.",
+            "title": "Postcode Estimate"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The live sale listing the caller identified (property_id; MCP value_property also matches an address). Set whenever a listing matched, even when its value is withheld.",
+            "title": "Property Id"
+          },
+          "published_value_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the listing's value is indicative or withheld. When withheld, valuation_scope stays 'postcode' and the figures are Zoopla's area estimate, not a value for this property.",
+            "title": "Published Value Note"
           },
           "rent_basis": {
             "anyOf": [
@@ -31329,6 +32510,18 @@
             "default": "postcode",
             "description": "Null when the sale estimate is suppressed (no rung reached the publish floor) — a rent-only answer claims no sale scope. Otherwise: what sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from Zoopla's AVM over currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'sector' / 'outcode' — the same aggregate answer, but the relaxation ladder found no usable sample at the requested scope and widened; the figures describe that wider geography, not the postcode asked about (scope_widened is True and valuation_notes says what moved). 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
             "title": "Valuation Scope"
+          },
+          "value_indicative": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Property-scoped only: True when the value is published as indicative (few comparables of the subject's own kind), with no discount headline.",
+            "title": "Value Indicative"
           }
         },
         "required": [
@@ -32087,6 +33280,18 @@
             "description": "Genuine sold comparables used for the BMV calculation",
             "title": "Bmv Comp Count Used"
           },
+          "bmv_comp_type_shortfall": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'house' | 'flat' when fewer than 2 of the valuation's comparables are of the subject's own kind (ENABLE_BMV_COMP_TYPE_RULE): the value is then indicative and no BMV % is published. Null otherwise.",
+            "title": "Bmv Comp Type Shortfall"
+          },
           "bmv_comparable_count": {
             "anyOf": [
               {
@@ -32218,6 +33423,18 @@
             },
             "title": "Bmv Evidence Warnings",
             "type": "array"
+          },
+          "bmv_hard_label_gated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when valuations in this segment miss Land Registry sales by more than 12% (median); the display gate then shows the BMV as indicative.",
+            "title": "Bmv Hard Label Gated"
           },
           "bmv_last_calculated_at": {
             "anyOf": [
@@ -32362,7 +33579,7 @@
                 "type": "null"
               }
             ],
-            "description": "Same-postcode Land Registry check on the fair value: 'consistent' | 'contradicted' (withheld by the display gate) | null (not judged).",
+            "description": "Same-postcode Land Registry check on the fair value: 'consistent' | 'contradicted' | 'asking_contradicted' (both withheld by the display gate) | null (not judged).",
             "title": "Bmv Street Verdict"
           },
           "broadband_speed_mbps": {
@@ -32684,6 +33901,18 @@
             ],
             "description": "Crime decile (1=highest crime, 10=lowest)",
             "title": "Crime Score"
+          },
+          "current_rent_pcm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Passing rent a sitting tenant pays, whole GBP per month",
+            "title": "Current Rent Pcm"
           },
           "damp_issues": {
             "anyOf": [
@@ -33189,6 +34418,18 @@
             ],
             "description": "Floor area in square meters",
             "title": "Floor Area Sqm"
+          },
+          "flying_freehold": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stated flying freehold",
+            "title": "Flying Freehold"
           },
           "for_you_score": {
             "anyOf": [
@@ -33752,6 +34993,18 @@
             "description": "SSSI protected area",
             "title": "Is Sssi"
           },
+          "is_student_accommodation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Purpose-built student accommodation or a student studio",
+            "title": "Is Student Accommodation"
+          },
           "is_top_floor": {
             "anyOf": [
               {
@@ -34163,6 +35416,18 @@
             "description": "Has new roof",
             "title": "New Roof"
           },
+          "non_standard_construction": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stated non-standard construction with no repair certificate",
+            "title": "Non Standard Construction"
+          },
           "ownership_type": {
             "anyOf": [
               {
@@ -34560,6 +35825,54 @@
               }
             ],
             "description": "Property type"
+          },
+          "published_bmv_discount_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The published discount of the asking price below published_value (positive = below value, negative = above). Null when withheld or indicative-only.",
+            "title": "Published Bmv Discount Pct"
+          },
+          "published_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The home's value as its property page publishes it (GBP): the corrected value through the published-BMV gate. Null when withheld; published_value_note says why.",
+            "title": "Published Value"
+          },
+          "published_value_indicative": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the page shows the value muted as indicative (few or low-confidence comparables). Null when no value is published.",
+            "title": "Published Value Indicative"
+          },
+          "published_value_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the value or discount is withheld or indicative.",
+            "title": "Published Value Note"
           },
           "quick_sale": {
             "anyOf": [
@@ -35163,6 +36476,18 @@
             "$ref": "#/components/schemas/PropertyStatus",
             "description": "Property status"
           },
+          "status_inferred": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when a sold_stc status is our inference from the listing being absent from its portal, not the agent's label (status_is_absence_inferred): show 'No longer listed', never 'Sold STC'. False when the portal said so; None when unknown or not sold_stc",
+            "title": "Status Inferred"
+          },
           "stc_fall_through": {
             "anyOf": [
               {
@@ -35446,6 +36771,18 @@
             "description": "Vacant possession",
             "title": "Vacant Possession"
           },
+          "valuation_absent": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the stored row has neither a corrected value nor a raw BMV discount. Input to the page's no-valuation verdict cap.",
+            "title": "Valuation Absent"
+          },
           "vendor_motivation_score": {
             "anyOf": [
               {
@@ -35481,6 +36818,21 @@
             ],
             "description": "AI verdict: pursue | watch | pass | insufficient_data",
             "title": "Verdict"
+          },
+          "verdict_blocked_by": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PursueBlockReason"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the Pursue evidence gate held this home at watch (ENABLE_VERDICT_EVIDENCE_GATE); null when nothing held it.",
+            "title": "Verdict Blocked By"
           },
           "verdict_score": {
             "anyOf": [
@@ -37631,6 +38983,26 @@
             }
           },
           {
+            "description": "Optional subject floor area in sq ft, supplied by the caller when none is held. Used only when the held area is absent, unverified or a building estimate (a measured area wins); must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied', not verified, and never saved.",
+            "in": "query",
+            "name": "subject_floor_area_sqft",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 50000,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional subject floor area in sq ft, supplied by the caller when none is held. Used only when the held area is absent, unverified or a building estimate (a measured area wins); must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied', not verified, and never saved.",
+              "title": "Subject Floor Area Sqft"
+            }
+          },
+          {
             "in": "query",
             "name": "user_id",
             "required": false,
@@ -38458,7 +39830,7 @@
     },
     "/api/v1/investment/ai-analysis/{property_id}": {
       "get": {
-        "description": "Get AI-powered investment analysis for a property.\n\nThis endpoint provides comprehensive investment insights including:\n- Natural language investment summary\n- Price appreciation predictions (1yr, 3yr, 5yr)\n- Risk assessment and investment scoring\n- Market comparisons and opportunities\n- Personalized recommendations\n\nThe analysis is cached permanently to optimize performance.\nUse refresh=true query parameter to force regeneration.",
+        "description": "Get AI-powered investment analysis for a property.\n\nThis endpoint provides comprehensive investment insights including:\n- Natural language investment summary\n- Risk assessment and investment scoring\n- Market comparisons and opportunities\n- Personalized recommendations\n\nThe analysis is cached permanently to optimize performance.\nUse refresh=true query parameter to force regeneration.",
         "operationId": "get_ai_investment_analysis_api_v1_investment_ai_analysis__property_id__get",
         "parameters": [
           {
@@ -39589,6 +40961,100 @@
         ]
       }
     },
+    "/api/v1/investment/hmo-conversion-cost": {
+      "post": {
+        "description": "Itemised cost of converting a house to an HMO: planning, licence and fire risk assessment, fire doors, emergency lighting, smoke detection, partitions, extra bathrooms and optional ensuites.",
+        "operationId": "estimate_hmo_conversion_cost_api_v1_investment_hmo_conversion_cost_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HMOConversionCostRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HMOCostBreakdownDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Estimate HMO conversion costs",
+        "tags": [
+          "Investment"
+        ]
+      }
+    },
+    "/api/v1/investment/hmo-gdv": {
+      "post": {
+        "description": "Net annual income divided by an HMO yield, as a low/mid/high range, with the bricks-and-mortar value alongside for small HMOs.",
+        "operationId": "estimate_hmo_gdv_api_v1_investment_hmo_gdv_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HMOGdvRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HMOGdvDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Optional Bearer Token": []
+          }
+        ],
+        "summary": "Value a converted HMO on an investment basis",
+        "tags": [
+          "Investment"
+        ]
+      }
+    },
     "/api/v1/investment/market-analysis/{area_code}": {
       "get": {
         "description": "Get investment analysis for a specific market area.\n\nProvides market-level yields, price trends, and investment\nopportunities for the specified area.",
@@ -40318,7 +41784,7 @@
     },
     "/api/v1/investment/refurb-scan/{property_id}": {
       "get": {
-        "description": "Read-only Refurb Scan state for the property page.\n\nReturns the persisted vision assessment rebuilt into a per-room\ncosted quote (rooms + systems + one-off allowances + uplift\npotential). NEVER calls OpenAI and never consumes scan quota -\nrunning a FRESH scan goes through\n``GET /refurb-estimate/{property_id}?use_vision=true`` which is\nplan-gated. Requires sign-in; available to all signed-in tiers so\nthe section can tease the feature with real persisted data.",
+        "description": "Read-only Refurb Scan state for the property page.\n\nReturns the persisted vision assessment rebuilt into a per-room\ncosted quote (rooms + systems + one-off allowances + uplift\npotential). NEVER calls OpenAI and never consumes scan quota -\nrunning a FRESH scan goes through\n``GET /refurb-estimate/{property_id}?use_vision=true`` which is\nplan-gated. Paid readers only (require_paid_property_data).",
         "operationId": "get_refurb_scan_api_v1_investment_refurb_scan__property_id__get",
         "parameters": [
           {
@@ -40392,6 +41858,9 @@
           }
         },
         "security": [
+          {
+            "Bearer Token": []
+          },
           {
             "Optional Bearer Token": []
           }
@@ -41867,6 +43336,28 @@
             }
           },
           {
+            "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
+            "in": "query",
+            "name": "exclude_article4",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "hmo",
+                    "hmo_and_unverified"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
+              "title": "Exclude Article4"
+            }
+          },
+          {
             "description": "Property category: residential, commercial",
             "in": "query",
             "name": "property_category",
@@ -42414,6 +43905,26 @@
               ],
               "description": "Restrict database comparables to a commercial sub-class (office / industrial / retail / development / mixed_use). Pattern set mirrors app/utils/commercial_classifier.py::_SUBCLASS_PATTERNS. Ignored unless property_type='commercial'.",
               "title": "Commercial Subclass"
+            }
+          },
+          {
+            "description": "Optional subject floor area in sq ft supplied by the user when the listing holds none. Used only when the held area is absent, unverified or a building estimate; must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied' and never saved.",
+            "in": "query",
+            "name": "subject_floor_area_sqft",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 50000,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional subject floor area in sq ft supplied by the user when the listing holds none. Used only when the held area is absent, unverified or a building estimate; must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied' and never saved.",
+              "title": "Subject Floor Area Sqft"
             }
           },
           {
@@ -43389,6 +44900,72 @@
         ]
       }
     },
+    "/api/v1/market-data/{property_id}/room-rents": {
+      "get": {
+        "description": "Area median room rent, indicative rooms x rent and HMO demand drivers.\n\nSigned-in only (sits with the PREVIEW-tier rent estimate). The rent is the\npostcode-area median from ``hmo_regional_room_rents``, never this\nproperty's own rent.",
+        "operationId": "get_room_rents_api_v1_market_data__property_id__room_rents_get",
+        "parameters": [
+          {
+            "description": "Property UUID or external listing id",
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Property UUID or external listing id",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomRentDemand"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get Room Rents",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
     "/api/v1/market-data/{property_id}/sold-on-street": {
       "get": {
         "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries zoopla_properties (1.74M) and rightmove_sold_prices (1.62M) directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of sources consulted (zoopla_postgis, rightmove_postgis)",
@@ -43483,6 +45060,18 @@
               "minimum": 1,
               "title": "Months Back",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Scotland, under ENABLE_SCOTLAND_STREET_EVIDENCE: with no sale in the window, return the street's older sales and an older_sales note",
+            "in": "query",
+            "name": "older_fallback",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Scotland, under ENABLE_SCOTLAND_STREET_EVIDENCE: with no sale in the window, return the street's older sales and an older_sales note",
+              "title": "Older Fallback",
+              "type": "boolean"
             }
           },
           {
@@ -45644,6 +47233,24 @@
             }
           },
           {
+            "description": "Comma-separated SIC codes of the owning company (any of)",
+            "in": "query",
+            "name": "sic_codes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated SIC codes of the owning company (any of)",
+              "title": "Sic Codes"
+            }
+          },
+          {
             "description": "Silent-pull minimum confidence tier: gold, silver, bronze",
             "in": "query",
             "name": "silently_pulled_min_tier",
@@ -46495,6 +48102,69 @@
           }
         },
         "summary": "Get nearby planning applications",
+        "tags": [
+          "Planning & environment"
+        ]
+      }
+    },
+    "/api/v1/planning/{property_id}/selective-licensing": {
+      "get": {
+        "description": "Council selective licensing scheme status (reuses the HMO licensing lookup)",
+        "operationId": "get_selective_licensing_api_v1_planning__property_id__selective_licensing_get",
+        "parameters": [
+          {
+            "description": "Property UUID or external listing id",
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Property UUID or external listing id",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Selective Licensing Api V1 Planning  Property Id  Selective Licensing Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Selective licensing status for a property",
         "tags": [
           "Planning & environment"
         ]
@@ -49888,7 +51558,7 @@
     },
     "/api/v1/properties/bulk-rental-estimates": {
       "post": {
-        "description": "Get rental estimates for multiple properties in bulk.\n\nOptimized for property lists to minimize API calls.\n\nOptional Authentication: Enhanced data for authenticated users.",
+        "description": "Get rental estimates for multiple properties in bulk.\n\nOptimized for property lists to minimize API calls.\n\nA rent estimate is paid data (owner 2026-10-31): 401 anonymous, 403 free.",
         "operationId": "get_bulk_rental_estimates_api_v1_properties_bulk_rental_estimates_post",
         "requestBody": {
           "content": {
@@ -54632,6 +56302,28 @@
             }
           },
           {
+            "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
+            "in": "query",
+            "name": "exclude_article4",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "hmo",
+                    "hmo_and_unverified"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
+              "title": "Exclude Article4"
+            }
+          },
+          {
             "description": "Only properties listed for sale AND rent at the same time (PLO signal)",
             "in": "query",
             "name": "dual_listed",
@@ -54789,6 +56481,18 @@
               ],
               "description": "Street name to fuzzy-match — slug ('acacia-avenue') or light free text ('Gloucestershire.'). Normalised server-side; requires postcode.",
               "title": "Street"
+            }
+          },
+          {
+            "description": "Return {signal_counts} for the For You chips instead of a page",
+            "in": "query",
+            "name": "signal_counts",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Return {signal_counts} for the For You chips instead of a page",
+              "title": "Signal Counts",
+              "type": "boolean"
             }
           },
           {
@@ -57351,7 +59055,7 @@
     },
     "/api/v1/properties/{property_id}/rental-estimate": {
       "get": {
-        "description": "Get rental estimate for a specific property.\n\nUses the sophisticated RentalEstimationService for consistent logic.\n\nOptional Authentication: Enhanced data for authenticated users.",
+        "description": "Get rental estimate for a specific property.\n\nUses the sophisticated RentalEstimationService for consistent logic.\n\nA rent estimate is paid data (owner 2026-10-31): require_paid_property_data\n401s anonymous and 403s free callers. The None check covers direct calls.",
         "operationId": "get_property_rental_estimate_api_v1_properties__property_id__rental_estimate_get",
         "parameters": [
           {
@@ -57407,6 +59111,9 @@
           }
         },
         "security": [
+          {
+            "Bearer Token": []
+          },
           {
             "Optional Bearer Token": []
           }
@@ -61152,6 +62859,24 @@
             }
           },
           {
+            "description": "Optional internal UUID of a live sale listing (paid plan; a free caller gets the postcode answer with published_value_note). sale_estimate is then that listing's published value, the figure on its property page (valuation_scope='property'), and the postcode figures move to postcode_estimate. A withheld value keeps the postcode answer with published_value_note saying why.",
+            "in": "query",
+            "name": "property_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional internal UUID of a live sale listing (paid plan; a free caller gets the postcode answer with published_value_note). sale_estimate is then that listing's published value, the figure on its property page (valuation_scope='property'), and the postcode figures move to postcode_estimate. A withheld value keeps the postcode answer with published_value_note saying why.",
+              "title": "Property Id"
+            }
+          },
+          {
             "in": "query",
             "name": "user_id",
             "required": false,
@@ -61203,7 +62928,7 @@
     },
     "/api/v1/yields/area/{outcode}": {
       "get": {
-        "description": "Aggregate gross rental yields for a postcode outcode.\n\nComputes mean, median, p25 and p75 across all sale listings in the\noutcode that have a non-null `estimated_rental_yield`. Useful for\ninvestor area-screening.",
+        "description": "Gross rental yields for a postcode outcode.\n\nThe median is the area gross yield: the median, over active sale listings,\nof each listing's own gross yield. The mean and quartiles describe the\nspread of those listing yields below 12%. Every yield field is null when\nfewer than 15 listings carry a yield or the median is 12% or more.",
         "operationId": "get_area_yields_api_v1_yields_area__outcode__get",
         "parameters": [
           {

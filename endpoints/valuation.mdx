@@ -1,6 +1,6 @@
 ---
 title: Valuation endpoint
-description: Automated postcode-level sale and rent valuation with a confidence band for any UK postcode. Returns sale and rent estimates, gross yield, and the area average. Required scope market-data:read.
+description: Automated postcode-level sale and rent valuation with a confidence band for any UK postcode, or a live listing's published value with property_id. Returns sale and rent estimates, gross yield, and the area average. Required scope market-data:read.
 ---
 
 # Valuation
@@ -33,6 +33,7 @@ All endpoints accept a `paid_*` API key or a logged-in Clerk session. Anonymous 
 | `postcode` | string | — | **Required.** Full UK postcode, e.g. `M1 4BT` |
 | `bedrooms` | integer | — | Optional. Filter comparables to a bedroom count (`0`–`10`) |
 | `type` | string | — | Optional. Property type, e.g. `flat`, `terraced`, `semi-detached`, `detached` |
+| `property_id` | string | — | Optional, **paid plan**. Internal UUID of a live sale listing. The answer is then that listing's published value, the same figure as its property page (see [Valuing one listing](#valuing-one-listing)). A malformed UUID returns `400` |
 
 ### Request
 
@@ -99,10 +100,29 @@ const { data } = await res.json();
 | `confidence` | string | `high`, `medium`, or `low` — driven by comparable count and spread |
 | `area_average` | integer | Average sale price across the postcode in £ |
 | `source` | string | Origin of the estimate, e.g. `comparables` |
+| `valuation_scope` | string | `postcode` (an area answer), or `property` when `sale_estimate` is a listing's published value |
+| `property_id` | string | With `property_id`: the live sale listing matched. Set even when its value is withheld |
+| `postcode_estimate` | object | With `valuation_scope` `property`: the postcode figures (`sale_estimate`, `sale_lower`, `sale_upper`, `area_average`, `valuation_scope`, `resolution_level`, `sample_size`) the published value replaced. Area context, not the home's value |
+| `bmv_discount_pct` | number | With `valuation_scope` `property`: the published discount of the asking price below `sale_estimate` (positive = below value). Null when none is published |
+| `value_indicative` | boolean | With `valuation_scope` `property`: `true` when the value is published as indicative (few comparables of the home's own kind), with no discount |
+| `published_value_note` | string | Why the listing's value is indicative or withheld, or that it needs a paid plan |
 
 ### Confidence band
 
 The `confidence` value reflects how many comparables backed the estimate and how tightly they clustered. A `high` band typically spans ±8 % around `sale_estimate`; a `low` band widens as the comparable set thins. Treat `low` valuations as indicative only.
+
+## Valuing one listing
+
+One home has one value. Pass `property_id` for a live sale listing and `sale_estimate` is the value its property page publishes (`valuation_scope: "property"`), the same figure `/api/v1/properties/{property_id}` returns as `published_value` and `/api/v1/property-pack` returns in its `valuation`. `sale_lower`, `sale_upper` and `area_average` are then null, `gross_yield_pct` is the rent over that value, and the postcode answer moves to `postcode_estimate`.
+
+A listing's own value is paid data: it needs a paid API plan or an entitled Prop AI Deals subscription. On the free plan, a call with `property_id` returns the unchanged postcode answer (`valuation_scope: "postcode"`) and `published_value_note` says the listing's value is part of the paid plan.
+
+When the property page withholds the listing's value (for example recent sales in its postcode disagree with it, or there is too little comparable evidence), the response keeps the postcode answer with `valuation_scope: "postcode"`, sets `property_id`, and says why in `published_value_note`. That postcode figure is an area estimate, not a value for this home. An id that is not a live sale listing returns the postcode answer unchanged.
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/valuation?postcode=M1%204BT&property_id=5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
 
 ## Common patterns
 

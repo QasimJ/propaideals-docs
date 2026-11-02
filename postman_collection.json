@@ -457,7 +457,7 @@
               },
               "raw": "[\n  \"\"\n]"
             },
-            "description": "Get rental estimates for multiple properties in bulk.\n\nOptimized for property lists to minimize API calls.\n\nOptional Authentication: Enhanced data for authenticated users.",
+            "description": "Get rental estimates for multiple properties in bulk.\n\nOptimized for property lists to minimize API calls.\n\nA rent estimate is paid data (owner 2026-10-31): 401 anonymous, 403 free.",
             "header": [
               {
                 "key": "Accept",
@@ -1191,7 +1191,7 @@
         {
           "name": "Get Property Rental Estimate",
           "request": {
-            "description": "Get rental estimate for a specific property.\n\nUses the sophisticated RentalEstimationService for consistent logic.\n\nOptional Authentication: Enhanced data for authenticated users.",
+            "description": "Get rental estimate for a specific property.\n\nUses the sophisticated RentalEstimationService for consistent logic.\n\nA rent estimate is paid data (owner 2026-10-31): require_paid_property_data\n401s anonymous and 403s free callers. The None check covers direct calls.",
             "header": [
               {
                 "key": "Accept",
@@ -3359,6 +3359,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
+                  "disabled": true,
+                  "key": "exclude_article4",
+                  "value": "hmo"
+                },
+                {
                   "description": "Only properties listed for sale AND rent at the same time (PLO signal)",
                   "disabled": true,
                   "key": "dual_listed",
@@ -3410,6 +3416,12 @@
                   "description": "Street name to fuzzy-match — slug ('acacia-avenue') or light free text ('Gloucestershire.'). Normalised server-side; requires postcode.",
                   "disabled": true,
                   "key": "street",
+                  "value": ""
+                },
+                {
+                  "description": "Return {signal_counts} for the For You chips instead of a page",
+                  "disabled": true,
+                  "key": "signal_counts",
                   "value": ""
                 },
                 {
@@ -6506,6 +6518,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Optional subject floor area in sq ft, supplied by the caller when none is held. Used only when the held area is absent, unverified or a building estimate (a measured area wins); must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied', not verified, and never saved.",
+                  "disabled": true,
+                  "key": "subject_floor_area_sqft",
+                  "value": ""
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -6723,6 +6741,12 @@
                   "description": "Restrict database comparables to a commercial sub-class (office / industrial / retail / development / mixed_use). Pattern set mirrors app/utils/commercial_classifier.py::_SUBCLASS_PATTERNS. Ignored unless property_type='commercial'.",
                   "disabled": true,
                   "key": "commercial_subclass",
+                  "value": ""
+                },
+                {
+                  "description": "Optional subject floor area in sq ft supplied by the user when the listing holds none. Used only when the held area is absent, unverified or a building estimate; must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied' and never saved.",
+                  "disabled": true,
+                  "key": "subject_floor_area_sqft",
                   "value": ""
                 },
                 {
@@ -7407,6 +7431,47 @@
           }
         },
         {
+          "name": "Get Room Rents",
+          "request": {
+            "description": "Area median room rent, indicative rooms x rent and HMO demand drivers.\n\nSigned-in only (sits with the PREVIEW-tier rent estimate). The rent is the\npostcode-area median from ``hmo_regional_room_rents``, never this\nproperty's own rent.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "market-data",
+                ":property_id",
+                "room-rents"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/market-data/:property_id/room-rents",
+              "variable": [
+                {
+                  "description": "Property UUID or external listing id",
+                  "key": "property_id",
+                  "value": "<property_id>"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Get Sold History",
           "request": {
             "description": "Return the matched sold transaction history for a property.\n\nLooks up the property's identity (UPRN, coords, address) then runs the\nmulti-source sold-history matcher (UPRN exact > PostGIS spatial > Land\nRegistry spatial + address). Only sales whose address is consistent with\nTHIS property stay in sold_history; nearby sales that positively belong to\nanother address are surfaced separately as neighbour_sales.",
@@ -7496,6 +7561,12 @@
                   "disabled": true,
                   "key": "months_back",
                   "value": "36"
+                },
+                {
+                  "description": "Scotland, under ENABLE_SCOTLAND_STREET_EVIDENCE: with no sale in the window, return the street's older sales and an older_sales note",
+                  "disabled": true,
+                  "key": "older_fallback",
+                  "value": ""
                 },
                 {
                   "description": "",
@@ -7602,6 +7673,12 @@
                   "description": "",
                   "disabled": true,
                   "key": "type",
+                  "value": ""
+                },
+                {
+                  "description": "Optional internal UUID of a live sale listing (paid plan; a free caller gets the postcode answer with published_value_note). sale_estimate is then that listing's published value, the figure on its property page (valuation_scope='property'), and the postcode figures move to postcode_estimate. A withheld value keeps the postcode answer with published_value_note saying why.",
+                  "disabled": true,
+                  "key": "property_id",
                   "value": ""
                 },
                 {
@@ -8439,6 +8516,44 @@
           }
         },
         {
+          "name": "Estimate HMO conversion costs",
+          "request": {
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"existing_bedrooms\": 0,\n  \"existing_bathrooms\": 0,\n  \"target_hmo_rooms\": 0\n}"
+            },
+            "description": "Itemised cost of converting a house to an HMO: planning, licence and fire risk assessment, fire doors, emergency lighting, smoke detection, partitions, extra bathrooms and optional ensuites.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "investment",
+                "hmo-conversion-cost"
+              ],
+              "raw": "{{baseUrl}}/api/v1/investment/hmo-conversion-cost"
+            }
+          }
+        },
+        {
           "name": "Find High Yield Properties",
           "request": {
             "description": "Find properties with high rental yields.\n\nReturns properties sorted by yield with investment calculations.",
@@ -8525,7 +8640,7 @@
         {
           "name": "Get Ai Investment Analysis",
           "request": {
-            "description": "Get AI-powered investment analysis for a property.\n\nThis endpoint provides comprehensive investment insights including:\n- Natural language investment summary\n- Price appreciation predictions (1yr, 3yr, 5yr)\n- Risk assessment and investment scoring\n- Market comparisons and opportunities\n- Personalized recommendations\n\nThe analysis is cached permanently to optimize performance.\nUse refresh=true query parameter to force regeneration.",
+            "description": "Get AI-powered investment analysis for a property.\n\nThis endpoint provides comprehensive investment insights including:\n- Natural language investment summary\n- Risk assessment and investment scoring\n- Market comparisons and opportunities\n- Personalized recommendations\n\nThe analysis is cached permanently to optimize performance.\nUse refresh=true query parameter to force regeneration.",
             "header": [
               {
                 "key": "Accept",
@@ -8717,7 +8832,7 @@
         {
           "name": "Get Refurb Scan",
           "request": {
-            "description": "Read-only Refurb Scan state for the property page.\n\nReturns the persisted vision assessment rebuilt into a per-room\ncosted quote (rooms + systems + one-off allowances + uplift\npotential). NEVER calls OpenAI and never consumes scan quota -\nrunning a FRESH scan goes through\n``GET /refurb-estimate/{property_id}?use_vision=true`` which is\nplan-gated. Requires sign-in; available to all signed-in tiers so\nthe section can tease the feature with real persisted data.",
+            "description": "Read-only Refurb Scan state for the property page.\n\nReturns the persisted vision assessment rebuilt into a per-room\ncosted quote (rooms + systems + one-off allowances + uplift\npotential). NEVER calls OpenAI and never consumes scan quota -\nrunning a FRESH scan goes through\n``GET /refurb-estimate/{property_id}?use_vision=true`` which is\nplan-gated. Paid readers only (require_paid_property_data).",
             "header": [
               {
                 "key": "Accept",
@@ -9264,6 +9379,44 @@
                   "value": "00000000-0000-0000-0000-000000000000"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Value a converted HMO on an investment basis",
+          "request": {
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"rooms\": 0\n}"
+            },
+            "description": "Net annual income divided by an HMO yield, as a low/mid/high range, with the bricks-and-mortar value alongside for small HMOs.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "investment",
+                "hmo-gdv"
+              ],
+              "raw": "{{baseUrl}}/api/v1/investment/hmo-gdv"
             }
           }
         }
@@ -9860,7 +10013,7 @@
         {
           "name": "Get Area Yields",
           "request": {
-            "description": "Aggregate gross rental yields for a postcode outcode.\n\nComputes mean, median, p25 and p75 across all sale listings in the\noutcode that have a non-null `estimated_rental_yield`. Useful for\ninvestor area-screening.",
+            "description": "Gross rental yields for a postcode outcode.\n\nThe median is the area gross yield: the median, over active sale listings,\nof each listing's own gross yield. The mean and quartiles describe the\nspread of those listing yields below 12%. Every yield field is null when\nfewer than 15 listings carry a yield or the median is 12% or more.",
             "header": [
               {
                 "key": "Accept",
@@ -11665,6 +11818,47 @@
               "raw": "{{baseUrl}}/api/v1/planning/search?postcode="
             }
           }
+        },
+        {
+          "name": "Selective licensing status for a property",
+          "request": {
+            "description": "Council selective licensing scheme status (reuses the HMO licensing lookup)",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "planning",
+                ":property_id",
+                "selective-licensing"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/planning/:property_id/selective-licensing",
+              "variable": [
+                {
+                  "description": "Property UUID or external listing id",
+                  "key": "property_id",
+                  "value": "<property_id>"
+                }
+              ]
+            }
+          }
         }
       ],
       "name": "Planning & environment"
@@ -12178,6 +12372,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Comma-separated SIC codes of the owning company (any of)",
+                  "disabled": true,
+                  "key": "sic_codes",
+                  "value": ""
+                },
+                {
                   "description": "Silent-pull minimum confidence tier: gold, silver, bronze",
                   "disabled": true,
                   "key": "silently_pulled_min_tier",
@@ -12463,6 +12663,12 @@
                   "disabled": true,
                   "key": "planning",
                   "value": "granted"
+                },
+                {
+                  "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
+                  "disabled": true,
+                  "key": "exclude_article4",
+                  "value": "hmo"
                 },
                 {
                   "description": "Property category: residential, commercial",
@@ -12831,7 +13037,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"alert_enabled\": false,\n  \"map_center_lat\": 0,\n  \"map_center_lng\": 0,\n  \"map_zoom\": 0,\n  \"name\": \"\",\n  \"polygon_wkt\": \"\"\n}"
+              "raw": "{\n  \"alert_email\": false,\n  \"alert_enabled\": false,\n  \"alert_push\": false,\n  \"alert_whatsapp\": false,\n  \"map_center_lat\": 0,\n  \"map_center_lng\": 0\n}"
             },
             "description": "Update an existing lead generator. Only provided fields are changed.",
             "header": [
@@ -12876,7 +13082,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"alert_enabled\": false,\n  \"map_center_lat\": 0,\n  \"map_center_lng\": 0,\n  \"map_zoom\": 0,\n  \"name\": \"\",\n  \"polygon_wkt\": \"\"\n}"
+              "raw": "{\n  \"alert_email\": false,\n  \"alert_enabled\": false,\n  \"alert_push\": false,\n  \"alert_whatsapp\": false,\n  \"map_center_lat\": 0,\n  \"map_center_lng\": 0\n}"
             },
             "description": "Update an existing off-market lead generator. Only provided fields are changed.",
             "header": [

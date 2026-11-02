@@ -9,7 +9,7 @@ An off-market lead generator is a saved, area-based scanner (outcodes or a drawn
 
 The workflow is: create a lead generator over your target area, then query its `/properties` endpoint with filters and sorting to pull ranked leads. The `/counts` endpoint gives the classification breakdown for the area.
 
-**Required scope:** `leads:read`
+**Required scope:** `leads:read` to read and preview; `leads:write` to create, update, delete, check or toggle (see [Write scopes](./authentication#write-scopes))
 **Cost:** 1 request per call
 **Available on:** Advanced, Professional, Business (not included in the Free plan)
 

@@ -55,6 +55,7 @@ print("Save this:", created["key"])
 |---|---|---|---|
 | `name` | string | yes | Human-readable name (1–100 chars) |
 | `expires_at` | ISO datetime | no | Optional expiry timestamp (UTC) |
+| `allow_write` | boolean | no | Default `false`. When `true`, the key also gets the write scope (`leads:write`, `investment:write`, ...) for each read family your plan grants. See [Authentication › Write scopes](./authentication#write-scopes) |
 
 ### Response — `201 Created`
 
