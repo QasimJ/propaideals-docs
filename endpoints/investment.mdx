@@ -476,6 +476,76 @@ for prop in res.json()["properties"]:
 }
 ```
 
+## Find undervalued properties
+
+```http
+GET /api/v1/investment/undervalued
+```
+
+Returns live sale listings whose asking price is below the value their property page publishes, sorted by that discount, highest first. The value is the same one `published_value` carries on [property objects](./properties): a value the page withholds (comparable sales in the postcode disagree, the evidence is thin or an automated estimate only, an auction or shared-ownership price) never appears, and an indicative value (few or low-confidence comparables) carries no discount, so it does not qualify either.
+
+This is paid data: a key or account without a paid plan gets `403` with `"error": "subscription_required"`.
+
+### Query parameters
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `min_discount` | float | No | Minimum published discount below value, % (0–60, default `10`) |
+| `max_price` | integer | No | Maximum asking price |
+| `limit` | integer | No | Max results (1–100, default `20`) |
+| `offset` | integer | No | Results to skip, for paging (0–500, default `0`) |
+
+### Request
+
+```bash
+curl "https://api.propaideals.co.uk/api/v1/investment/undervalued?min_discount=15&max_price=250000&limit=10" \
+  -H "Authorization: Bearer $PROPAIDEALS_API_KEY"
+```
+
+```python
+import requests
+
+res = requests.get(
+    "https://api.propaideals.co.uk/api/v1/investment/undervalued",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    params={"min_discount": 15, "max_price": 250000, "limit": 10},
+)
+for prop in res.json()["properties"]:
+    print(prop["address"], prop["price"], prop["published_value"], prop["published_bmv_discount_pct"])
+```
+
+### Response
+
+```json
+{
+  "properties": [
+    {
+      "id": "4f9c1a2e-...",
+      "title": "3 bed terraced house for sale",
+      "address": "Example Street, Leeds LS6",
+      "postcode": "LS6 1AA",
+      "property_type": "Terraced",
+      "area": "Leeds",
+      "bedrooms": 3,
+      "price": 170000,
+      "published_value": 200000,
+      "published_bmv_discount_pct": 15.0,
+      "published_value_indicative": false,
+      "published_value_note": null,
+      "market_value": 200000,
+      "potential_gain": 30000,
+      "discount_percentage": 15.0
+    }
+  ],
+  "count": 1,
+  "criteria": { "min_discount": 15.0, "max_price": 250000 },
+  "limit": 10,
+  "offset": 0
+}
+```
+
+`market_value`, `potential_gain` and `discount_percentage` are kept for existing integrations and now equal `published_value`, `published_value` minus `price`, and `published_bmv_discount_pct`. The `value_score` and `overall_score` fields are no longer returned. Before 2 November 2026 this endpoint read a value of asking price plus 5% and always returned an empty list.
+
 ## ROI scenarios
 
 ```http

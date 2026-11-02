@@ -19844,6 +19844,17 @@
             "description": "Why the Pursue evidence gate held this home at watch (ENABLE_VERDICT_EVIDENCE_GATE); null when nothing held it.",
             "title": "Verdict Blocked By"
           },
+          "verdict_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerdictReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why this home reads Pursue under the value-add rule (ENABLE_VALUE_ADD_PURSUE): a judged-feasible extra room; null otherwise."
+          },
           "verdict_score": {
             "anyOf": [
               {
@@ -27239,7 +27250,7 @@
         "properties": {
           "basis": {
             "default": "none",
-            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | property_estimate (this home's own algorithmic estimate, used over a low- or medium-confidence area median) | verify_cap_comparable_median (a per-sqft, band-edge, thin-sample or verify-labelled rent held at the median of the same-bedroom comparable lets) | none",
+            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | property_estimate (this home's own algorithmic estimate, used over a low- or medium-confidence area median) | verify_cap_comparable_median (a per-sqft, band-edge, thin-sample or verify-labelled rent held at the median of the same-bedroom comparable lets) | local_listing_median (held at the median of live like-for-like local lets: same bedrooms, flat or house, whole-home tenancies) | local_listing_yield_cap (held at the lower quartile of those lets because it implied 1.5x the local listing yield or more; labelled verify) | none",
             "title": "Basis",
             "type": "string"
           },
@@ -31045,6 +31056,227 @@
         "title": "UKRegionalPropertyData",
         "type": "object"
       },
+      "UndervaluedPropertiesResponse": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "criteria": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Criteria",
+            "type": "object"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "properties": {
+            "items": {
+              "$ref": "#/components/schemas/UndervaluedProperty"
+            },
+            "title": "Properties",
+            "type": "array"
+          }
+        },
+        "required": [
+          "properties",
+          "count",
+          "criteria",
+          "limit",
+          "offset"
+        ],
+        "title": "UndervaluedPropertiesResponse",
+        "type": "object"
+      },
+      "UndervaluedProperty": {
+        "description": "A live sale listing priced below its published value.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area"
+          },
+          "bedrooms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bedrooms"
+          },
+          "discount_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Same as published_bmv_discount_pct (legacy)",
+            "title": "Discount Percentage"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "market_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Same as published_value (legacy)",
+            "title": "Market Value"
+          },
+          "postcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode"
+          },
+          "potential_gain": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "published_value minus the asking price (GBP, legacy)",
+            "title": "Potential Gain"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Asking price (GBP)",
+            "title": "Price"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Type"
+          },
+          "published_bmv_discount_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Published discount of the asking price below published_value (%)",
+            "title": "Published Bmv Discount Pct"
+          },
+          "published_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The home's value as its property page publishes it (GBP)",
+            "title": "Published Value"
+          },
+          "published_value_indicative": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Always false here: indicative values do not qualify",
+            "title": "Published Value Indicative"
+          },
+          "published_value_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Value Note"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "UndervaluedProperty",
+        "type": "object"
+      },
       "UpdateComparisonTimeRequest": {
         "description": "Request schema for updating time spent on comparison page.",
         "example": {
@@ -31563,6 +31795,58 @@
           "confidence"
         ],
         "title": "ValueTerm",
+        "type": "object"
+      },
+      "VerdictReason": {
+        "description": "Why a home reads Pursue under the value-add rule\n(verdict_engine.value_add_reason, ENABLE_VALUE_ADD_PURSUE).",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "extra_rooms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra Rooms"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "strategy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "VerdictReason",
         "type": "object"
       },
       "ViewportSearchRequest": {
@@ -36834,6 +37118,17 @@
             "description": "Why the Pursue evidence gate held this home at watch (ENABLE_VERDICT_EVIDENCE_GATE); null when nothing held it.",
             "title": "Verdict Blocked By"
           },
+          "verdict_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerdictReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why this home reads Pursue under the value-add rule (ENABLE_VALUE_ADD_PURSUE): a judged-feasible extra room; null otherwise."
+          },
           "verdict_score": {
             "anyOf": [
               {
@@ -42051,9 +42346,66 @@
     },
     "/api/v1/investment/undervalued": {
       "get": {
-        "description": "Find potentially undervalued properties.\n\nUses market analysis to identify properties below market value.",
+        "description": "Live sale listings priced below their published value.\n\nThe value is the one the property page publishes for each home (the\npublished-BMV gate): withheld and indicative values never qualify. Sorted\nby published discount, highest first. Paid data: callers without a paid\nplan get 403 ``subscription_required``.",
         "operationId": "find_undervalued_properties_api_v1_investment_undervalued_get",
         "parameters": [
+          {
+            "description": "Minimum published discount below value (%)",
+            "in": "query",
+            "name": "min_discount",
+            "required": false,
+            "schema": {
+              "default": 10.0,
+              "description": "Minimum published discount below value (%)",
+              "maximum": 60,
+              "minimum": 0,
+              "title": "Min Discount",
+              "type": "number"
+            }
+          },
+          {
+            "description": "Maximum asking price",
+            "in": "query",
+            "name": "max_price",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum asking price",
+              "title": "Max Price"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 500,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
           {
             "in": "query",
             "name": "user_id",
@@ -42076,9 +42428,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Find Undervalued Properties Api V1 Investment Undervalued Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/UndervaluedPropertiesResponse"
                 }
               }
             },
@@ -42097,7 +42447,7 @@
         },
         "security": [
           {
-            "Optional Bearer Token": []
+            "Bearer Token": []
           }
         ],
         "summary": "Find Undervalued Properties",

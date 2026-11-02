@@ -7,6 +7,15 @@ description: Prop AI Deals API release notes, breaking changes, and deprecation 
 
 This page lists user-visible changes to the Prop AI Deals API. We follow [SemVer](https://semver.org/) at the API level — breaking changes are versioned (`/api/v2/`) and announced at least 90 days in advance.
 
+## 2026-11-02 — Undervalued listings on the published value
+
+**Fixed:**
+- **[`GET /api/v1/investment/undervalued`](./endpoints/investment#find-undervalued-properties)** always returned an empty list: it compared the asking price with a value of asking price plus 5%. It now returns live sale listings priced below the value their property page publishes (`published_value`, as on property objects), sorted by `published_bmv_discount_pct`. Withheld and indicative values never qualify.
+
+**New:** `min_discount`, `max_price`, `limit` and `offset` query parameters, and `published_value`, `published_bmv_discount_pct`, `published_value_indicative`, `published_value_note` on each result.
+
+**Changed:** `market_value`, `potential_gain` and `discount_percentage` now come from the published value. `value_score` and `overall_score` are no longer returned. The endpoint needs a paid plan (`403 subscription_required` otherwise) and an authenticated caller.
+
 ## 2026-10-19 — Claude can act in your account
 
 **New:**

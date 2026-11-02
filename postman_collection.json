@@ -8607,7 +8607,7 @@
         {
           "name": "Find Undervalued Properties",
           "request": {
-            "description": "Find potentially undervalued properties.\n\nUses market analysis to identify properties below market value.",
+            "description": "Live sale listings priced below their published value.\n\nThe value is the one the property page publishes for each home (the\npublished-BMV gate): withheld and indicative values never qualify. Sorted\nby published discount, highest first. Paid data: callers without a paid\nplan get 403 ``subscription_required``.",
             "header": [
               {
                 "key": "Accept",
@@ -8626,6 +8626,30 @@
                 "undervalued"
               ],
               "query": [
+                {
+                  "description": "Minimum published discount below value (%)",
+                  "disabled": true,
+                  "key": "min_discount",
+                  "value": "10.0"
+                },
+                {
+                  "description": "Maximum asking price",
+                  "disabled": true,
+                  "key": "max_price",
+                  "value": ""
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "offset",
+                  "value": ""
+                },
                 {
                   "description": "",
                   "disabled": true,
