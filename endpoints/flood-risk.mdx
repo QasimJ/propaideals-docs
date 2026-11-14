@@ -1,11 +1,11 @@
 ---
 title: Flood risk endpoint
-description: Check whether a UK property or coordinate falls inside a flood risk zone. PostGIS spatial check against 144,000+ flood zone polygons sourced from EA flood map and SEPA.
+description: Check whether a UK property or coordinate falls inside a flood risk zone. Environment Agency flood map for England, SEPA for Scotland; Wales and Northern Ireland are not covered.
 ---
 
 # Flood risk
 
-Check whether a UK location is inside a flood risk zone. Backed by **144,000+ flood zone polygons** stored as PostGIS geometries, sourced from the Environment Agency flood map (England & Wales) and SEPA (Scotland).
+Check whether a UK location is inside a flood risk zone. England is answered from the Environment Agency flood map (the point is tested against each flood polygon); Scotland from SEPA flood polygons stored in PostGIS. Wales and Northern Ireland are **not covered**: `in_flood_zone` is `null` there, never `false`.
 
 **Required scope:** `planning:read`
 **Cost:** 1 request per call
@@ -17,7 +17,7 @@ Check whether a UK location is inside a flood risk zone. Backed by **144,000+ fl
 GET /api/v1/flood-risk/coordinates?lat={lat}&lon={lon}
 ```
 
-PostGIS `ST_Contains` check against the `flood_zones` table. If the point falls inside multiple overlapping zones, returns the highest-risk match.
+A point inside a SEPA polygon returns the highest-risk match. Otherwise the country of the nearest postcode decides: England gets the Environment Agency answer, Scotland outside every SEPA polygon gets `false`, and Wales, Northern Ireland or an unknown country gets `null` with `coverage: "not_covered"`.
 
 ### Request
 
@@ -35,10 +35,12 @@ res = requests.get(
     headers={"Authorization": f"Bearer {API_KEY}"},
 )
 risk = res.json()["data"]
-if risk["in_flood_zone"]:
-    print(f"At risk: {risk['risk_level']} ({risk['zone_category']})")
+if risk["in_flood_zone"] is None:
+    print(f"Not checked: {risk['note']}")
+elif risk["in_flood_zone"]:
+    print(f"At risk: zone {risk['zone_category']} ({risk['source']})")
 else:
-    print("Outside any flood zone")
+    print("Outside any mapped flood zone")
 ```
 
 ### Response (in zone)
@@ -49,10 +51,12 @@ else:
     "lat": 53.4808,
     "lon": -2.2426,
     "in_flood_zone": true,
-    "risk_level": "high",
-    "zone_category": "3a",
-    "zone_type": "rivers",
-    "source": "ea_flood_map"
+    "risk_level": null,
+    "zone_category": "3",
+    "zone_type": null,
+    "source": "ea_ogc",
+    "coverage": "england_ea",
+    "note": null
   }
 }
 ```
@@ -66,14 +70,34 @@ else:
     "lon": -2.2426,
     "in_flood_zone": false,
     "risk_level": null,
-    "zone_category": null,
+    "zone_category": "1",
     "zone_type": null,
-    "source": null
+    "source": "ea_ogc",
+    "coverage": "england_ea",
+    "note": null
   }
 }
 ```
 
-The endpoint returns `200` even when the point isn't in any zone — `in_flood_zone: false` is the signal.
+### Response (not checked)
+
+```json
+{
+  "data": {
+    "lat": 51.4816,
+    "lon": -3.1791,
+    "in_flood_zone": null,
+    "risk_level": null,
+    "zone_category": null,
+    "zone_type": null,
+    "source": null,
+    "coverage": "not_covered",
+    "note": "Not checked: flood zones are answered for England (Environment Agency) and Scotland (SEPA) only"
+  }
+}
+```
+
+The endpoint returns `200` in every case. `in_flood_zone` is tri-state: `true` (in zone 2 or 3), `false` (checked, outside every mapped zone) or `null` (not checked: read `note`). By coordinates, the country is taken from the nearest postcode centroid within 2 km; a point with no postcode that close (open moorland, remote coast, offshore) also returns `null`, since its country cannot be named.
 
 ## Check by property ID
 
@@ -81,7 +105,7 @@ The endpoint returns `200` even when the point isn't in any zone — `in_flood_z
 GET /api/v1/flood-risk/property/{property_id}
 ```
 
-Looks up the property's stored coordinates and runs the same check. Honours the precomputed `is_flood_zone` flag if it's already set on the property row, falling back to the spatial query otherwise.
+Reads the property's stored flood zone. A zone stored before the November 2026 point-in-polygon fix that is still being re-checked, or an Environment Agency answer for a home outside England, returns `null` with a `note`. With no stored zone, a Scottish home gets the SEPA polygon check and any other home returns `null`.
 
 ```bash
 curl "https://api.propaideals.co.uk/api/v1/flood-risk/property/5fa1b2c3-d4e5-6f78-9012-3456789abcde" \
@@ -111,12 +135,10 @@ Returns the same `FloodRiskResponse` shape.
 
 | Region | Coverage | Source |
 |---|---|---|
-| England | All flood zones 2 + 3 | EA flood map |
-| Wales | All flood zones | NRW flood map |
-| Scotland | All categories | SEPA flood maps |
-| Northern Ireland | Limited | DfI Rivers |
-
-Total: **144,237 polygon records** across all UK home nations.
+| England | Flood zones 2 + 3 (rivers and sea) | Environment Agency flood map |
+| Wales | Not covered (`null`) | Natural Resources Wales maps are not yet queried |
+| Scotland | SEPA likelihood polygons | SEPA flood maps |
+| Northern Ireland | Not covered (`null`) | No public source is queried |
 
 ## Related endpoints
 

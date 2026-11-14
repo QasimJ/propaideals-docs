@@ -1144,7 +1144,6 @@
                 "type": "string"
               }
             ],
-            "default": "0.75",
             "description": "Monthly bridge finance interest rate (% per month, 0 for self-funded)",
             "title": "Bridge Finance Rate"
           },
@@ -1215,7 +1214,7 @@
             "title": "Insurance Pct"
           },
           "interest_only": {
-            "default": false,
+            "default": true,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
@@ -1916,7 +1915,7 @@
             "title": "Deposit Percentage"
           },
           "interest_only": {
-            "default": false,
+            "default": true,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
@@ -3293,7 +3292,7 @@
           },
           "floor_area_source": {
             "default": "absent",
-            "description": "measured | building_estimate | unverified | absent. 'measured' means the EPC certificate behind this size was matched to THIS address (Land Registry `uprn_match_method='epc_exact'`). 'building_estimate' means it was attached by whole-address similarity, which every flat in one block passes - 11.5% of Land Registry floor areas. 'unverified' means the source records nothing about how the certificate was chosen, which is every Zoopla row.",
+            "description": "measured | building_estimate | unverified | absent. 'measured' means the EPC certificate behind this size was matched to THIS address (Land Registry `uprn_match_method='epc_exact'`). 'building_estimate' means it was attached by whole-address similarity, which every flat in one block passes - 11.5% of Land Registry floor areas. 'unverified' means the source records nothing about how the certificate was chosen.",
             "title": "Floor Area Source",
             "type": "string"
           },
@@ -3437,7 +3436,7 @@
                 "type": "null"
               }
             ],
-            "description": "Property type in ONE vocabulary across every source: flat | terraced | semi-detached | detached | bungalow | house | studio | maisonette | land | commercial | parking | caravan | other. Safe to send straight back as the `type` filter - the label always selects the row it came from. Null when the source recorded no type. Comparables are drawn from Zoopla, HM Land Registry and PropertyPal, which label the same dwelling 'Purpose Built Flat', 'Flat' and 'Flat/Maisonette'; read property_type_source for what the supplier actually said.",
+            "description": "Property type in ONE vocabulary across every source: flat | terraced | semi-detached | detached | bungalow | house | studio | maisonette | land | commercial | parking | caravan | other. Safe to send straight back as the `type` filter - the label always selects the row it came from. Null when the source recorded no type. Comparables are drawn from several sold-price sources, which label the same dwelling 'Purpose Built Flat', 'Flat' and 'Flat/Maisonette'; read property_type_source for what the supplier actually said.",
             "title": "Property Type"
           },
           "property_type_source": {
@@ -6211,7 +6210,6 @@
                 "type": "string"
               }
             ],
-            "default": "0.75",
             "description": "Monthly bridge finance interest rate (%, 0 for self-funded)",
             "title": "Bridge Finance Rate"
           },
@@ -6734,9 +6732,28 @@
       },
       "FloodRiskResponse": {
         "properties": {
+          "coverage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Which flood map answered: england_ea (Environment Agency), scotland_sepa (SEPA), or not_covered (Wales, Northern Ireland or an unknown country: no flood map here is queried, so in_flood_zone is null)",
+            "title": "Coverage"
+          },
           "in_flood_zone": {
-            "title": "In Flood Zone",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Flood Zone"
           },
           "lat": {
             "title": "Lat",
@@ -6745,6 +6762,18 @@
           "lon": {
             "title": "Lon",
             "type": "number"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why in_flood_zone is null, when it is",
+            "title": "Note"
           },
           "risk_level": {
             "anyOf": [
@@ -6807,7 +6836,7 @@
         "description": "Request schema for bulk letter generation from off-market leads.",
         "properties": {
           "lead_ids": {
-            "description": "List of zoopla_property IDs",
+            "description": "List of lead property IDs",
             "items": {
               "type": "string"
             },
@@ -7108,7 +7137,7 @@
             "title": "Insurance Percentage"
           },
           "interest_only": {
-            "default": false,
+            "default": true,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
@@ -9261,6 +9290,198 @@
         "title": "LeadGeneratorCreateRequest",
         "type": "object"
       },
+      "LeadGeneratorCreateResponse": {
+        "description": "Response schema for POST /lead-generators.",
+        "properties": {
+          "alert_email": {
+            "default": true,
+            "title": "Alert Email",
+            "type": "boolean"
+          },
+          "alert_enabled": {
+            "default": false,
+            "title": "Alert Enabled",
+            "type": "boolean"
+          },
+          "alert_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Id"
+          },
+          "alert_push": {
+            "default": true,
+            "title": "Alert Push",
+            "type": "boolean"
+          },
+          "alert_whatsapp": {
+            "default": true,
+            "title": "Alert Whatsapp",
+            "type": "boolean"
+          },
+          "already_existed": {
+            "default": false,
+            "description": "True when an active scanner with the same area and criteria already existed: that scanner is returned and nothing new is created.",
+            "title": "Already Existed",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checked At"
+          },
+          "last_emailed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Emailed At"
+          },
+          "map_center_lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Center Lat"
+          },
+          "map_center_lng": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Center Lng"
+          },
+          "map_zoom": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Zoom"
+          },
+          "matches_7d": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matches 7D"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "new_since_last_check": {
+            "default": 0,
+            "title": "New Since Last Check",
+            "type": "integer"
+          },
+          "polygon_wkt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polygon Wkt"
+          },
+          "search_criteria": {
+            "additionalProperties": true,
+            "title": "Search Criteria",
+            "type": "object"
+          },
+          "selected_outcodes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Outcodes"
+          },
+          "status_counts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StatusCountsResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "title": "LeadGeneratorCreateResponse",
+        "type": "object"
+      },
       "LeadGeneratorListResponse": {
         "description": "Response schema for list of lead generators.",
         "properties": {
@@ -10119,7 +10340,7 @@
           },
           "bmv_source": {
             "default": "area_average",
-            "description": "Source of BMV calculation: 'database' (accurate Zoopla AVM), 'area_average' (fallback estimate from area prices), or 'insufficient_data' (no baseline — BMV fields are None, never fabricated)",
+            "description": "Source of BMV calculation: 'database' (automated valuation), 'area_average' (fallback estimate from area prices), or 'insufficient_data' (no baseline — BMV fields are None, never fabricated)",
             "pattern": "^(database|area_average|insufficient_data)$",
             "title": "Bmv Source",
             "type": "string"
@@ -10143,10 +10364,17 @@
             "type": "integer"
           },
           "estimated_roi": {
-            "maximum": 500.0,
-            "minimum": 0.0,
-            "title": "Estimated Roi",
-            "type": "number"
+            "anyOf": [
+              {
+                "maximum": 500.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Return on cash after finance (None when no rent); can be negative",
+            "title": "Estimated Roi"
           },
           "investment_score": {
             "maximum": 10.0,
@@ -10257,7 +10485,6 @@
           "property_id",
           "price",
           "rental_yield",
-          "estimated_roi",
           "monthly_cash_flow",
           "days_on_market",
           "investment_score",
@@ -15038,6 +15265,54 @@
             "description": "Block of flats",
             "title": "Block Of Flats"
           },
+          "bmv_basis_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'scotland_sale_ratio' when bmv_basis_price applies, else null",
+            "title": "Bmv Basis Kind"
+          },
+          "bmv_basis_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The one sentence explaining bmv_basis_price (discount_calibration.bmv_basis_note, the same copy as the page's bmvBasisNote); null on an asking basis",
+            "title": "Bmv Basis Note"
+          },
+          "bmv_basis_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The price the BMV % and the verdict's price premium are measured against when it is not the asking price (Scotland, ENABLE_BMV_SCOTLAND_SALE_RATIO): asking x sale ratio. Null otherwise.",
+            "title": "Bmv Basis Price"
+          },
+          "bmv_basis_yield_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set with bmv_basis_note: the gross yield is on the asking price, not the basis",
+            "title": "Bmv Basis Yield Note"
+          },
           "bmv_comp_count_used": {
             "anyOf": [
               {
@@ -15339,6 +15614,43 @@
             ],
             "description": "Signed residual the model applied (%). >0 means the raw market average over-estimated; corrected = market_avg / (1 + pct/100).",
             "title": "Bmv Residual Pct"
+          },
+          "bmv_residual_scored_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the corrected BMV was last scored. A price change after it withholds the published discount ('recalculating').",
+            "title": "Bmv Residual Scored At"
+          },
+          "bmv_sale_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The sale/asking ratio behind bmv_basis_price, else null",
+            "title": "Bmv Sale Ratio"
+          },
+          "bmv_sale_ratio_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'area' when bmv_sale_ratio is measured for this postcode area, 'scotland' for the Scotland-wide figure, else null",
+            "title": "Bmv Sale Ratio Scope"
           },
           "bmv_street_verdict": {
             "anyOf": [
@@ -16384,6 +16696,18 @@
             "description": "EA/SEPA flood zone: 1, 2, 3, 3a, 3b",
             "title": "Flood Zone"
           },
+          "flood_zone_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reader-facing reason the flood zone is withheld",
+            "title": "Flood Zone Note"
+          },
           "flood_zone_source": {
             "anyOf": [
               {
@@ -16395,6 +16719,18 @@
             ],
             "description": "Data source: ea_ogc, sepa_postgis, not_available",
             "title": "Flood Zone Source"
+          },
+          "flood_zone_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the stored zone is withheld: rechecking | not_checked_wales | not_checked_scotland | not_available (app/services/flood_zone_status.py)",
+            "title": "Flood Zone Status"
           },
           "flood_zone_updated_at": {
             "anyOf": [
@@ -16612,10 +16948,16 @@
             "title": "Has Annexe"
           },
           "has_article4_restrictions": {
-            "default": false,
-            "description": "Property has Article 4 direction restrictions",
-            "title": "Has Article4 Restrictions",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated, always null: use hmo_planning",
+            "title": "Has Article4 Restrictions"
           },
           "has_basement": {
             "anyOf": [
@@ -16724,6 +17066,19 @@
             ],
             "description": "Services connected",
             "title": "Has Services Connected"
+          },
+          "headline_verdict": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The viewer's headline {state, strategy, label, source, also, note}: the best verdict among their preferred strategies, else the global verdict.",
+            "title": "Headline Verdict"
           },
           "heating": {
             "anyOf": [
@@ -16986,10 +17341,16 @@
             "title": "Imd Decile"
           },
           "in_conservation_area": {
-            "default": false,
-            "description": "Property is within a designated conservation area",
-            "title": "In Conservation Area",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated, always null: use within_conservation_area",
+            "title": "In Conservation Area"
           },
           "investment_only": {
             "anyOf": [
@@ -17190,10 +17551,16 @@
             "title": "Is Land Plot"
           },
           "is_listed_building": {
-            "default": false,
-            "description": "Property is an officially listed building",
-            "title": "Is Listed Building",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated, always null: use listed_status",
+            "title": "Is Listed Building"
           },
           "is_multi_unit": {
             "anyOf": [
@@ -17310,31 +17677,6 @@
             },
             "title": "Key Features",
             "type": "array"
-          },
-          "last_sale_date": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Last sale date",
-            "title": "Last Sale Date"
-          },
-          "last_sale_price": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Last sale price in pence",
-            "title": "Last Sale Price"
           },
           "last_seen": {
             "anyOf": [
@@ -17850,7 +18192,7 @@
           },
           "nearby_applications_count": {
             "default": 0,
-            "description": "Count of planning applications within 0.5 miles",
+            "description": "Count of planning applications within 500 metres in the last 12 months (app/constants/nearby_planning.py)",
             "title": "Nearby Applications Count",
             "type": "integer"
           },
@@ -18223,6 +18565,18 @@
             ],
             "description": "Postcode district",
             "title": "Postcode District"
+          },
+          "postcode_withheld": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the portal withheld the postcode; signed-out readers then get the outcode only",
+            "title": "Postcode Withheld"
           },
           "potential_energy_efficiency": {
             "anyOf": [
@@ -18713,6 +19067,18 @@
             "description": "Provenance of the rateable value: 'voa', 'scraper', 'manual'",
             "title": "Rateable Value Source"
           },
+          "realistic_offer_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The opening offer roce_at_offer_pct is computed at",
+            "title": "Realistic Offer Price"
+          },
           "reception_rooms": {
             "anyOf": [
               {
@@ -18942,7 +19308,7 @@
                 "type": "null"
               }
             ],
-            "description": "Data source: zoopla, rightmove, market_data_rental",
+            "description": "Rental data source code",
             "title": "Rental Data Source"
           },
           "rental_data_updated": {
@@ -19105,6 +19471,18 @@
             "description": "Right to buy",
             "title": "Right To Buy"
           },
+          "roce_at_offer_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The card's BTL ROCE at the page's opening offer; null = no offer or figure",
+            "title": "Roce At Offer Pct"
+          },
           "roi_percentage": {
             "anyOf": [
               {
@@ -19190,6 +19568,19 @@
             ],
             "description": "Suitable for serviced accommodation",
             "title": "Sa Suitable"
+          },
+          "sale_motivation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vendor motivation from the listing history: signals [{key, label, evidence, summary, route_in, offer_effect}], achievable_offer (label-backed median and cautious sold-vs-asking gap, or null), region, measured_on.",
+            "title": "Sale Motivation"
           },
           "secondheat_description": {
             "anyOf": [
@@ -19491,6 +19882,34 @@
             "description": "Net profit projections for all strategies (BTL, HMO, BRRR, FLIP, SA, R2R)",
             "title": "Strategy Projections"
           },
+          "strategy_tier_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The For You strategy tab's tier for this property: gold 3, silver 2, bronze 1, else 0. Only with for_you_strategy (paid callers).",
+            "title": "Strategy Tier Rank"
+          },
+          "strategy_verdicts": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-strategy verdicts {key: {state, reason, label}}: every key on the property page, the viewer's preferred keys on cards.",
+            "title": "Strategy Verdicts"
+          },
           "structural_issues": {
             "anyOf": [
               {
@@ -19614,6 +20033,19 @@
             ],
             "description": "Tenure from EPC data",
             "title": "Tenure Epc"
+          },
+          "tenure_facts": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Tenure and leasehold facts with sources (app/services/tenure_lease_facts.py): jurisdiction, tenure_label, lease, cladding, service_charge. Set only under ENABLE_TENURE_LEASE_FACTS (None otherwise)",
+            "title": "Tenure Facts"
           },
           "title": {
             "description": "Property title",
@@ -19778,8 +20210,56 @@
                 "type": "null"
               }
             ],
-            "description": "What moved the fair value away from the model (investor audit 2.2/2.4/2.5): anchor {type own_sale|same_building|same_street, date, price, indexed_price, weight, sales[]} to list first among the comparables, tenanted investment value, Scottish offers-over basis. Null unless ENABLE_VALUATION_ANCHORS is on and the corrected value is shown.",
+            "description": "What moved the fair value away from the model (investor audit 2.2/2.4/2.5): anchor {type own_sale|same_building|same_street, date, price, indexed_price, weight, sales[], strength {strong, reasons} under ENABLE_ANCHOR_STRENGTH_GATE} to list first among the comparables, tenanted investment value, Scottish offers-over basis. Null unless ENABLE_VALUATION_ANCHORS is on and the corrected value is shown.",
             "title": "Valuation Evidence"
+          },
+          "value_confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'low' when the value is published only as a range; null otherwise.",
+            "title": "Value Confidence"
+          },
+          "value_confidence_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the value is low confidence, in a few words.",
+            "title": "Value Confidence Reason"
+          },
+          "value_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "High end of the low-confidence value range (GBP). Null otherwise.",
+            "title": "Value High"
+          },
+          "value_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Low end of the home's value range (GBP) when the value is published at low confidence. The verdict compares the asking price with this figure. Null otherwise.",
+            "title": "Value Low"
           },
           "vat_applicable": {
             "anyOf": [
@@ -19919,6 +20399,19 @@
             "description": "Walls environmental impact rating",
             "title": "Walls Env Eff"
           },
+          "watch_tier": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A Watch home's tier {tier, label, strategy, offer_band, reason, checks}: works_with_offer, needs_check or watch. Null for any other verdict.",
+            "title": "Watch Tier"
+          },
           "windows_description": {
             "anyOf": [
               {
@@ -20012,7 +20505,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla upper rental range",
+            "description": "Upper rental range",
             "title": "Zoopla Rental Estimate High"
           },
           "zoopla_rental_estimate_low": {
@@ -20024,7 +20517,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla lower rental range",
+            "description": "Lower rental range",
             "title": "Zoopla Rental Estimate Low"
           },
           "zoopla_rental_estimate_pcm": {
@@ -20036,7 +20529,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla monthly rental estimate",
+            "description": "Algorithmic monthly rental estimate",
             "title": "Zoopla Rental Estimate Pcm"
           }
         },
@@ -21924,7 +22417,7 @@
                 "type": "null"
               }
             ],
-            "description": "Maximum last sale year (e.g. 2020)",
+            "description": "Retired: accepted and ignored (frozen last-sale backfill)",
             "title": "Max Last Sale Year"
           },
           "max_price": {
@@ -22172,7 +22665,7 @@
                 "type": "null"
               }
             ],
-            "description": "Minimum last sale year (e.g. 2015)",
+            "description": "Retired: accepted and ignored (frozen last-sale backfill)",
             "title": "Min Last Sale Year"
           },
           "min_lease_years": {
@@ -22285,6 +22778,20 @@
             ],
             "description": "Minimum monthly rent in pounds",
             "title": "Min Rent"
+          },
+          "min_roce": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum ROCE % at asking or at a realistic offer",
+            "title": "Min Roce"
           },
           "min_sa_score": {
             "anyOf": [
@@ -22412,7 +22919,7 @@
                 "type": "null"
               }
             ],
-            "description": "Filter for properties with negative equity (last sale price > current price)",
+            "description": "Retired: accepted and ignored (it read a frozen last-sale backfill)",
             "title": "Negative Equity"
           },
           "new_bathroom": {
@@ -23397,7 +23904,7 @@
                 "type": "null"
               }
             ],
-            "description": "Canonical gross yield % (zoopla-preferred); use this for display",
+            "description": "Canonical gross yield %; use this for display",
             "title": "Gross Yield"
           },
           "id": {
@@ -23524,6 +24031,17 @@
             ],
             "title": "Postcode"
           },
+          "postcode_withheld": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode Withheld"
+          },
           "price": {
             "anyOf": [
               {
@@ -23614,7 +24132,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla rental estimate",
+            "description": "Algorithmic rental estimate",
             "title": "Zoopla Rental Estimate Pcm"
           }
         },
@@ -25161,7 +25679,7 @@
                 "type": "null"
               }
             ],
-            "description": "Maximum last sale year (e.g. 2020)",
+            "description": "Retired: accepted and ignored (frozen last-sale backfill)",
             "title": "Max Last Sale Year"
           },
           "max_price": {
@@ -25409,7 +25927,7 @@
                 "type": "null"
               }
             ],
-            "description": "Minimum last sale year (e.g. 2015)",
+            "description": "Retired: accepted and ignored (frozen last-sale backfill)",
             "title": "Min Last Sale Year"
           },
           "min_lease_years": {
@@ -25522,6 +26040,20 @@
             ],
             "description": "Minimum monthly rent in pounds",
             "title": "Min Rent"
+          },
+          "min_roce": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum ROCE % at asking or at a realistic offer",
+            "title": "Min Roce"
           },
           "min_sa_score": {
             "anyOf": [
@@ -25649,7 +26181,7 @@
                 "type": "null"
               }
             ],
-            "description": "Filter for properties with negative equity (last sale price > current price)",
+            "description": "Retired: accepted and ignored (it read a frozen last-sale backfill)",
             "title": "Negative Equity"
           },
           "new_bathroom": {
@@ -27250,7 +27782,7 @@
         "properties": {
           "basis": {
             "default": "none",
-            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | property_estimate (this home's own algorithmic estimate, used over a low- or medium-confidence area median) | verify_cap_comparable_median (a per-sqft, band-edge, thin-sample or verify-labelled rent held at the median of the same-bedroom comparable lets) | local_listing_median (held at the median of live like-for-like local lets: same bedrooms, flat or house, whole-home tenancies) | local_listing_yield_cap (held at the lower quartile of those lets because it implied 1.5x the local listing yield or more; labelled verify) | none",
+            "description": "rent_psf_x_floor_area (median rent per sqft applied to the subject's own measured floor area) | rent_psf_clamped_to_band (that extrapolation fell outside the sample's interquartile rent band and was held at the band edge — the published number is the band's, and confidence is degraded a tier) | beds_median_rent (median rent for this bedroom count, no size input) | stated_passing_rent (the sitting tenant's rent the listing states) | stated_yield_cap (the rent the listing's own, lower, gross-yield claim implies) | property_estimate (this home's own algorithmic estimate, used over a low- or medium-confidence area median) | verify_cap_comparable_median (a per-sqft, band-edge, thin-sample or verify-labelled rent held at the median of the same-bedroom comparable lets) | local_listing_median (held at the median of live like-for-like local lets: same bedrooms, flat or house, whole-home tenancies) | local_listing_yield_cap (held at the lower quartile of those lets because it implied 1.5x the local listing yield or more; labelled verify) | like_for_like_median_cap (held at the lower of the sector and district medians of those like-for-like lets) | size_matched_median_cap (the same cap over lets within 0.8-1.25x a measured floor area, for a large home where the bedrooms median is 2,500/mo or more) | achieved_price_adjusted_median (that median scaled down by the home's published market value, else its asking price, against the district's asking prices for the same homes, at most 10% and never below the lower quartile of the lets) | none",
             "title": "Basis",
             "type": "string"
           },
@@ -28079,7 +28611,7 @@
             "title": "Insurance Annual"
           },
           "interest_only": {
-            "default": false,
+            "default": true,
             "description": "Whether mortgage is interest-only",
             "title": "Interest Only",
             "type": "boolean"
@@ -29182,6 +29714,125 @@
         "title": "SavedCalculationResponse",
         "type": "object"
       },
+      "ScannerLetterSettingsIn": {
+        "properties": {
+          "auto_send": {
+            "default": false,
+            "title": "Auto Send",
+            "type": "boolean"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "goal": {
+            "maxLength": 50,
+            "title": "Goal",
+            "type": "string"
+          },
+          "letter_style": {
+            "default": "personal",
+            "enum": [
+              "personal",
+              "branded",
+              "plain"
+            ],
+            "title": "Letter Style",
+            "type": "string"
+          },
+          "monthly_budget": {
+            "default": 0,
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Monthly Budget",
+            "type": "integer"
+          },
+          "template_type": {
+            "maxLength": 50,
+            "title": "Template Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "goal",
+          "template_type"
+        ],
+        "title": "ScannerLetterSettingsIn",
+        "type": "object"
+      },
+      "ScannerLetterSettingsOut": {
+        "properties": {
+          "auto_send": {
+            "default": false,
+            "title": "Auto Send",
+            "type": "boolean"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "letter_style": {
+            "default": "personal",
+            "enum": [
+              "personal",
+              "branded",
+              "plain"
+            ],
+            "title": "Letter Style",
+            "type": "string"
+          },
+          "monthly_budget": {
+            "default": 0,
+            "title": "Monthly Budget",
+            "type": "integer"
+          },
+          "saved_search_id": {
+            "title": "Saved Search Id",
+            "type": "string"
+          },
+          "template_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Type"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "saved_search_id"
+        ],
+        "title": "ScannerLetterSettingsOut",
+        "type": "object"
+      },
       "ScotlandDemographicsResponse": {
         "description": "Scotland-specific demographics from SIMD 2020",
         "properties": {
@@ -29627,6 +30278,30 @@
       },
       "SoldHistoryResponse": {
         "properties": {
+          "data_as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest Land Registry transfer date we hold (ISO date). Loaded monthly and registered weeks to months after completion, so a recent sale may not appear yet.",
+            "title": "Data As Of"
+          },
+          "data_as_of_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'Land Registry data to <month year>' for display beside sold figures.",
+            "title": "Data As Of Label"
+          },
           "estimate_note": {
             "anyOf": [
               {
@@ -29658,6 +30333,12 @@
             "title": "Neighbour Sales",
             "type": "array"
           },
+          "neighbour_sales_total": {
+            "default": 0,
+            "description": "Every neighbour sale held before the cap. neighbour_sales lists only each other unit's latest sale, newest first, at most 10 rows.",
+            "title": "Neighbour Sales Total",
+            "type": "integer"
+          },
           "neighbour_sources_used": {
             "description": "Sources behind neighbour_sales, which usually differ from sources_used.",
             "items": {
@@ -29665,6 +30346,12 @@
             },
             "title": "Neighbour Sources Used",
             "type": "array"
+          },
+          "neighbour_units_total": {
+            "default": 0,
+            "description": "Distinct other units behind neighbour_sales_total.",
+            "title": "Neighbour Units Total",
+            "type": "integer"
           },
           "property_id": {
             "title": "Property Id",
@@ -30605,6 +31292,18 @@
             "default": "residential_btl",
             "title": "Property Type",
             "type": "string"
+          },
+          "tax_year": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "UK tax year, e.g. \"2027/28\"; omitted = the current tax year",
+            "title": "Tax Year"
           }
         },
         "required": [
@@ -31362,7 +32061,7 @@
         "type": "object"
       },
       "UpliftEstimate": {
-        "description": "Post-refurb value uplift potential.\n\npost_refurb_value_gbp basis priority (2026-06-12):\n  1. avm_corrected             - residual-corrected valuation\n                                 (properties.bmv_corrected_value,\n                                 flywheel #2b model output)\n  2. comparable_market_average - the BMV engine's comp average\n  3. avm_postcode_median       - Zoopla AVM median for the\n                                 postcode + bedrooms + type\nOmitted from the scan response entirely when no basis exists.",
+        "description": "Post-refurb value uplift potential.\n\npost_refurb_value_gbp basis priority (2026-06-12):\n  1. avm_corrected             - residual-corrected valuation\n                                 (properties.bmv_corrected_value,\n                                 flywheel #2b model output)\n  2. comparable_market_average - the BMV engine's comp average\n  3. avm_postcode_median       - automated valuation median for the\n                                 postcode + bedrooms + type\nOmitted from the scan response entirely when no basis exists.",
         "properties": {
           "all_in_cost_gbp": {
             "title": "All In Cost Gbp",
@@ -31798,8 +32497,23 @@
         "type": "object"
       },
       "VerdictReason": {
-        "description": "Why a home reads Pursue under the value-add rule\n(verdict_engine.value_add_reason, ENABLE_VALUE_ADD_PURSUE).",
+        "additionalProperties": true,
+        "description": "Why a home reads Pursue under the value-add rule\n(verdict_engine.value_add_reason, ENABLE_VALUE_ADD_PURSUE) or a loosening\nflag (verdict_engine.pursue_loosen_reason), or why a\ncommercial or land lot reads insufficient_data (lot_reasons.lot_reason,\nENABLE_COMMERCIAL_LOT_FACTS: ``note`` and ``facts``), or why a Watch reads\nPursue at an offer (pursue_at_offer.at_offer_reason, ENABLE_PURSUE_AT_OFFER:\n``basis``, ``offer_price``, ``offer_pct_below_asking``, the range\n``offer_low_price`` / ``offer_low_pct_below_asking`` / ``offer_high_price`` /\n``offer_high_pct_below_asking``, ``works_up_to``, ``signal_mix``). Extra keys\npass through, so the other reasons serialise exactly as before.",
         "properties": {
+          "checks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checks"
+          },
           "code": {
             "title": "Code",
             "type": "string"
@@ -31815,9 +32529,34 @@
             ],
             "title": "Extra Rooms"
           },
+          "facts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/VerdictReasonFact"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facts"
+          },
           "label": {
             "title": "Label",
             "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
           },
           "status": {
             "anyOf": [
@@ -31847,6 +32586,25 @@
           "label"
         ],
         "title": "VerdictReason",
+        "type": "object"
+      },
+      "VerdictReasonFact": {
+        "description": "One commercial fact a lot reason names (lot_reasons.lot_reason).",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "VerdictReasonFact",
         "type": "object"
       },
       "ViewportSearchRequest": {
@@ -32298,12 +33056,26 @@
             "title": "Address"
           },
           "in_conservation_area": {
-            "title": "In Conservation Area",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Conservation Area"
           },
           "is_listed_building": {
-            "title": "Is Listed Building",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Listed Building"
           },
           "postcode": {
             "anyOf": [
@@ -32553,8 +33325,20 @@
                 "type": "null"
               }
             ],
-            "description": "Confidence band for the sale estimate: high | medium | low, LOWER-CASE, the one convention every enum-like field on this surface uses (rent_confidence, bmv_confidence_level, confidence_tier). ValuationService's own enum is upper-case and is normalised at this boundary, so a caller can compare this against rent_confidence without case-folding first. What sets it: how closely the sample's estimates AGREE (their relative inter-quartile range), not how many there are - measured against achieved Land Registry sale prices, the spread predicts error and the head-count does not. A small sample that agrees closely can therefore be 'high'; it is capped by any widening of the question (see scope_widened) and by the source's own record confidence. Read it with sample_size.",
+            "description": "Confidence band for the sale estimate: high | medium | low, LOWER-CASE, the one convention every enum-like field on this surface uses (rent_confidence, bmv_confidence_level, confidence_tier). ValuationService's own enum is upper-case and is normalised at this boundary, so a caller can compare this against rent_confidence without case-folding first. What sets it depends on confidence_basis. 'postcode_sample': how closely the sample's estimates AGREE (their relative inter-quartile range), not how many there are - measured against achieved Land Registry sale prices, the spread predicts error and the head-count does not. A small sample that agrees closely can therefore be 'high'; it is capped by any widening of the question (see scope_widened) and by the source's own record confidence. Read it with sample_size. 'property_comparables' (valuation_scope 'property'): the rule score_deal's BMV factor applies to the same value - fewer than 6 comparables, or a stored 'low' level, is 'low'; otherwise the stored level. The postcode sample's own confidence is then under postcode_estimate.",
             "title": "Confidence"
+          },
+          "confidence_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What confidence measures: 'postcode_sample' (agreement of the postcode AVM sample behind a postcode/sector/outcode answer) | 'property_comparables' (the listing's own comparables behind a property-scoped value, the confidence score_deal's BMV factor states for it). Null when no confidence is published.",
+            "title": "Confidence Basis"
           },
           "gross_yield_pct": {
             "anyOf": [
@@ -32583,7 +33367,7 @@
                 "type": "null"
               }
             ],
-            "description": "Present when valuation_scope is 'property': the postcode-level Zoopla AVM figures (sale_estimate, sale_lower, sale_upper, area_average, valuation_scope, resolution_level, sample_size) that this answer replaced as the primary value. A secondary area context, not the property's value.",
+            "description": "Present when valuation_scope is 'property': the postcode-level automated valuation figures (sale_estimate, sale_lower, sale_upper, area_average, valuation_scope, resolution_level, sample_size, confidence, confidence_basis, scope_widened, valuation_notes) that this answer replaced as the primary value. A secondary area context, not the property's value.",
             "title": "Postcode Estimate"
           },
           "property_id": {
@@ -32607,7 +33391,7 @@
                 "type": "null"
               }
             ],
-            "description": "Why the listing's value is indicative or withheld. When withheld, valuation_scope stays 'postcode' and the figures are Zoopla's area estimate, not a value for this property.",
+            "description": "Why the listing's value is indicative or withheld. When withheld, valuation_scope stays 'postcode' and the figures are an area estimate, not a value for this property.",
             "title": "Published Value Note"
           },
           "rent_basis": {
@@ -32711,7 +33495,7 @@
                 "type": "null"
               }
             ],
-            "description": "Lower bound of the sale estimate (GBP)",
+            "description": "Lower bound of the sale estimate (GBP). At valuation_scope 'property' it is the property pack's band for the same value: the stored comparables band when it contains the value, else +/-10% / 15% / 20% for a high / medium / low confidence.",
             "title": "Sale Lower"
           },
           "sale_upper": {
@@ -32723,7 +33507,7 @@
                 "type": "null"
               }
             ],
-            "description": "Upper bound of the sale estimate (GBP)",
+            "description": "Upper bound of the sale estimate (GBP); see sale_lower.",
             "title": "Sale Upper"
           },
           "sample_size": {
@@ -32747,7 +33531,7 @@
                 "type": "null"
               }
             ],
-            "description": "True when the answer widened past the requested scope (geography or bedrooms) to find a usable sample — read valuation_notes for what moved. False when the ladder answered at the rung asked for; null on property-scoped payloads.",
+            "description": "True when the answer widened past the requested scope (geography or bedrooms) to find a usable sample — read valuation_notes for what moved. False when the ladder answered at the rung asked for, and on property-scoped payloads (the postcode sample's own widening is then under postcode_estimate).",
             "title": "Scope Widened"
           },
           "source": {
@@ -32792,7 +33576,7 @@
               }
             ],
             "default": "postcode",
-            "description": "Null when the sale estimate is suppressed (no rung reached the publish floor) — a rent-only answer claims no sale scope. Otherwise: what sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from Zoopla's AVM over currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'sector' / 'outcode' — the same aggregate answer, but the relaxation ladder found no usable sample at the requested scope and widened; the figures describe that wider geography, not the postcode asked about (scope_widened is True and valuation_notes says what moved). 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
+            "description": "Null when the sale estimate is suppressed (no rung reached the publish floor) — a rent-only answer claims no sale scope. Otherwise: what sale_estimate, sale_lower/upper, area_average and gross_yield_pct are ABOUT. 'postcode' — this endpoint and the MCP value_property tool, neither of which accepts a property id: a median over every matching dwelling in the postcode, from automated valuations of currently listed stock. No dwelling is identified, so it must not be quoted as one property's value. 'sector' / 'outcode' — the same aggregate answer, but the relaxation ladder found no usable sample at the requested scope and widened; the figures describe that wider geography, not the postcode asked about (scope_widened is True and valuation_notes says what moved). 'property' — /api/v1/property-pack and the MCP get_property_report that wraps it, which are given a property_id: that dwelling's own market value, the achieved-comparables figure its published BMV discount is measured against. The two answer different questions and will differ: 420,000 postcode-scoped for M20 4SB against 370,200 property-scoped for the listing inside it, both measured 2026-08-13.",
             "title": "Valuation Scope"
           },
           "value_indicative": {
@@ -32822,6 +33606,19 @@
             "description": "Is this an additional property",
             "title": "Is Additional Property",
             "type": "boolean"
+          },
+          "postcode": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Postcode: picks SDLT, LBTT or LTT (default England)",
+            "title": "Postcode"
           },
           "price": {
             "description": "Property price",
@@ -33552,6 +34349,54 @@
             "description": "Block of flats",
             "title": "Block Of Flats"
           },
+          "bmv_basis_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'scotland_sale_ratio' when bmv_basis_price applies, else null",
+            "title": "Bmv Basis Kind"
+          },
+          "bmv_basis_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The one sentence explaining bmv_basis_price (discount_calibration.bmv_basis_note, the same copy as the page's bmvBasisNote); null on an asking basis",
+            "title": "Bmv Basis Note"
+          },
+          "bmv_basis_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The price the BMV % and the verdict's price premium are measured against when it is not the asking price (Scotland, ENABLE_BMV_SCOTLAND_SALE_RATIO): asking x sale ratio. Null otherwise.",
+            "title": "Bmv Basis Price"
+          },
+          "bmv_basis_yield_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set with bmv_basis_note: the gross yield is on the asking price, not the basis",
+            "title": "Bmv Basis Yield Note"
+          },
           "bmv_comp_count_used": {
             "anyOf": [
               {
@@ -33853,6 +34698,43 @@
             ],
             "description": "Signed residual the model applied (%). >0 means the raw market average over-estimated; corrected = market_avg / (1 + pct/100).",
             "title": "Bmv Residual Pct"
+          },
+          "bmv_residual_scored_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the corrected BMV was last scored. A price change after it withholds the published discount ('recalculating').",
+            "title": "Bmv Residual Scored At"
+          },
+          "bmv_sale_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The sale/asking ratio behind bmv_basis_price, else null",
+            "title": "Bmv Sale Ratio"
+          },
+          "bmv_sale_ratio_scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'area' when bmv_sale_ratio is measured for this postcode area, 'scotland' for the Scotland-wide figure, else null",
+            "title": "Bmv Sale Ratio Scope"
           },
           "bmv_street_verdict": {
             "anyOf": [
@@ -34778,10 +35660,16 @@
             "title": "Has Annexe"
           },
           "has_article4_restrictions": {
-            "default": false,
-            "description": "Property has Article 4 direction restrictions",
-            "title": "Has Article4 Restrictions",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated, always null: use hmo_planning",
+            "title": "Has Article4 Restrictions"
           },
           "has_basement": {
             "anyOf": [
@@ -34890,6 +35778,19 @@
             ],
             "description": "Services connected",
             "title": "Has Services Connected"
+          },
+          "headline_verdict": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The viewer's headline {state, strategy, label, source, also, note}: the best verdict among their preferred strategies, else the global verdict.",
+            "title": "Headline Verdict"
           },
           "hidden_opportunities": {
             "anyOf": [
@@ -35032,10 +35933,16 @@
             "title": "Imd Decile"
           },
           "in_conservation_area": {
-            "default": false,
-            "description": "Property is within a designated conservation area",
-            "title": "In Conservation Area",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated, always null: use within_conservation_area",
+            "title": "In Conservation Area"
           },
           "investment_only": {
             "anyOf": [
@@ -35224,10 +36131,16 @@
             "title": "Is Land Plot"
           },
           "is_listed_building": {
-            "default": false,
-            "description": "Property is an officially listed building",
-            "title": "Is Listed Building",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated, always null: use listed_status",
+            "title": "Is Listed Building"
           },
           "is_multi_unit": {
             "anyOf": [
@@ -35336,6 +36249,19 @@
             ],
             "description": "Japanese knotweed detected",
             "title": "Japanese Knotweed"
+          },
+          "last_seen": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last seen on source portal",
+            "title": "Last Seen"
           },
           "last_updated": {
             "description": "Last updated",
@@ -35636,7 +36562,7 @@
           },
           "nearby_applications_count": {
             "default": 0,
-            "description": "Count of planning applications within 0.5 miles",
+            "description": "Count of planning applications within 500 metres in the last 12 months (app/constants/nearby_planning.py)",
             "title": "Nearby Applications Count",
             "type": "integer"
           },
@@ -35885,6 +36811,18 @@
             ],
             "description": "Property postcode",
             "title": "Postcode"
+          },
+          "postcode_withheld": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the portal withheld the postcode; signed-out readers then get the outcode only",
+            "title": "Postcode Withheld"
           },
           "predicted_reduction_likelihood": {
             "anyOf": [
@@ -36275,6 +37213,18 @@
             "description": "Suitable for rent-to-rent",
             "title": "R2R Suitable"
           },
+          "realistic_offer_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The opening offer roce_at_offer_pct is computed at",
+            "title": "Realistic Offer Price"
+          },
           "rent_evidence_basis": {
             "anyOf": [
               {
@@ -36467,7 +37417,7 @@
                 "type": "null"
               }
             ],
-            "description": "Data source: zoopla, rightmove, market_data_rental",
+            "description": "Rental data source code",
             "title": "Rental Data Source"
           },
           "rental_data_updated": {
@@ -36604,6 +37554,18 @@
             ],
             "description": "Right to buy",
             "title": "Right To Buy"
+          },
+          "roce_at_offer_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The card's BTL ROCE at the page's opening offer; null = no offer or figure",
+            "title": "Roce At Offer Pct"
           },
           "roi_percentage": {
             "anyOf": [
@@ -36847,6 +37809,34 @@
             "description": "Net profit projections for all strategies (BTL, HMO, BRRR, FLIP, SA, R2R)",
             "title": "Strategy Projections"
           },
+          "strategy_tier_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The For You strategy tab's tier for this property: gold 3, silver 2, bronze 1, else 0. Only with for_you_strategy (paid callers).",
+            "title": "Strategy Tier Rank"
+          },
+          "strategy_verdicts": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-strategy verdicts {key: {state, reason, label}}: every key on the property page, the viewer's preferred keys on cards.",
+            "title": "Strategy Verdicts"
+          },
           "structural_issues": {
             "anyOf": [
               {
@@ -37067,6 +38057,54 @@
             "description": "True when the stored row has neither a corrected value nor a raw BMV discount. Input to the page's no-valuation verdict cap.",
             "title": "Valuation Absent"
           },
+          "value_confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'low' when the value is published only as a range; null otherwise.",
+            "title": "Value Confidence"
+          },
+          "value_confidence_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the value is low confidence, in a few words.",
+            "title": "Value Confidence Reason"
+          },
+          "value_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "High end of the low-confidence value range (GBP). Null otherwise.",
+            "title": "Value High"
+          },
+          "value_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Low end of the home's value range (GBP) when the value is published at low confidence. The verdict compares the asking price with this figure. Null otherwise.",
+            "title": "Value Low"
+          },
           "vendor_motivation_score": {
             "anyOf": [
               {
@@ -37149,6 +38187,19 @@
             "title": "View Count",
             "type": "integer"
           },
+          "watch_tier": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A Watch home's tier {tier, label, strategy, offer_band, reason, checks}: works_with_offer, needs_check or watch. Null for any other verdict.",
+            "title": "Watch Tier"
+          },
           "within_article_4": {
             "anyOf": [
               {
@@ -37206,7 +38257,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla upper rental range",
+            "description": "Upper rental range",
             "title": "Zoopla Rental Estimate High"
           },
           "zoopla_rental_estimate_low": {
@@ -37218,7 +38269,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla lower rental range",
+            "description": "Lower rental range",
             "title": "Zoopla Rental Estimate Low"
           },
           "zoopla_rental_estimate_pcm": {
@@ -37230,7 +38281,7 @@
                 "type": "null"
               }
             ],
-            "description": "Zoopla monthly rental estimate",
+            "description": "Algorithmic monthly rental estimate",
             "title": "Zoopla Rental Estimate Pcm"
           }
         },
@@ -37400,7 +38451,7 @@
             "title": "Rent Upper"
           },
           "zoopla_property_id": {
-            "description": "Zoopla property identifier",
+            "description": "Comparable property identifier",
             "title": "Zoopla Property Id",
             "type": "string"
           }
@@ -37527,7 +38578,7 @@
             }
           },
           {
-            "description": "Optional property type filter (e.g. 'flat', 'semi-detached', 'Detached House'). Normalised server-side, so any of the frontend / Land Registry / Zoopla / Rightmove variants are accepted. When supplied, every signal in the response is computed against that type only — comparables, active stock, BMV mix, rentals.",
+            "description": "Optional property type filter (e.g. 'flat', 'semi-detached', 'Detached House'). Normalised server-side, so any of the common property-type label variants are accepted. When supplied, every signal in the response is computed against that type only — comparables, active stock, BMV mix, rentals.",
             "in": "query",
             "name": "property_type",
             "required": false,
@@ -37541,7 +38592,7 @@
                   "type": "null"
                 }
               ],
-              "description": "Optional property type filter (e.g. 'flat', 'semi-detached', 'Detached House'). Normalised server-side, so any of the frontend / Land Registry / Zoopla / Rightmove variants are accepted. When supplied, every signal in the response is computed against that type only — comparables, active stock, BMV mix, rentals.",
+              "description": "Optional property type filter (e.g. 'flat', 'semi-detached', 'Detached House'). Normalised server-side, so any of the common property-type label variants are accepted. When supplied, every signal in the response is computed against that type only — comparables, active stock, BMV mix, rentals.",
               "title": "Property Type"
             }
           },
@@ -38291,7 +39342,7 @@
     },
     "/api/v1/area/service-analytics": {
       "get": {
-        "description": "Neutral area facts for a seller pre-valuation pack.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nProjects six blocks from AreaAnalyticsService (epc_mix, council_tax_mix,\nsold_vs_asking, days_on_market, price_trend, transaction_volume) plus the\nservice's overall confidence / sample_size / asking_price_sample_size /\ngenerated_at, and adds nearby schools and flood zone when the postcode has\na GB centroid. Rent, yield, BMV, investor activity, tier mix and demand are\ndeliberately never returned: the reader is a homeowner, not an investor.\n\nEvery block is either ``{\"available\": true, \"sample_size\": n, ...}`` or\n``{\"available\": false, \"reason\": ...}``. Reasons: ``no_data`` (the source\nholds nothing here), ``lookup_failed`` (the source errored or timed out, or\na loader feeding the block failed), ``no_centroid`` (postcode not in\nos_postcodes, so no point to measure from), ``not_covered_northern_ireland``\nand ``not_covered_wales`` (the flood service has no source for that\nnation), ``country_unknown`` (no recognised nation for the centroid, so no\nflood source can be chosen), ``source_not_available`` (surface water, which\nno source we query publishes). No block failure raises: the route returns\n200 with markers. confidence / sample_size / asking_price_sample_size are\nnull when a loader they are computed from failed.\n\nAvailable analytics blocks carry their scope, from the input actually used:\n``source`` (sale_comparables | sold_listings), ``geography``\n(within_0_5_miles | outcode_prefix for comparables; outcode for sold\nlistings and council tax -- outcode_prefix is the ranker's no-coordinates\nfallback and may include neighbouring districts sharing the prefix),\n``window`` (10_years | 12_months | all_time) and ``counts``\n(comparables_capped_500 | sold_listings_capped_5000); price_trend and\ntransaction_volume add ``max_points`` (60). A scope value is null when the\nservice did not record it. council_tax_mix carries basis / geography /\nwindow only.\n\nCoverage: sold prices come from HM Land Registry (England and Wales) and\nZoopla sold records (Scotland); Northern Ireland has only asking prices,\ncounted in ``asking_price_sample_size``. Council tax bands are\nlisting-derived. os_postcodes holds no Northern Irish rows, so NI never\ngets schools. Flood covers England (EA) and Scotland (SEPA) only.\n\nThe request's database session is released before the flood lookup, which\nruns without it under a ``_FLOOD_TIMEOUT_SECONDS`` bound.\n\nRaises:\n    HTTPException: 400 if the postcode is not a full UK postcode. FastAPI\n        answers 422 before this handler runs when the postcode is missing\n        or outside 2-10 characters.",
+        "description": "Neutral area facts for a seller pre-valuation pack.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nProjects six blocks from AreaAnalyticsService (epc_mix, council_tax_mix,\nsold_vs_asking, days_on_market, price_trend, transaction_volume) plus the\nservice's overall confidence / sample_size / asking_price_sample_size /\ngenerated_at, and adds nearby schools and flood zone when the postcode has\na GB centroid. Rent, yield, BMV, investor activity, tier mix and demand are\ndeliberately never returned: the reader is a homeowner, not an investor.\n\nEvery block is either ``{\"available\": true, \"sample_size\": n, ...}`` or\n``{\"available\": false, \"reason\": ...}``. Reasons: ``no_data`` (the source\nholds nothing here), ``lookup_failed`` (the source errored or timed out, or\na loader feeding the block failed), ``no_centroid`` (postcode not in\nos_postcodes, so no point to measure from), ``not_covered_northern_ireland``\nand ``not_covered_wales`` (the flood service has no source for that\nnation), ``country_unknown`` (no recognised nation for the centroid, so no\nflood source can be chosen), ``source_not_available`` (surface water, which\nno source we query publishes). No block failure raises: the route returns\n200 with markers. confidence / sample_size / asking_price_sample_size are\nnull when a loader they are computed from failed.\n\nAvailable analytics blocks carry their scope, from the input actually used:\n``source`` (sale_comparables | sold_listings), ``geography``\n(within_0_5_miles | outcode_prefix for comparables; outcode for sold\nlistings and council tax -- outcode_prefix is the ranker's no-coordinates\nfallback and may include neighbouring districts sharing the prefix),\n``window`` (10_years | 12_months | all_time) and ``counts``\n(comparables_capped_500 | sold_listings_capped_5000); price_trend and\ntransaction_volume add ``max_points`` (60). A scope value is null when the\nservice did not record it. council_tax_mix carries basis / geography /\nwindow only.\n\nCoverage: sold prices come from HM Land Registry (England and Wales) and\nRegisters of Scotland records (Scotland); Northern Ireland has only asking prices,\ncounted in ``asking_price_sample_size``. Council tax bands are\nlisting-derived. os_postcodes holds no Northern Irish rows, so NI never\ngets schools. Flood covers England (EA) and Scotland (SEPA) only.\n\nThe request's database session is released before the flood lookup, which\nruns without it under a ``_FLOOD_TIMEOUT_SECONDS`` bound.\n\nRaises:\n    HTTPException: 400 if the postcode is not a full UK postcode. FastAPI\n        answers 422 before this handler runs when the postcode is missing\n        or outside 2-10 characters.",
         "operationId": "get_area_service_analytics_api_v1_area_service_analytics_get",
         "parameters": [
           {
@@ -38356,7 +39407,7 @@
     },
     "/api/v1/area/service-local-context": {
       "get": {
-        "description": "Area facts a potential seller's BUYERS will check: broadband and links.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nDeliberately SEPARATE from ``/service-postcode-summary`` rather than folded\ninto it. That endpoint 404s when it holds no sold prices, which is every\nScottish sector Zoopla missed and all of Northern Ireland -- exactly the\nsellers who most need something honest on the page. Bolting this on there\nwould have made the two fail together; here they fail independently.\n\nBroadband is averaged over the postcode SECTOR (Ofcom Connected Nations),\nnot the single postcode: a sector is the right grain for \"your area\", it is\nless identifying, and it rescues a postcode whose own row Ofcom never\nmeasured. Rows that are all-zero across all four percentages are dropped as\nno-data rather than averaged in -- see ``aggregate_broadband``.\n\nTransport needs a centroid from os_postcodes and is therefore GB-only by\nconstruction; a Northern Irish postcode returns ``[]`` here and still gets\nits broadband.\n\nRaises:\n    HTTPException: 400 if the postcode cannot be parsed, 404 if neither\n        broadband nor transport could be resolved for it.",
+        "description": "Area facts a potential seller's BUYERS will check: broadband and links.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nDeliberately SEPARATE from ``/service-postcode-summary`` rather than folded\ninto it. That endpoint 404s when it holds no sold prices, which is every\nScottish sector with no recorded sales and all of Northern Ireland -- exactly the\nsellers who most need something honest on the page. Bolting this on there\nwould have made the two fail together; here they fail independently.\n\nBroadband is averaged over the postcode SECTOR (Ofcom Connected Nations),\nnot the single postcode: a sector is the right grain for \"your area\", it is\nless identifying, and it rescues a postcode whose own row Ofcom never\nmeasured. Rows that are all-zero across all four percentages are dropped as\nno-data rather than averaged in -- see ``aggregate_broadband``.\n\nTransport needs a centroid from os_postcodes and is therefore GB-only by\nconstruction; a Northern Irish postcode returns ``[]`` here and still gets\nits broadband.\n\nRaises:\n    HTTPException: 400 if the postcode cannot be parsed, 404 if neither\n        broadband nor transport could be resolved for it.",
         "operationId": "get_area_service_local_context_api_v1_area_service_local_context_get",
         "parameters": [
           {
@@ -39788,7 +40839,7 @@
     },
     "/api/v1/flood-risk/coordinates": {
       "get": {
-        "description": "Check if a coordinate falls inside a UK flood risk zone.\n\nUses PostGIS ST_Contains against the flood_zones polygons (sourced from\nSEPA, EA flood map, etc.). Returns the highest-risk match if a point\nfalls inside multiple zones.",
+        "description": "Check if a coordinate falls inside a UK flood risk zone.\n\nScotland: PostGIS ST_Contains against the SEPA polygons in flood_zones.\nEngland: the Environment Agency flood map, tested point-in-polygon.\nWales, Northern Ireland or an unknown country: in_flood_zone is null\n(coverage not_covered), never false. The country is the nearest postcode's.",
         "operationId": "get_flood_risk_at_coordinates_api_v1_flood_risk_coordinates_get",
         "parameters": [
           {
@@ -39865,7 +40916,7 @@
     },
     "/api/v1/flood-risk/property/{property_id}": {
       "get": {
-        "description": "Check flood risk for a Prop AI Deals property by UUID.\n\nLooks up the property's lat/lon and runs the same PostGIS containment\ncheck. Honours the property's pre-computed `is_flood_zone` and\n`flood_zone` columns when available, falling back to the spatial join.",
+        "description": "Check flood risk for a Prop AI Deals property by UUID.\n\nReads the stored EA / SEPA zone through flood_zone_status (a zone being\nre-checked after the 2026-11 point-in-polygon fix, or an EA answer for a\nhome outside England, is null with a note). ``is_flood_zone`` is not used:\nlisting-text keywords write it too. With no stored zone, a Scottish home\ngets the SEPA polygon check and any other home is null (not checked).",
         "operationId": "get_flood_risk_for_property_api_v1_flood_risk_property__property_id__get",
         "parameters": [
           {
@@ -40060,7 +41111,7 @@
     },
     "/api/v1/heritage/property/{property_id}": {
       "get": {
-        "description": "Return listed-building and conservation-area status for a property.\n\nUses the pre-computed `is_listed_building` and `in_conservation_area`\nflags on the properties table. Both are populated by the planning\nenrichment workers from Historic England + local authority data.",
+        "description": "Return listed-building and conservation-area status for a property.\n\nReads the canonical heritage fields (property_market_signals.listed_status\n/ listed_checked_at / within_conservation_area), never the legacy\nis_listed_building / in_conservation_area columns, which are false on every\nhome that holds a real Historic England grade. Listed: true with a grade,\nfalse only after an answered check, otherwise null. Conservation area: true\nwhen flagged, otherwise null (the stored false cannot tell \"checked\" from\n\"never looked\").",
         "operationId": "get_heritage_status_api_v1_heritage_property__property_id__get",
         "parameters": [
           {
@@ -42511,7 +43562,7 @@
         ]
       },
       "post": {
-        "description": "Create a new area-based lead generator with outcode or polygon selection.",
+        "description": "Create a new area-based lead generator with outcode or polygon selection. If you already have an active scanner with the same outcodes (in any order), polygon and criteria, that scanner is returned with `already_existed: true` and nothing new is created (also when you are at your plan's scanner limit). A scanner that could never match anything is refused with 422 and `{\"detail\": {\"error\": <code>, \"message\": <text>}}`, where code is `invalid_range` (a min above its max: price, bedrooms, bathrooms, yield, days on market, floor area), `unknown_property_type` (outside flat, terraced, semi-detached, detached, bungalow, house, studio, maisonette, land, commercial, parking, caravan, other) or `area_required` (no outcodes or polygon; `radius_miles` alone is not an area).",
         "operationId": "create_lead_generator_api_v1_lead_generators_post",
         "requestBody": {
           "content": {
@@ -42528,7 +43579,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LeadGeneratorResponse"
+                  "$ref": "#/components/schemas/LeadGeneratorCreateResponse"
                 }
               }
             },
@@ -42724,7 +43775,7 @@
         ]
       },
       "put": {
-        "description": "Update an existing lead generator. Only provided fields are changed.",
+        "description": "Update an existing lead generator. Only provided fields are changed. A scanner that could never match anything is refused with 422 and `{\"detail\": {\"error\": <code>, \"message\": <text>}}`, where code is `invalid_range` (a min above its max: price, bedrooms, bathrooms, yield, days on market, floor area), `unknown_property_type` (outside flat, terraced, semi-detached, detached, bungalow, house, studio, maisonette, land, commercial, parking, caravan, other) or `area_required` (no outcodes or polygon; `radius_miles` alone is not an area).",
         "operationId": "update_lead_generator_api_v1_lead_generators__lg_id__put",
         "parameters": [
           {
@@ -43052,6 +44103,124 @@
         ]
       }
     },
+    "/api/v1/lead-generators/{lg_id}/letters": {
+      "get": {
+        "operationId": "get_scanner_letter_settings_api_v1_lead_generators__lg_id__letters_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lg_id",
+            "required": true,
+            "schema": {
+              "title": "Lg Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScannerLetterSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Get a scanner's letter settings",
+        "tags": [
+          "Lead generators"
+        ]
+      },
+      "put": {
+        "operationId": "put_scanner_letter_settings_api_v1_lead_generators__lg_id__letters_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lg_id",
+            "required": true,
+            "schema": {
+              "title": "Lg Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScannerLetterSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScannerLetterSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer Token": []
+          }
+        ],
+        "summary": "Save a scanner's letter settings",
+        "tags": [
+          "Lead generators"
+        ]
+      }
+    },
     "/api/v1/lead-generators/{lg_id}/new-count": {
       "get": {
         "description": "Returns the number of properties added since the lead generator was last marked as checked. Returns 0 if never checked.",
@@ -43319,6 +44488,26 @@
               ],
               "description": "Minimum rental yield",
               "title": "Min Yield"
+            }
+          },
+          {
+            "description": "Minimum ROCE at asking or a realistic offer",
+            "in": "query",
+            "name": "min_roce",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": -100,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum ROCE at asking or a realistic offer",
+              "title": "Min Roce"
             }
           },
           {
@@ -43897,7 +45086,7 @@
     },
     "/api/v1/market-data/{property_id}": {
       "get": {
-        "description": "Get comprehensive market data for a property.\n\nReturns enriched market intelligence including:\n- Current market valuation (Zoopla/Rightmove API data)\n- Price growth metrics (1yr, 3yr, 5yr)\n- Demand score and market trends\n- Property sold history (specific property)\n- Comparable properties nearby\n- Confidence levels and data sources\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive market data dictionary\n\nRaises:\n    HTTPException: 404 if property or market data not found",
+        "description": "Get comprehensive market data for a property.\n\nReturns enriched market intelligence including:\n- Current market valuation\n- Price growth metrics (1yr, 3yr, 5yr)\n- Demand score and market trends\n- Property sold history (specific property)\n- Comparable properties nearby\n- Confidence levels and data sources\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive market data dictionary\n\nRaises:\n    HTTPException: 404 if property or market data not found",
         "operationId": "get_property_market_data_api_v1_market_data__property_id__get",
         "parameters": [
           {
@@ -44043,7 +45232,7 @@
     },
     "/api/v1/market-data/{property_id}/comparables": {
       "get": {
-        "description": "Get detailed comparable properties from raw API data with optional filtering.\n\nLEGACY VERSION: Extracts from market_data.raw_response JSONB only.\nUse /comparables-v2 for comprehensive multi-table search.\n\nExtracts comparable property details from Zoopla raw_response JSONB\nincluding addresses, prices, dates, and property characteristics.\n\nSupports filtering by bedrooms and property type for precise comparables.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of comparables to return\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    List of comparable properties with detailed information",
+        "description": "Get detailed comparable properties from raw API data with optional filtering.\n\nLEGACY VERSION: Extracts from market_data.raw_response JSONB only.\nUse /comparables-v2 for comprehensive multi-table search.\n\nReturns comparable property details\nincluding addresses, prices, dates, and property characteristics.\n\nSupports filtering by bedrooms and property type for precise comparables.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of comparables to return\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    List of comparable properties with detailed information",
         "operationId": "get_property_comparables_api_v1_market_data__property_id__comparables_get",
         "parameters": [
           {
@@ -44149,7 +45338,7 @@
     },
     "/api/v1/market-data/{property_id}/comparables-enhanced": {
       "get": {
-        "description": "Get enhanced comparables including sold, live listings, and database properties.\n\nReturns comprehensive comparable properties from multiple sources:\n1. Zoopla sold properties (similarProperties from market_data)\n2. Zoopla live listings (similarListingsV2 from market_data)\n3. Zoopla sold properties (from zoopla_properties table via PostGIS)\n4. Rightmove sold properties (from rightmove_sold_prices table via PostGIS)\n5. Our database properties (optional)\n\nAll sources are merged, deduplicated by full address, and returned as raw data.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum comparables to return (default 100, max 100)\n    radius_miles: Search radius in miles (default 3.0, max 5.0)\n    include_database: Include our database properties\n    listing_type: Filter by sale or rent\n    current_user: Optional authenticated user\n\nReturns:\n    Categorized comparables with summary statistics\n\nRaises:\n    HTTPException: 404 if property not found\n    HTTPException: 500 if database error",
+        "description": "Get enhanced comparables including sold, live listings, and database properties.\n\nReturns comprehensive comparable properties from multiple sources:\n1. Sold properties similar to the subject\n2. Similar live listings\n3. Sold properties nearby\n4. Further sold-price records nearby\n5. Our database properties (optional)\n\nAll sources are merged, deduplicated by full address, and returned as raw data.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum comparables to return (default 100, max 100)\n    radius_miles: Search radius in miles (default 3.0, max 5.0)\n    include_database: Include our database properties\n    listing_type: Filter by sale or rent\n    current_user: Optional authenticated user\n\nReturns:\n    Categorized comparables with summary statistics\n\nRaises:\n    HTTPException: 404 if property not found\n    HTTPException: 500 if database error",
         "operationId": "get_enhanced_comparables_api_v1_market_data__property_id__comparables_enhanced_get",
         "parameters": [
           {
@@ -44222,7 +45411,7 @@
             }
           },
           {
-            "description": "Filter database comparables to a specific top-level property_type (e.g. 'commercial'). When set, the database-comparables fetch overrides the subject's own type with this value so commercial buyers see only commercial-stock comparables. Has no effect on the Zoopla / Rightmove / Land Registry sources, which lack this classification.",
+            "description": "Filter database comparables to a specific top-level property_type (e.g. 'commercial'). When set, the database-comparables fetch overrides the subject's own type with this value so commercial buyers see only commercial-stock comparables. Has no effect on the sold-price sources, which lack this classification.",
             "in": "query",
             "name": "property_type",
             "required": false,
@@ -44235,7 +45424,7 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter database comparables to a specific top-level property_type (e.g. 'commercial'). When set, the database-comparables fetch overrides the subject's own type with this value so commercial buyers see only commercial-stock comparables. Has no effect on the Zoopla / Rightmove / Land Registry sources, which lack this classification.",
+              "description": "Filter database comparables to a specific top-level property_type (e.g. 'commercial'). When set, the database-comparables fetch overrides the subject's own type with this value so commercial buyers see only commercial-stock comparables. Has no effect on the sold-price sources, which lack this classification.",
               "title": "Property Type"
             }
           },
@@ -44275,6 +45464,18 @@
               ],
               "description": "Optional subject floor area in sq ft supplied by the user when the listing holds none. Used only when the held area is absent, unverified or a building estimate; must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied' and never saved.",
               "title": "Subject Floor Area Sqft"
+            }
+          },
+          {
+            "description": "Add live_asking_summary for a sale subject: the median asking price, count and median price per sq ft of current same-type, same-bedroom listings within the comparables radius, and the subject's asking price against it. Signed-in viewers only (null when anonymous).",
+            "in": "query",
+            "name": "include_live_asking_summary",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Add live_asking_summary for a sale subject: the median asking price, count and median price per sq ft of current same-type, same-bedroom listings within the comparables radius, and the subject's asking price against it. Signed-in viewers only (null when anonymous).",
+              "title": "Include Live Asking Summary",
+              "type": "boolean"
             }
           },
           {
@@ -44331,7 +45532,7 @@
     },
     "/api/v1/market-data/{property_id}/comparables-v2": {
       "get": {
-        "description": "Get comparable properties from ALL database tables using PostGIS spatial search.\n\nNEW VERSION: Queries all 5 tables for comprehensive comparables:\n- zoopla_properties (historic sales)\n- rightmove_sold_prices (sold transactions)\n- zoopla_property_details (price change data)\n- rightmove_property_details (price data)\n- market_data (enriched sold data)\n\nFeatures:\n- PostGIS spatial search within radius\n- Optional bedroom/property type filtering\n- Deduplication by UPRN or address\n- Source tracking\n- Summary statistics\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_miles: Search radius in miles (0.1-10.0)\n    limit: Maximum number of comparables to return (1-200)\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    Comparable properties from all sources with summary statistics",
+        "description": "Get comparable properties from ALL database tables using PostGIS spatial search.\n\nNEW VERSION: Queries all 5 tables for comprehensive comparables:\n- historic sales\n- sold transactions\n- price change data\n- listing price data\n- market_data (enriched sold data)\n\nFeatures:\n- PostGIS spatial search within radius\n- Optional bedroom/property type filtering\n- Deduplication by UPRN or address\n- Source tracking\n- Summary statistics\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_miles: Search radius in miles (0.1-10.0)\n    limit: Maximum number of comparables to return (1-200)\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    Comparable properties from all sources with summary statistics",
         "operationId": "get_property_comparables_v2_api_v1_market_data__property_id__comparables_v2_get",
         "parameters": [
           {
@@ -44519,7 +45720,7 @@
     },
     "/api/v1/market-data/{property_id}/history-comprehensive": {
       "get": {
-        "description": "Get comprehensive property sold history using PostGIS radius search.\n\nCombines data from:\n- zoopla_properties (historic_sales JSONB with 398k+ records)\n- rightmove_sold_prices (493k+ sold price records)\n\nUses PostGIS GIST indexes for fast spatial queries (<50ms typical).\nExcludes properties on the same street if exclude_street_name is provided.\n\nArgs:\n    property_id: Target property UUID\n    radius_miles: Search radius (0.1-5.0 miles)\n    match_bedrooms: Filter by matching bedroom count\n    match_property_type: Filter by matching property type\n    limit: Maximum results (1-200)\n    exclude_street_name: Normalized street name to exclude\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive history response with nearby properties (OTHER streets)",
+        "description": "Get comprehensive property sold history using PostGIS radius search.\n\nCombines data from:\n- historic sales records\n- sold price records\n\nUses PostGIS GIST indexes for fast spatial queries (<50ms typical).\nExcludes properties on the same street if exclude_street_name is provided.\n\nArgs:\n    property_id: Target property UUID\n    radius_miles: Search radius (0.1-5.0 miles)\n    match_bedrooms: Filter by matching bedroom count\n    match_property_type: Filter by matching property type\n    limit: Maximum results (1-200)\n    exclude_street_name: Normalized street name to exclude\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive history response with nearby properties (OTHER streets)",
         "operationId": "get_comprehensive_history_api_v1_market_data__property_id__history_comprehensive_get",
         "parameters": [
           {
@@ -44954,7 +46155,7 @@
     },
     "/api/v1/market-data/{property_id}/price-accuracy": {
       "get": {
-        "description": "Get asking-to-sold price accuracy data for a property's area.\n\nCross-references Land Registry, Zoopla, and Rightmove sold prices\nagainst current asking prices. Filtered by property type and bedrooms.\n\nReturns gap percentages at property, area, and city level.",
+        "description": "Get asking-to-sold price accuracy data for a property's area.\n\nCross-references Land Registry and other sold-price records\nagainst current asking prices. Filtered by property type and bedrooms.\n\nReturns gap percentages at property, area, and city level.",
         "operationId": "get_price_accuracy_api_v1_market_data__property_id__price_accuracy_get",
         "parameters": [
           {
@@ -45022,7 +46223,7 @@
     },
     "/api/v1/market-data/{property_id}/r2r-market-data": {
       "get": {
-        "description": "Get R2R (Rent-to-Rent) market data for investment analysis.\n\nProvides real market data for rental properties including:\n- Rental comparables from zoopla_properties (3.4M records)\n- Area average rents from market_data_rental by postcode/bedrooms\n- HMO room rates from propertydata_market_rentals\n- Calculated SA (Serviced Accommodation) projections\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius for comparables (100-2000m)\n    current_user: Optional authenticated user\n\nReturns:\n    R2R market data including rental comparables, area averages, and HMO rates",
+        "description": "Get R2R (Rent-to-Rent) market data for investment analysis.\n\nProvides real market data for rental properties including:\n- Rental comparables nearby\n- Area average rents from market_data_rental by postcode/bedrooms\n- HMO room rates from propertydata_market_rentals\n- Calculated SA (Serviced Accommodation) projections\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius for comparables (100-2000m)\n    current_user: Optional authenticated user\n\nReturns:\n    R2R market data including rental comparables, area averages, and HMO rates",
         "operationId": "get_r2r_market_data_api_v1_market_data__property_id__r2r_market_data_get",
         "parameters": [
           {
@@ -45104,7 +46305,7 @@
     },
     "/api/v1/market-data/{property_id}/rental-comparables": {
       "get": {
-        "description": "Get rental comparables from zoopla_properties using PostGIS.\n\nReturns nearby properties with Zoopla rental estimates for investment analysis.\nUseful for comparing potential rental income on the same street/area.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius in meters (default 200, max 1000)\n    limit: Maximum comparables to return (default 20, max 50)\n    min_bedrooms: Minimum bedroom filter\n    max_bedrooms: Maximum bedroom filter\n    current_user: Optional authenticated user\n\nReturns:\n    Rental comparables with summary statistics",
+        "description": "Get rental comparables near a property.\n\nReturns nearby properties with rental estimates for investment analysis.\nUseful for comparing potential rental income on the same street/area.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius in meters (default 200, max 1000)\n    limit: Maximum comparables to return (default 20, max 50)\n    min_bedrooms: Minimum bedroom filter\n    max_bedrooms: Maximum bedroom filter\n    current_user: Optional authenticated user\n\nReturns:\n    Rental comparables with summary statistics",
         "operationId": "get_rental_comparables_api_v1_market_data__property_id__rental_comparables_get",
         "parameters": [
           {
@@ -45187,13 +46388,13 @@
             }
           },
           {
-            "description": "Include archived/removed rental listings (last 24 months) alongside live listings and Zoopla algorithmic estimates. Useful for surfacing 'past data we have' on a property page. NAPSA #453 follow-up, May 2026.",
+            "description": "Include archived/removed rental listings (last 24 months) alongside live listings and algorithmic estimates. Useful for surfacing 'past data we have' on a property page. NAPSA #453 follow-up, May 2026.",
             "in": "query",
             "name": "include_historical",
             "required": false,
             "schema": {
               "default": false,
-              "description": "Include archived/removed rental listings (last 24 months) alongside live listings and Zoopla algorithmic estimates. Useful for surfacing 'past data we have' on a property page. NAPSA #453 follow-up, May 2026.",
+              "description": "Include archived/removed rental listings (last 24 months) alongside live listings and algorithmic estimates. Useful for surfacing 'past data we have' on a property page. NAPSA #453 follow-up, May 2026.",
               "title": "Include Historical",
               "type": "boolean"
             }
@@ -45318,7 +46519,7 @@
     },
     "/api/v1/market-data/{property_id}/sold-on-street": {
       "get": {
-        "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries zoopla_properties (1.74M) and rightmove_sold_prices (1.62M) directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of sources consulted (zoopla_postgis, rightmove_postgis)",
+        "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries sold-price records directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of source codes consulted",
         "operationId": "get_sold_on_street_api_v1_market_data__property_id__sold_on_street_get",
         "parameters": [
           {
@@ -47303,7 +48504,7 @@
     },
     "/api/v1/off-market-lead-generators/{lg_id}/generate-letters": {
       "post": {
-        "description": "Bulk generate letters for selected zoopla_property leads using a template.",
+        "description": "Bulk generate letters for selected leads using a template.",
         "operationId": "generate_letters_api_v1_off_market_lead_generators__lg_id__generate_letters_post",
         "parameters": [
           {
@@ -47363,7 +48564,7 @@
     },
     "/api/v1/off-market-lead-generators/{lg_id}/properties": {
       "get": {
-        "description": "Returns zoopla_properties matching the lead generator's area and filter criteria.",
+        "description": "Returns properties matching the lead generator's area and filter criteria.",
         "operationId": "get_off_market_lg_properties_api_v1_off_market_lead_generators__lg_id__properties_get",
         "parameters": [
           {
@@ -50333,6 +51534,26 @@
             }
           },
           {
+            "description": "Minimum ROCE % at asking or a realistic offer",
+            "in": "query",
+            "name": "min_roce",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum ROCE % at asking or a realistic offer",
+              "title": "Min Roce"
+            }
+          },
+          {
             "in": "query",
             "name": "user_id",
             "required": false,
@@ -51743,6 +52964,26 @@
               ],
               "description": "Exact branch id match (precise branch join key)",
               "title": "Branch Id"
+            }
+          },
+          {
+            "description": "Minimum ROCE % at asking or a realistic offer",
+            "in": "query",
+            "name": "min_roce",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum ROCE % at asking or a realistic offer",
+              "title": "Min Roce"
             }
           },
           {
@@ -54311,6 +55552,26 @@
             }
           },
           {
+            "description": "Minimum ROCE % at asking or a realistic offer",
+            "in": "query",
+            "name": "min_roce",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum ROCE % at asking or a realistic offer",
+              "title": "Min Roce"
+            }
+          },
+          {
             "in": "query",
             "name": "user_id",
             "required": false,
@@ -54859,6 +56120,25 @@
             }
           },
           {
+            "description": "For You strategy tab (btl, flip, hmo_convert, r2r_sa, ...): its tier, or its strategy tag / listing flag (app/services/for_you/strategy_tabs.py)",
+            "in": "query",
+            "name": "for_you_strategy",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "For You strategy tab (btl, flip, hmo_convert, r2r_sa, ...): its tier, or its strategy tag / listing flag (app/services/for_you/strategy_tabs.py)",
+              "title": "For You Strategy"
+            }
+          },
+          {
             "description": "Minimum BTL score",
             "in": "query",
             "name": "min_btl_score",
@@ -55056,6 +56336,26 @@
               ],
               "description": "Minimum ML score",
               "title": "Min Ml Score"
+            }
+          },
+          {
+            "description": "Minimum ROCE % at asking or a realistic offer",
+            "in": "query",
+            "name": "min_roce",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum ROCE % at asking or a realistic offer",
+              "title": "Min Roce"
             }
           },
           {
@@ -55321,6 +56621,46 @@
               ],
               "description": "Max sqft",
               "title": "Max Floor Area Sqft"
+            }
+          },
+          {
+            "description": "Min price per sqft (GBP)",
+            "in": "query",
+            "name": "min_price_per_sqft",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 100000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Min price per sqft (GBP)",
+              "title": "Min Price Per Sqft"
+            }
+          },
+          {
+            "description": "Max price per sqft (GBP)",
+            "in": "query",
+            "name": "max_price_per_sqft",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 100000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Max price per sqft (GBP)",
+              "title": "Max Price Per Sqft"
             }
           },
           {
@@ -58487,7 +59827,7 @@
     },
     "/api/v1/properties/{property_id}/listed-conservation": {
       "get": {
-        "description": "Listed status + conservation area flag for a property.",
+        "description": "Listed status + conservation area flag for a property.\n\nENABLE_LISTED_FACT_CHECKED_ONLY (API env): the grade only from a row an answered\nNHLE check stamped, as the signals merge mirrors it into properties.",
         "operationId": "get_listed_conservation_api_v1_properties__property_id__listed_conservation_get",
         "parameters": [
           {
@@ -62027,7 +63367,7 @@
     },
     "/api/v1/spatial/psqft-heatmap": {
       "get": {
-        "description": "Per-street median £/sqft within a radius.\n\nPowers the merged Comparables page map overlay. Joins HM Land Registry sales\nagainst Zoopla floor areas at the (postcode, PAON) level and returns one\naggregated cell per street. Streets with fewer than the core minimum samples\nare excluded to avoid single-sale noise.\n\nPublic API: exposed under the ``spatial:read`` scope via the catch-all prefix\n``/api/v1/spatial`` in ``app/constants/api_scopes.py::PATH_SCOPE_MAP``.",
+        "description": "Per-street median £/sqft within a radius.\n\nPowers the merged Comparables page map overlay. Joins HM Land Registry sales\nagainst recorded floor areas at the (postcode, PAON) level and returns one\naggregated cell per street. Streets with fewer than the core minimum samples\nare excluded to avoid single-sale noise.\n\nPublic API: exposed under the ``spatial:read`` scope via the catch-all prefix\n``/api/v1/spatial`` in ``app/constants/api_scopes.py::PATH_SCOPE_MAP``.",
         "operationId": "psqft_heatmap_api_v1_spatial_psqft_heatmap_get",
         "parameters": [
           {
@@ -63160,7 +64500,7 @@
     },
     "/api/v1/valuation": {
       "get": {
-        "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nSale comes from ValuationService.get_valuation_by_postcode. **Rent does\nnot**: it comes from the unified resolver\n(``app/services/rent/unified_rent_resolver.py``), the same engine\n``/api/v1/rental-estimate`` uses, so the two endpoints can no longer\ndisagree about what a let is worth.\n\nValuationService answered rent with a median of\n``zoopla_properties.rent_estimate_current`` walked up a postcode -> sector\n-> outcode ladder. Only ~4% of those rows carry a rent, so in practice the\nladder ran to the district and returned one number for the whole area,\nwhich the endpoint then divided into the sale estimate. The resolver keys\non live and let-agreed asking rents at an exact bedroom count and refuses\nto publish a yield above 12%.\n\nReturns 404 only when no estimate of any kind exists — a rent-only result\nis still a result.",
+        "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nSale comes from ValuationService.get_valuation_by_postcode. **Rent does\nnot**: it comes from the unified resolver\n(``app/services/rent/unified_rent_resolver.py``), the same engine\n``/api/v1/rental-estimate`` uses, so the two endpoints can no longer\ndisagree about what a let is worth.\n\nValuationService answered rent with a median of\nstored area rent estimates walked up a postcode -> sector\n-> outcode ladder. Only ~4% of those rows carry a rent, so in practice the\nladder ran to the district and returned one number for the whole area,\nwhich the endpoint then divided into the sale estimate. The resolver keys\non live and let-agreed asking rents at an exact bedroom count and refuses\nto publish a yield above 12%.\n\nReturns 404 only when no estimate of any kind exists — a rent-only result\nis still a result.",
         "operationId": "get_valuation_api_v1_valuation_get",
         "parameters": [
           {

@@ -525,7 +525,7 @@
         {
           "name": "Get Listed Conservation",
           "request": {
-            "description": "Listed status + conservation area flag for a property.",
+            "description": "Listed status + conservation area flag for a property.\n\nENABLE_LISTED_FACT_CHECKED_ONLY (API env): the grade only from a row an answered\nNHLE check stamped, as the signals merge mirrors it into properties.",
             "header": [
               {
                 "key": "Accept",
@@ -2771,6 +2771,12 @@
                   "value": "['']"
                 },
                 {
+                  "description": "For You strategy tab (btl, flip, hmo_convert, r2r_sa, ...): its tier, or its strategy tag / listing flag (app/services/for_you/strategy_tabs.py)",
+                  "disabled": true,
+                  "key": "for_you_strategy",
+                  "value": ""
+                },
+                {
                   "description": "Minimum BTL score",
                   "disabled": true,
                   "key": "min_btl_score",
@@ -2828,6 +2834,12 @@
                   "description": "Minimum ML score",
                   "disabled": true,
                   "key": "min_ml_score",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum ROCE % at asking or a realistic offer",
+                  "disabled": true,
+                  "key": "min_roce",
                   "value": ""
                 },
                 {
@@ -2912,6 +2924,18 @@
                   "description": "Max sqft",
                   "disabled": true,
                   "key": "max_floor_area_sqft",
+                  "value": ""
+                },
+                {
+                  "description": "Min price per sqft (GBP)",
+                  "disabled": true,
+                  "key": "min_price_per_sqft",
+                  "value": ""
+                },
+                {
+                  "description": "Max price per sqft (GBP)",
+                  "disabled": true,
+                  "key": "max_price_per_sqft",
                   "value": ""
                 },
                 {
@@ -3908,6 +3932,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Minimum ROCE % at asking or a realistic offer",
+                  "disabled": true,
+                  "key": "min_roce",
+                  "value": ""
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -4384,6 +4414,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Minimum ROCE % at asking or a realistic offer",
+                  "disabled": true,
+                  "key": "min_roce",
+                  "value": ""
+                },
+                {
                   "description": "",
                   "disabled": true,
                   "key": "user_id",
@@ -4857,6 +4893,12 @@
                   "description": "Exact branch id match (precise branch join key)",
                   "disabled": true,
                   "key": "branch_id",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum ROCE % at asking or a realistic offer",
+                  "disabled": true,
+                  "key": "min_roce",
                   "value": ""
                 },
                 {
@@ -6041,7 +6083,7 @@
         {
           "name": "Psqft Heatmap",
           "request": {
-            "description": "Per-street median £/sqft within a radius.\n\nPowers the merged Comparables page map overlay. Joins HM Land Registry sales\nagainst Zoopla floor areas at the (postcode, PAON) level and returns one\naggregated cell per street. Streets with fewer than the core minimum samples\nare excluded to avoid single-sale noise.\n\nPublic API: exposed under the ``spatial:read`` scope via the catch-all prefix\n``/api/v1/spatial`` in ``app/constants/api_scopes.py::PATH_SCOPE_MAP``.",
+            "description": "Per-street median £/sqft within a radius.\n\nPowers the merged Comparables page map overlay. Joins HM Land Registry sales\nagainst recorded floor areas at the (postcode, PAON) level and returns one\naggregated cell per street. Streets with fewer than the core minimum samples\nare excluded to avoid single-sale noise.\n\nPublic API: exposed under the ``spatial:read`` scope via the catch-all prefix\n``/api/v1/spatial`` in ``app/constants/api_scopes.py::PATH_SCOPE_MAP``.",
             "header": [
               {
                 "key": "Accept",
@@ -6537,7 +6579,7 @@
         {
           "name": "Get Comprehensive History",
           "request": {
-            "description": "Get comprehensive property sold history using PostGIS radius search.\n\nCombines data from:\n- zoopla_properties (historic_sales JSONB with 398k+ records)\n- rightmove_sold_prices (493k+ sold price records)\n\nUses PostGIS GIST indexes for fast spatial queries (<50ms typical).\nExcludes properties on the same street if exclude_street_name is provided.\n\nArgs:\n    property_id: Target property UUID\n    radius_miles: Search radius (0.1-5.0 miles)\n    match_bedrooms: Filter by matching bedroom count\n    match_property_type: Filter by matching property type\n    limit: Maximum results (1-200)\n    exclude_street_name: Normalized street name to exclude\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive history response with nearby properties (OTHER streets)",
+            "description": "Get comprehensive property sold history using PostGIS radius search.\n\nCombines data from:\n- historic sales records\n- sold price records\n\nUses PostGIS GIST indexes for fast spatial queries (<50ms typical).\nExcludes properties on the same street if exclude_street_name is provided.\n\nArgs:\n    property_id: Target property UUID\n    radius_miles: Search radius (0.1-5.0 miles)\n    match_bedrooms: Filter by matching bedroom count\n    match_property_type: Filter by matching property type\n    limit: Maximum results (1-200)\n    exclude_street_name: Normalized street name to exclude\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive history response with nearby properties (OTHER streets)",
             "header": [
               {
                 "key": "Accept",
@@ -6687,7 +6729,7 @@
         {
           "name": "Get Enhanced Comparables",
           "request": {
-            "description": "Get enhanced comparables including sold, live listings, and database properties.\n\nReturns comprehensive comparable properties from multiple sources:\n1. Zoopla sold properties (similarProperties from market_data)\n2. Zoopla live listings (similarListingsV2 from market_data)\n3. Zoopla sold properties (from zoopla_properties table via PostGIS)\n4. Rightmove sold properties (from rightmove_sold_prices table via PostGIS)\n5. Our database properties (optional)\n\nAll sources are merged, deduplicated by full address, and returned as raw data.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum comparables to return (default 100, max 100)\n    radius_miles: Search radius in miles (default 3.0, max 5.0)\n    include_database: Include our database properties\n    listing_type: Filter by sale or rent\n    current_user: Optional authenticated user\n\nReturns:\n    Categorized comparables with summary statistics\n\nRaises:\n    HTTPException: 404 if property not found\n    HTTPException: 500 if database error",
+            "description": "Get enhanced comparables including sold, live listings, and database properties.\n\nReturns comprehensive comparable properties from multiple sources:\n1. Sold properties similar to the subject\n2. Similar live listings\n3. Sold properties nearby\n4. Further sold-price records nearby\n5. Our database properties (optional)\n\nAll sources are merged, deduplicated by full address, and returned as raw data.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum comparables to return (default 100, max 100)\n    radius_miles: Search radius in miles (default 3.0, max 5.0)\n    include_database: Include our database properties\n    listing_type: Filter by sale or rent\n    current_user: Optional authenticated user\n\nReturns:\n    Categorized comparables with summary statistics\n\nRaises:\n    HTTPException: 404 if property not found\n    HTTPException: 500 if database error",
             "header": [
               {
                 "key": "Accept",
@@ -6732,7 +6774,7 @@
                   "value": ""
                 },
                 {
-                  "description": "Filter database comparables to a specific top-level property_type (e.g. 'commercial'). When set, the database-comparables fetch overrides the subject's own type with this value so commercial buyers see only commercial-stock comparables. Has no effect on the Zoopla / Rightmove / Land Registry sources, which lack this classification.",
+                  "description": "Filter database comparables to a specific top-level property_type (e.g. 'commercial'). When set, the database-comparables fetch overrides the subject's own type with this value so commercial buyers see only commercial-stock comparables. Has no effect on the sold-price sources, which lack this classification.",
                   "disabled": true,
                   "key": "property_type",
                   "value": ""
@@ -6747,6 +6789,12 @@
                   "description": "Optional subject floor area in sq ft supplied by the user when the listing holds none. Used only when the held area is absent, unverified or a building estimate; must be plausible for the bedroom count. Published as subject_floor_area_source='user_supplied' and never saved.",
                   "disabled": true,
                   "key": "subject_floor_area_sqft",
+                  "value": ""
+                },
+                {
+                  "description": "Add live_asking_summary for a sale subject: the median asking price, count and median price per sq ft of current same-type, same-bedroom listings within the comparables radius, and the subject's asking price against it. Signed-in viewers only (null when anonymous).",
+                  "disabled": true,
+                  "key": "include_live_asking_summary",
                   "value": ""
                 },
                 {
@@ -7028,7 +7076,7 @@
         {
           "name": "Get Price Accuracy",
           "request": {
-            "description": "Get asking-to-sold price accuracy data for a property's area.\n\nCross-references Land Registry, Zoopla, and Rightmove sold prices\nagainst current asking prices. Filtered by property type and bedrooms.\n\nReturns gap percentages at property, area, and city level.",
+            "description": "Get asking-to-sold price accuracy data for a property's area.\n\nCross-references Land Registry and other sold-price records\nagainst current asking prices. Filtered by property type and bedrooms.\n\nReturns gap percentages at property, area, and city level.",
             "header": [
               {
                 "key": "Accept",
@@ -7069,7 +7117,7 @@
         {
           "name": "Get Property Comparables",
           "request": {
-            "description": "Get detailed comparable properties from raw API data with optional filtering.\n\nLEGACY VERSION: Extracts from market_data.raw_response JSONB only.\nUse /comparables-v2 for comprehensive multi-table search.\n\nExtracts comparable property details from Zoopla raw_response JSONB\nincluding addresses, prices, dates, and property characteristics.\n\nSupports filtering by bedrooms and property type for precise comparables.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of comparables to return\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    List of comparable properties with detailed information",
+            "description": "Get detailed comparable properties from raw API data with optional filtering.\n\nLEGACY VERSION: Extracts from market_data.raw_response JSONB only.\nUse /comparables-v2 for comprehensive multi-table search.\n\nReturns comparable property details\nincluding addresses, prices, dates, and property characteristics.\n\nSupports filtering by bedrooms and property type for precise comparables.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of comparables to return\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    List of comparable properties with detailed information",
             "header": [
               {
                 "key": "Accept",
@@ -7128,7 +7176,7 @@
         {
           "name": "Get Property Comparables V2",
           "request": {
-            "description": "Get comparable properties from ALL database tables using PostGIS spatial search.\n\nNEW VERSION: Queries all 5 tables for comprehensive comparables:\n- zoopla_properties (historic sales)\n- rightmove_sold_prices (sold transactions)\n- zoopla_property_details (price change data)\n- rightmove_property_details (price data)\n- market_data (enriched sold data)\n\nFeatures:\n- PostGIS spatial search within radius\n- Optional bedroom/property type filtering\n- Deduplication by UPRN or address\n- Source tracking\n- Summary statistics\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_miles: Search radius in miles (0.1-10.0)\n    limit: Maximum number of comparables to return (1-200)\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    Comparable properties from all sources with summary statistics",
+            "description": "Get comparable properties from ALL database tables using PostGIS spatial search.\n\nNEW VERSION: Queries all 5 tables for comprehensive comparables:\n- historic sales\n- sold transactions\n- price change data\n- listing price data\n- market_data (enriched sold data)\n\nFeatures:\n- PostGIS spatial search within radius\n- Optional bedroom/property type filtering\n- Deduplication by UPRN or address\n- Source tracking\n- Summary statistics\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_miles: Search radius in miles (0.1-10.0)\n    limit: Maximum number of comparables to return (1-200)\n    match_bedrooms: Only return properties with matching bedroom count\n    match_property_type: Only return properties with matching property type\n    current_user: Optional authenticated user\n\nReturns:\n    Comparable properties from all sources with summary statistics",
             "header": [
               {
                 "key": "Accept",
@@ -7193,7 +7241,7 @@
         {
           "name": "Get Property Market Data",
           "request": {
-            "description": "Get comprehensive market data for a property.\n\nReturns enriched market intelligence including:\n- Current market valuation (Zoopla/Rightmove API data)\n- Price growth metrics (1yr, 3yr, 5yr)\n- Demand score and market trends\n- Property sold history (specific property)\n- Comparable properties nearby\n- Confidence levels and data sources\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive market data dictionary\n\nRaises:\n    HTTPException: 404 if property or market data not found",
+            "description": "Get comprehensive market data for a property.\n\nReturns enriched market intelligence including:\n- Current market valuation\n- Price growth metrics (1yr, 3yr, 5yr)\n- Demand score and market trends\n- Property sold history (specific property)\n- Comparable properties nearby\n- Confidence levels and data sources\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    current_user: Optional authenticated user\n\nReturns:\n    Comprehensive market data dictionary\n\nRaises:\n    HTTPException: 404 if property or market data not found",
             "header": [
               {
                 "key": "Accept",
@@ -7277,7 +7325,7 @@
         {
           "name": "Get R2R Market Data",
           "request": {
-            "description": "Get R2R (Rent-to-Rent) market data for investment analysis.\n\nProvides real market data for rental properties including:\n- Rental comparables from zoopla_properties (3.4M records)\n- Area average rents from market_data_rental by postcode/bedrooms\n- HMO room rates from propertydata_market_rentals\n- Calculated SA (Serviced Accommodation) projections\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius for comparables (100-2000m)\n    current_user: Optional authenticated user\n\nReturns:\n    R2R market data including rental comparables, area averages, and HMO rates",
+            "description": "Get R2R (Rent-to-Rent) market data for investment analysis.\n\nProvides real market data for rental properties including:\n- Rental comparables nearby\n- Area average rents from market_data_rental by postcode/bedrooms\n- HMO room rates from propertydata_market_rentals\n- Calculated SA (Serviced Accommodation) projections\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius for comparables (100-2000m)\n    current_user: Optional authenticated user\n\nReturns:\n    R2R market data including rental comparables, area averages, and HMO rates",
             "header": [
               {
                 "key": "Accept",
@@ -7324,7 +7372,7 @@
         {
           "name": "Get Rental Comparables",
           "request": {
-            "description": "Get rental comparables from zoopla_properties using PostGIS.\n\nReturns nearby properties with Zoopla rental estimates for investment analysis.\nUseful for comparing potential rental income on the same street/area.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius in meters (default 200, max 1000)\n    limit: Maximum comparables to return (default 20, max 50)\n    min_bedrooms: Minimum bedroom filter\n    max_bedrooms: Maximum bedroom filter\n    current_user: Optional authenticated user\n\nReturns:\n    Rental comparables with summary statistics",
+            "description": "Get rental comparables near a property.\n\nReturns nearby properties with rental estimates for investment analysis.\nUseful for comparing potential rental income on the same street/area.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius in meters (default 200, max 1000)\n    limit: Maximum comparables to return (default 20, max 50)\n    min_bedrooms: Minimum bedroom filter\n    max_bedrooms: Maximum bedroom filter\n    current_user: Optional authenticated user\n\nReturns:\n    Rental comparables with summary statistics",
             "header": [
               {
                 "key": "Accept",
@@ -7369,7 +7417,7 @@
                   "value": ""
                 },
                 {
-                  "description": "Include archived/removed rental listings (last 24 months) alongside live listings and Zoopla algorithmic estimates. Useful for surfacing 'past data we have' on a property page. NAPSA #453 follow-up, May 2026.",
+                  "description": "Include archived/removed rental listings (last 24 months) alongside live listings and algorithmic estimates. Useful for surfacing 'past data we have' on a property page. NAPSA #453 follow-up, May 2026.",
                   "disabled": true,
                   "key": "include_historical",
                   "value": ""
@@ -7512,7 +7560,7 @@
         {
           "name": "Get Sold On Street",
           "request": {
-            "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries zoopla_properties (1.74M) and rightmove_sold_prices (1.62M) directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of sources consulted (zoopla_postgis, rightmove_postgis)",
+            "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries sold-price records directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of source codes consulted",
             "header": [
               {
                 "key": "Accept",
@@ -7639,7 +7687,7 @@
         {
           "name": "Get Valuation",
           "request": {
-            "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nSale comes from ValuationService.get_valuation_by_postcode. **Rent does\nnot**: it comes from the unified resolver\n(``app/services/rent/unified_rent_resolver.py``), the same engine\n``/api/v1/rental-estimate`` uses, so the two endpoints can no longer\ndisagree about what a let is worth.\n\nValuationService answered rent with a median of\n``zoopla_properties.rent_estimate_current`` walked up a postcode -> sector\n-> outcode ladder. Only ~4% of those rows carry a rent, so in practice the\nladder ran to the district and returned one number for the whole area,\nwhich the endpoint then divided into the sale estimate. The resolver keys\non live and let-agreed asking rents at an exact bedroom count and refuses\nto publish a yield above 12%.\n\nReturns 404 only when no estimate of any kind exists — a rent-only result\nis still a result.",
+            "description": "Return a postcode-level sale + rent valuation with confidence band.\n\nSale comes from ValuationService.get_valuation_by_postcode. **Rent does\nnot**: it comes from the unified resolver\n(``app/services/rent/unified_rent_resolver.py``), the same engine\n``/api/v1/rental-estimate`` uses, so the two endpoints can no longer\ndisagree about what a let is worth.\n\nValuationService answered rent with a median of\nstored area rent estimates walked up a postcode -> sector\n-> outcode ladder. Only ~4% of those rows carry a rent, so in practice the\nladder ran to the district and returned one number for the whole area,\nwhich the endpoint then divided into the sale estimate. The resolver keys\non live and let-agreed asking rents at an exact bedroom count and refuses\nto publish a yield above 12%.\n\nReturns 404 only when no estimate of any kind exists — a rent-only result\nis still a result.",
             "header": [
               {
                 "key": "Accept",
@@ -9735,7 +9783,7 @@
               ],
               "query": [
                 {
-                  "description": "Optional property type filter (e.g. 'flat', 'semi-detached', 'Detached House'). Normalised server-side, so any of the frontend / Land Registry / Zoopla / Rightmove variants are accepted. When supplied, every signal in the response is computed against that type only — comparables, active stock, BMV mix, rentals.",
+                  "description": "Optional property type filter (e.g. 'flat', 'semi-detached', 'Detached House'). Normalised server-side, so any of the common property-type label variants are accepted. When supplied, every signal in the response is computed against that type only — comparables, active stock, BMV mix, rentals.",
                   "disabled": true,
                   "key": "property_type",
                   "value": ""
@@ -9843,7 +9891,7 @@
         {
           "name": "Get Area Service Analytics",
           "request": {
-            "description": "Neutral area facts for a seller pre-valuation pack.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nProjects six blocks from AreaAnalyticsService (epc_mix, council_tax_mix,\nsold_vs_asking, days_on_market, price_trend, transaction_volume) plus the\nservice's overall confidence / sample_size / asking_price_sample_size /\ngenerated_at, and adds nearby schools and flood zone when the postcode has\na GB centroid. Rent, yield, BMV, investor activity, tier mix and demand are\ndeliberately never returned: the reader is a homeowner, not an investor.\n\nEvery block is either ``{\"available\": true, \"sample_size\": n, ...}`` or\n``{\"available\": false, \"reason\": ...}``. Reasons: ``no_data`` (the source\nholds nothing here), ``lookup_failed`` (the source errored or timed out, or\na loader feeding the block failed), ``no_centroid`` (postcode not in\nos_postcodes, so no point to measure from), ``not_covered_northern_ireland``\nand ``not_covered_wales`` (the flood service has no source for that\nnation), ``country_unknown`` (no recognised nation for the centroid, so no\nflood source can be chosen), ``source_not_available`` (surface water, which\nno source we query publishes). No block failure raises: the route returns\n200 with markers. confidence / sample_size / asking_price_sample_size are\nnull when a loader they are computed from failed.\n\nAvailable analytics blocks carry their scope, from the input actually used:\n``source`` (sale_comparables | sold_listings), ``geography``\n(within_0_5_miles | outcode_prefix for comparables; outcode for sold\nlistings and council tax -- outcode_prefix is the ranker's no-coordinates\nfallback and may include neighbouring districts sharing the prefix),\n``window`` (10_years | 12_months | all_time) and ``counts``\n(comparables_capped_500 | sold_listings_capped_5000); price_trend and\ntransaction_volume add ``max_points`` (60). A scope value is null when the\nservice did not record it. council_tax_mix carries basis / geography /\nwindow only.\n\nCoverage: sold prices come from HM Land Registry (England and Wales) and\nZoopla sold records (Scotland); Northern Ireland has only asking prices,\ncounted in ``asking_price_sample_size``. Council tax bands are\nlisting-derived. os_postcodes holds no Northern Irish rows, so NI never\ngets schools. Flood covers England (EA) and Scotland (SEPA) only.\n\nThe request's database session is released before the flood lookup, which\nruns without it under a ``_FLOOD_TIMEOUT_SECONDS`` bound.\n\nRaises:\n    HTTPException: 400 if the postcode is not a full UK postcode. FastAPI\n        answers 422 before this handler runs when the postcode is missing\n        or outside 2-10 characters.",
+            "description": "Neutral area facts for a seller pre-valuation pack.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nProjects six blocks from AreaAnalyticsService (epc_mix, council_tax_mix,\nsold_vs_asking, days_on_market, price_trend, transaction_volume) plus the\nservice's overall confidence / sample_size / asking_price_sample_size /\ngenerated_at, and adds nearby schools and flood zone when the postcode has\na GB centroid. Rent, yield, BMV, investor activity, tier mix and demand are\ndeliberately never returned: the reader is a homeowner, not an investor.\n\nEvery block is either ``{\"available\": true, \"sample_size\": n, ...}`` or\n``{\"available\": false, \"reason\": ...}``. Reasons: ``no_data`` (the source\nholds nothing here), ``lookup_failed`` (the source errored or timed out, or\na loader feeding the block failed), ``no_centroid`` (postcode not in\nos_postcodes, so no point to measure from), ``not_covered_northern_ireland``\nand ``not_covered_wales`` (the flood service has no source for that\nnation), ``country_unknown`` (no recognised nation for the centroid, so no\nflood source can be chosen), ``source_not_available`` (surface water, which\nno source we query publishes). No block failure raises: the route returns\n200 with markers. confidence / sample_size / asking_price_sample_size are\nnull when a loader they are computed from failed.\n\nAvailable analytics blocks carry their scope, from the input actually used:\n``source`` (sale_comparables | sold_listings), ``geography``\n(within_0_5_miles | outcode_prefix for comparables; outcode for sold\nlistings and council tax -- outcode_prefix is the ranker's no-coordinates\nfallback and may include neighbouring districts sharing the prefix),\n``window`` (10_years | 12_months | all_time) and ``counts``\n(comparables_capped_500 | sold_listings_capped_5000); price_trend and\ntransaction_volume add ``max_points`` (60). A scope value is null when the\nservice did not record it. council_tax_mix carries basis / geography /\nwindow only.\n\nCoverage: sold prices come from HM Land Registry (England and Wales) and\nRegisters of Scotland records (Scotland); Northern Ireland has only asking prices,\ncounted in ``asking_price_sample_size``. Council tax bands are\nlisting-derived. os_postcodes holds no Northern Irish rows, so NI never\ngets schools. Flood covers England (EA) and Scotland (SEPA) only.\n\nThe request's database session is released before the flood lookup, which\nruns without it under a ``_FLOOD_TIMEOUT_SECONDS`` bound.\n\nRaises:\n    HTTPException: 400 if the postcode is not a full UK postcode. FastAPI\n        answers 422 before this handler runs when the postcode is missing\n        or outside 2-10 characters.",
             "header": [
               {
                 "key": "Accept",
@@ -9882,7 +9930,7 @@
         {
           "name": "Get Area Service Local Context",
           "request": {
-            "description": "Area facts a potential seller's BUYERS will check: broadband and links.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nDeliberately SEPARATE from ``/service-postcode-summary`` rather than folded\ninto it. That endpoint 404s when it holds no sold prices, which is every\nScottish sector Zoopla missed and all of Northern Ireland -- exactly the\nsellers who most need something honest on the page. Bolting this on there\nwould have made the two fail together; here they fail independently.\n\nBroadband is averaged over the postcode SECTOR (Ofcom Connected Nations),\nnot the single postcode: a sector is the right grain for \"your area\", it is\nless identifying, and it rescues a postcode whose own row Ofcom never\nmeasured. Rows that are all-zero across all four percentages are dropped as\nno-data rather than averaged in -- see ``aggregate_broadband``.\n\nTransport needs a centroid from os_postcodes and is therefore GB-only by\nconstruction; a Northern Irish postcode returns ``[]`` here and still gets\nits broadband.\n\nRaises:\n    HTTPException: 400 if the postcode cannot be parsed, 404 if neither\n        broadband nor transport could be resolved for it.",
+            "description": "Area facts a potential seller's BUYERS will check: broadband and links.\n\n**Authentication Required**: X-Service-Token header matching\nPROPERTYESTATE_SERVICE_TOKEN.\n\nDeliberately SEPARATE from ``/service-postcode-summary`` rather than folded\ninto it. That endpoint 404s when it holds no sold prices, which is every\nScottish sector with no recorded sales and all of Northern Ireland -- exactly the\nsellers who most need something honest on the page. Bolting this on there\nwould have made the two fail together; here they fail independently.\n\nBroadband is averaged over the postcode SECTOR (Ofcom Connected Nations),\nnot the single postcode: a sector is the right grain for \"your area\", it is\nless identifying, and it rescues a postcode whose own row Ofcom never\nmeasured. Rows that are all-zero across all four percentages are dropped as\nno-data rather than averaged in -- see ``aggregate_broadband``.\n\nTransport needs a centroid from os_postcodes and is therefore GB-only by\nconstruction; a Northern Irish postcode returns ``[]`` here and still gets\nits broadband.\n\nRaises:\n    HTTPException: 400 if the postcode cannot be parsed, 404 if neither\n        broadband nor transport could be resolved for it.",
             "header": [
               {
                 "key": "Accept",
@@ -11504,7 +11552,7 @@
         {
           "name": "Get Flood Risk At Coordinates",
           "request": {
-            "description": "Check if a coordinate falls inside a UK flood risk zone.\n\nUses PostGIS ST_Contains against the flood_zones polygons (sourced from\nSEPA, EA flood map, etc.). Returns the highest-risk match if a point\nfalls inside multiple zones.",
+            "description": "Check if a coordinate falls inside a UK flood risk zone.\n\nScotland: PostGIS ST_Contains against the SEPA polygons in flood_zones.\nEngland: the Environment Agency flood map, tested point-in-polygon.\nWales, Northern Ireland or an unknown country: in_flood_zone is null\n(coverage not_covered), never false. The country is the nearest postcode's.",
             "header": [
               {
                 "key": "Accept",
@@ -11549,7 +11597,7 @@
         {
           "name": "Get Flood Risk For Property",
           "request": {
-            "description": "Check flood risk for a Prop AI Deals property by UUID.\n\nLooks up the property's lat/lon and runs the same PostGIS containment\ncheck. Honours the property's pre-computed `is_flood_zone` and\n`flood_zone` columns when available, falling back to the spatial join.",
+            "description": "Check flood risk for a Prop AI Deals property by UUID.\n\nReads the stored EA / SEPA zone through flood_zone_status (a zone being\nre-checked after the 2026-11 point-in-polygon fix, or an EA answer for a\nhome outside England, is null with a note). ``is_flood_zone`` is not used:\nlisting-text keywords write it too. With no stored zone, a Scottish home\ngets the SEPA polygon check and any other home is null (not checked).",
             "header": [
               {
                 "key": "Accept",
@@ -11631,7 +11679,7 @@
         {
           "name": "Get Heritage Status",
           "request": {
-            "description": "Return listed-building and conservation-area status for a property.\n\nUses the pre-computed `is_listed_building` and `in_conservation_area`\nflags on the properties table. Both are populated by the planning\nenrichment workers from Historic England + local authority data.",
+            "description": "Return listed-building and conservation-area status for a property.\n\nReads the canonical heritage fields (property_market_signals.listed_status\n/ listed_checked_at / within_conservation_area), never the legacy\nis_listed_building / in_conservation_area columns, which are false on every\nhome that holds a real Historic England grade. Listed: true with a grade,\nfalse only after an answered check, otherwise null. Conservation area: true\nwhen flagged, otherwise null (the stored false cannot tell \"checked\" from\n\"never looked\").",
             "header": [
               {
                 "key": "Accept",
@@ -11901,7 +11949,7 @@
               },
               "raw": "{\n  \"name\": \"\"\n}"
             },
-            "description": "Create a new area-based lead generator with outcode or polygon selection.",
+            "description": "Create a new area-based lead generator with outcode or polygon selection. If you already have an active scanner with the same outcodes (in any order), polygon and criteria, that scanner is returned with `already_existed: true` and nothing new is created (also when you are at your plan's scanner limit). A scanner that could never match anything is refused with 422 and `{\"detail\": {\"error\": <code>, \"message\": <text>}}`, where code is `invalid_range` (a min above its max: price, bedrooms, bathrooms, yield, days on market, floor area), `unknown_property_type` (outside flat, terraced, semi-detached, detached, bungalow, house, studio, maisonette, land, commercial, parking, caravan, other) or `area_required` (no outcodes or polygon; `radius_miles` alone is not an area).",
             "header": [
               {
                 "key": "Accept",
@@ -12104,7 +12152,7 @@
               },
               "raw": "{\n  \"lead_ids\": [\n    \"\"\n  ]\n}"
             },
-            "description": "Bulk generate letters for selected zoopla_property leads using a template.",
+            "description": "Bulk generate letters for selected leads using a template.",
             "header": [
               {
                 "key": "Accept",
@@ -12168,6 +12216,47 @@
                 }
               ],
               "raw": "{{baseUrl}}/api/v1/lead-generators/:lg_id",
+              "variable": [
+                {
+                  "description": "",
+                  "key": "lg_id",
+                  "value": "<lg_id>"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get a scanner's letter settings",
+          "request": {
+            "description": "Get a scanner's letter settings",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lead-generators",
+                ":lg_id",
+                "letters"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/lead-generators/:lg_id/letters",
               "variable": [
                 {
                   "description": "",
@@ -12303,7 +12392,7 @@
         {
           "name": "Get off-market properties for a lead generator",
           "request": {
-            "description": "Returns zoopla_properties matching the lead generator's area and filter criteria.",
+            "description": "Returns properties matching the lead generator's area and filter criteria.",
             "header": [
               {
                 "key": "Accept",
@@ -12566,6 +12655,12 @@
                   "description": "Minimum rental yield",
                   "disabled": true,
                   "key": "min_yield",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum ROCE at asking or a realistic offer",
+                  "disabled": true,
+                  "key": "min_roce",
                   "value": ""
                 },
                 {
@@ -12960,6 +13055,52 @@
           }
         },
         {
+          "name": "Save a scanner's letter settings",
+          "request": {
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"goal\": \"\",\n  \"template_type\": \"\"\n}"
+            },
+            "description": "Save a scanner's letter settings",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lead-generators",
+                ":lg_id",
+                "letters"
+              ],
+              "raw": "{{baseUrl}}/api/v1/lead-generators/:lg_id/letters",
+              "variable": [
+                {
+                  "description": "",
+                  "key": "lg_id",
+                  "value": "<lg_id>"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Toggle alert for a lead generator",
           "request": {
             "body": {
@@ -13063,7 +13204,7 @@
               },
               "raw": "{\n  \"alert_email\": false,\n  \"alert_enabled\": false,\n  \"alert_push\": false,\n  \"alert_whatsapp\": false,\n  \"map_center_lat\": 0,\n  \"map_center_lng\": 0\n}"
             },
-            "description": "Update an existing lead generator. Only provided fields are changed.",
+            "description": "Update an existing lead generator. Only provided fields are changed. A scanner that could never match anything is refused with 422 and `{\"detail\": {\"error\": <code>, \"message\": <text>}}`, where code is `invalid_range` (a min above its max: price, bedrooms, bathrooms, yield, days on market, floor area), `unknown_property_type` (outside flat, terraced, semi-detached, detached, bungalow, house, studio, maisonette, land, commercial, parking, caravan, other) or `area_required` (no outcodes or polygon; `radius_miles` alone is not an area).",
             "header": [
               {
                 "key": "Accept",

@@ -98,11 +98,12 @@ const { data } = await res.json();
 | `rent_estimate` | integer | Estimated monthly rent in £ |
 | `gross_yield_pct` | number | Gross yield from `rent_estimate × 12 / sale_estimate` |
 | `confidence` | string | `high`, `medium`, or `low` — driven by comparable count and spread |
+| `confidence_basis` | string | What `confidence` measures: `postcode_sample` (the postcode answer's sample agreement) or `property_comparables` (a listing's own comparables, the confidence `score_deal`'s BMV factor states for the same value) |
 | `area_average` | integer | Average sale price across the postcode in £ |
 | `source` | string | Origin of the estimate, e.g. `comparables` |
 | `valuation_scope` | string | `postcode` (an area answer), or `property` when `sale_estimate` is a listing's published value |
 | `property_id` | string | With `property_id`: the live sale listing matched. Set even when its value is withheld |
-| `postcode_estimate` | object | With `valuation_scope` `property`: the postcode figures (`sale_estimate`, `sale_lower`, `sale_upper`, `area_average`, `valuation_scope`, `resolution_level`, `sample_size`) the published value replaced. Area context, not the home's value |
+| `postcode_estimate` | object | With `valuation_scope` `property`: the postcode figures (`sale_estimate`, `sale_lower`, `sale_upper`, `area_average`, `valuation_scope`, `resolution_level`, `sample_size`, `confidence`, `confidence_basis`, `scope_widened`, `valuation_notes`) the published value replaced. Area context, not the home's value |
 | `bmv_discount_pct` | number | With `valuation_scope` `property`: the published discount of the asking price below `sale_estimate` (positive = below value). Null when none is published |
 | `value_indicative` | boolean | With `valuation_scope` `property`: `true` when the value is published as indicative (few comparables of the home's own kind), with no discount |
 | `published_value_note` | string | Why the listing's value is indicative or withheld, or that it needs a paid plan |
@@ -113,7 +114,7 @@ The `confidence` value reflects how many comparables backed the estimate and how
 
 ## Valuing one listing
 
-One home has one value. Pass `property_id` for a live sale listing and `sale_estimate` is the value its property page publishes (`valuation_scope: "property"`), the same figure `/api/v1/properties/{property_id}` returns as `published_value` and `/api/v1/property-pack` returns in its `valuation`. `sale_lower`, `sale_upper` and `area_average` are then null, `gross_yield_pct` is the rent over that value, and the postcode answer moves to `postcode_estimate`.
+One home has one value. Pass `property_id` for a live sale listing and `sale_estimate` is the value its property page publishes (`valuation_scope: "property"`), the same figure `/api/v1/properties/{property_id}` returns as `published_value` and `/api/v1/property-pack` returns in its `valuation`. `sale_lower` and `sale_upper` are then the property's own band (the stored comparables band when it contains the value, else ±10% / 15% / 20% for a high / medium / low confidence), `confidence` is the listing's own (`confidence_basis: "property_comparables"`: fewer than 6 comparables, or a stored low level, is `low`, as in `score_deal`), `area_average` is null, `gross_yield_pct` is the rent over that value, and the postcode answer, with its own confidence and notes, moves to `postcode_estimate`.
 
 A listing's own value is paid data: it needs a paid API plan or an entitled Prop AI Deals subscription. On the free plan, a call with `property_id` returns the unchanged postcode answer (`valuation_scope: "postcode"`) and `published_value_note` says the listing's value is part of the paid plan.
 

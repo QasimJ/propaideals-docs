@@ -196,9 +196,19 @@ print(f"Created scanner {scanner['id']}")
 
 *One of `selected_outcodes` or `polygon_wkt` is required — providing neither returns `400`.
 
+A scanner that could never match anything returns `422` with `{"detail": {"error": "<code>", "message": "..."}}`:
+
+| `error` | Cause |
+|---|---|
+| `invalid_range` | A minimum above its maximum: price, bedrooms, bathrooms, yield, days on market or floor area |
+| `unknown_property_type` | A `property_types` value outside `flat`, `terraced`, `semi-detached`, `detached`, `bungalow`, `house`, `studio`, `maisonette`, `land`, `commercial`, `parking`, `caravan`, `other` (aliases such as `apartment` are stored as `flat`) |
+| `area_required` | No outcodes or polygon. A `radius_miles` in `search_criteria` is not an area |
+
 ### Response
 
-Returns `201 Created` with the full lead generator object — same shape as a single item in the list response above.
+Returns `201 Created` with the full lead generator object — same shape as a single item in the list response above — plus `already_existed`.
+
+If you already have an active lead generator with the same outcodes (in any order), polygon and `search_criteria`, no new one is created: the existing one is returned with `"already_existed": true` (the name is ignored). This also applies when you are at your plan's lead generator limit. A newly created lead generator has `"already_existed": false`.
 
 ## Get a lead generator
 
@@ -258,7 +268,7 @@ res = requests.put(
 )
 ```
 
-Accepts the same fields as the create endpoint, all optional. Sending an empty body returns `400`.
+Accepts the same fields as the create endpoint, all optional. Sending an empty body returns `400`. A change to `search_criteria`, `selected_outcodes` or `polygon_wkt` is checked against the scanner as it will be after the update, with the same `422` errors as create.
 
 ### Response
 

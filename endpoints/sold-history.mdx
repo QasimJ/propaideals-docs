@@ -85,6 +85,9 @@ console.log(`${data.sold_history.length} records, confidence ${data.match_confid
 | `sold_history` | array | Sale records, most recent first. Each carries `price` (£), `date`, and where available `tenure` and `new_build`. A record may also carry `skipped_as_price_change_basis` — see below. |
 | `sold_history[].skipped_as_price_change_basis` | boolean | `true` when the record was excluded as the *basis* for the next sale's percentage change because its price is implausible for the property (a nominal or part transfer, not an open-market sale). The record is still returned; the change on the following sale is computed against the last plausible price instead, so **differencing consecutive rows yourself will not reproduce it**. |
 | `sources_used` | array | Data sources that contributed records, e.g. `land_registry`, `zoopla`. |
+| `neighbour_sales` | array | Sales at OTHER addresses nearby (or other flats in the block), as context only. Each other unit's latest sale, newest first, at most 10 rows. Never average these in with `sold_history`. |
+| `neighbour_sales_total` | integer | Every neighbour sale held before the 10-row cap. |
+| `neighbour_units_total` | integer | Distinct other units behind `neighbour_sales_total`. |
 | `match_confidence` | integer | Confidence the records belong to this property, `0`–`100`. |
 | `is_building_estimate` | boolean | `true` when records are a building-level estimate rather than a unit-exact match (common for flats in a block). |
 | `estimate_note` | string \| null | Explanation when `is_building_estimate` is `true`, otherwise `null`. |
