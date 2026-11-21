@@ -7043,6 +7043,7 @@
                 "type": "string"
               }
             ],
+            "default": "0",
             "description": "Monthly cleaning costs for common areas",
             "title": "Cleaning Monthly"
           },
@@ -7210,7 +7211,7 @@
                 "type": "string"
               }
             ],
-            "default": "12.0",
+            "default": "10",
             "description": "Property management fee (% of gross rent, 10-15% typical)",
             "title": "Management Fee Percentage"
           },
@@ -7386,14 +7387,13 @@
                 "type": "string"
               }
             ],
+            "default": "200",
             "description": "Monthly utility bills (typically landlord pays)",
             "title": "Utilities Monthly"
           }
         },
         "required": [
-          "rooms",
-          "utilities_monthly",
-          "cleaning_monthly"
+          "rooms"
         ],
         "title": "HMOCalculationRequest",
         "type": "object"
@@ -10298,8 +10298,20 @@
                 "type": "null"
               }
             ],
-            "description": "BMV amount in GBP (None when no area baseline exists)",
+            "description": "Corrected value minus asking price in GBP (None when withheld)",
             "title": "Bmv Amount"
+          },
+          "bmv_basis_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when bmv_percentage and bmv_amount are measured against an expected sale price, not the asking price (Scotland): quote it with the figures",
+            "title": "Bmv Basis Note"
           },
           "bmv_confidence": {
             "anyOf": [
@@ -10326,6 +10338,18 @@
             "description": "Specific data source for BMV (e.g., 'zoopla_avm_direct', 'zoopla_avm_uprn')",
             "title": "Bmv Data Source"
           },
+          "bmv_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why no BMV figure is published, when withheld",
+            "title": "Bmv Note"
+          },
           "bmv_percentage": {
             "anyOf": [
               {
@@ -10335,12 +10359,12 @@
                 "type": "null"
               }
             ],
-            "description": "Below Market Value percentage (None when no area baseline exists)",
+            "description": "The published discount of the asking price below the property's corrected value (positive = below value, negative = above), the figure the property page publishes. None when withheld (see bmv_note)",
             "title": "Bmv Percentage"
           },
           "bmv_source": {
             "default": "area_average",
-            "description": "Source of BMV calculation: 'database' (automated valuation), 'area_average' (fallback estimate from area prices), or 'insufficient_data' (no baseline — BMV fields are None, never fabricated)",
+            "description": "Source of BMV calculation: 'database' (the published valuation) or 'insufficient_data' (none published: BMV fields are None, never derived from an area average). 'area_average' is no longer returned",
             "pattern": "^(database|area_average|insufficient_data)$",
             "title": "Bmv Source",
             "type": "string"
@@ -10422,9 +10446,16 @@
             ]
           },
           "monthly_cash_flow": {
-            "description": "Monthly cash flow after costs",
-            "title": "Monthly Cash Flow",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Monthly cash flow after costs (None when no yield is published)",
+            "title": "Monthly Cash Flow"
           },
           "price": {
             "maximum": 50000000.0,
@@ -10476,10 +10507,30 @@
             "description": "Rental market context from live listings in the area"
           },
           "rental_yield": {
-            "maximum": 100.0,
-            "minimum": 0.0,
-            "title": "Rental Yield",
-            "type": "number"
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Gross yield on the asking price. None when none is published: an auction guide or shared-ownership price, or a type investment metrics do not apply to (see rental_yield_note)",
+            "title": "Rental Yield"
+          },
+          "rental_yield_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why no yield, return or cash flow is published, when withheld",
+            "title": "Rental Yield Note"
           },
           "yield_vs_area": {
             "anyOf": [
@@ -10497,8 +10548,6 @@
         "required": [
           "property_id",
           "price",
-          "rental_yield",
-          "monthly_cash_flow",
           "days_on_market",
           "investment_score",
           "market_demand",
@@ -14973,6 +15022,18 @@
             ],
             "description": "IMD deprivation, crime, broadband, LSOA data",
             "title": "Area Intelligence"
+          },
+          "area_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Published area gross yield for the home's postcode district, %",
+            "title": "Area Yield Pct"
           },
           "article4_area": {
             "anyOf": [
@@ -28545,10 +28606,12 @@
               {
                 "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
+              },
+              {
+                "type": "null"
               }
             ],
-            "default": "40.0",
-            "description": "Cleaning cost per guest turnover (GBP 30-60 typical)",
+            "description": "Cleaning cost per guest turnover (GBP). None = 20% of gross, the verdict engine's figure",
             "title": "Cleaning Cost Per Booking"
           },
           "consumables_monthly": {
@@ -28579,7 +28642,7 @@
                 "type": "string"
               }
             ],
-            "default": "125.0",
+            "default": "150",
             "description": "Monthly council tax (Band D average £125, business rates may apply if >140 days occupied)",
             "title": "Council Tax Monthly"
           },
@@ -28711,8 +28774,8 @@
                 "type": "string"
               }
             ],
-            "default": "0.0",
-            "description": "Management fee if outsourced (0 if self-managed, 15-25% typical)",
+            "default": "20",
+            "description": "Management fee (20% of gross, the verdict engine's figure; 0 if self-managed)",
             "title": "Management Fee Percentage"
           },
           "mortgage_amount": {
@@ -28784,7 +28847,7 @@
                 "type": "string"
               }
             ],
-            "default": "75.0",
+            "default": "80",
             "description": "Average annual occupancy rate (% of nights booked)",
             "title": "Occupancy Rate"
           },
@@ -28872,8 +28935,8 @@
                 "type": "string"
               }
             ],
-            "default": "15.5",
-            "description": "Platform fee (Airbnb UK host-only 15.5%, Booking.com 15-18%)",
+            "default": "15",
+            "description": "Platform fee (15% of gross, the verdict engine's figure)",
             "title": "Platform Fee Percentage"
           },
           "property_type": {
@@ -29025,7 +29088,7 @@
                 "type": "string"
               }
             ],
-            "default": "150.0",
+            "default": "250",
             "description": "Monthly utilities (landlord pays all for SA)",
             "title": "Utilities Monthly"
           }
@@ -33326,7 +33389,7 @@
                 "type": "null"
               }
             ],
-            "description": "Property-scoped only: the published discount of the asking price below sale_estimate (positive = below value). Null when none is published, including the indicative case.",
+            "description": "Property-scoped only: the published discount of the asking price below sale_estimate (positive = below value, negative = the asking price is above it). Null when none is published, including the indicative case.",
             "title": "Bmv Discount Pct"
           },
           "confidence": {
@@ -33352,6 +33415,18 @@
             ],
             "description": "What confidence measures: 'postcode_sample' (agreement of the postcode AVM sample behind a postcode/sector/outcode answer) | 'property_comparables' (the listing's own comparables behind a property-scoped value, the confidence score_deal's BMV factor states for it). Null when no confidence is published.",
             "title": "Confidence Basis"
+          },
+          "gross_yield_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What gross_yield_pct is divided by. 'sale_estimate': the sale_estimate in this payload (this endpoint). 'asking_price': the listing's asking price (the property pack / report, and the yield the property page shows). Null when no yield is published.",
+            "title": "Gross Yield Basis"
           },
           "gross_yield_pct": {
             "anyOf": [
@@ -34131,6 +34206,18 @@
             ],
             "description": "Area/location",
             "title": "Area"
+          },
+          "area_yield_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Published area gross yield for the home's postcode district, %",
+            "title": "Area Yield Pct"
           },
           "article4_area": {
             "anyOf": [
