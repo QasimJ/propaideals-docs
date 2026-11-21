@@ -29,7 +29,8 @@
               "errors",
               "response-format",
               "connect-with-ai",
-              "connect-to-claude"
+              "connect-to-claude",
+              "connect-to-chatgpt"
             ]
           },
           {

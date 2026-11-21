@@ -3766,12 +3766,12 @@
         },
         "properties": {
           "property_ids": {
-            "description": "List of property UUIDs to compare (2-4 properties)",
+            "description": "List of listing UUIDs to compare (1-4). One is allowed because the web compare page sets a single listing beside deals and off-market leads, which it holds itself.",
             "items": {
               "type": "string"
             },
             "maxItems": 4,
-            "minItems": 2,
+            "minItems": 1,
             "title": "Property Ids",
             "type": "array"
           }
@@ -10375,6 +10375,19 @@
             ],
             "description": "Return on cash after finance (None when no rent); can be negative",
             "title": "Estimated Roi"
+          },
+          "estimated_roi_basis": {
+            "anyOf": [
+              {
+                "pattern": "^(gross_rent|net_after_finance)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Which sum estimated_roi is on: 'gross_rent' (gross rent over cash in) or 'net_after_finance' (return on cash after finance). None when there is no figure or the figure is a stored one whose sum is not recorded",
+            "title": "Estimated Roi Basis"
           },
           "investment_score": {
             "maximum": 10.0,
@@ -34167,6 +34180,31 @@
             "description": "Article 4 direction blocks Class Q conversion",
             "title": "Article 4 Restricts Q"
           },
+          "asking_rent_pa": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Advertised annual rent (£/yr)",
+            "title": "Asking Rent Pa"
+          },
+          "auction_date": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Auction date",
+            "title": "Auction Date"
+          },
           "auction_priced": {
             "anyOf": [
               {
@@ -34178,6 +34216,18 @@
             ],
             "description": "Whether the price is valued as an auction lot (no BMV, no yield). is_auction, except that a TypeSafe 'fixed_price' verdict lifts it under ENABLE_TYPESAFE_AUCTION_PRICE_BASIS_GATE; null with the gate off.",
             "title": "Auction Priced"
+          },
+          "auction_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Auction type: modern_method, traditional, online, timed_online, livestream",
+            "title": "Auction Type"
           },
           "available_from": {
             "anyOf": [
@@ -34872,6 +34922,42 @@
             "description": "Suitable for buy-to-let",
             "title": "Btl Suitable"
           },
+          "business_rates_pa": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Annual business rates payable (£/yr)",
+            "title": "Business Rates Pa"
+          },
+          "buyer_fee_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reservation fee / buyer premium payable on top of the price (GBP)",
+            "title": "Buyer Fee Amount"
+          },
+          "buyer_fee_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The same fee where the listing quotes it as a percentage",
+            "title": "Buyer Fee Percent"
+          },
           "cash_buyer_only": {
             "anyOf": [
               {
@@ -34979,6 +35065,18 @@
             ],
             "description": "Commercial sub-type, e.g. 'Office', 'restaurant', 'Mixed Use'",
             "title": "Commercial Property Type"
+          },
+          "commercial_size_sqft": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Commercial floor area in square feet",
+            "title": "Commercial Size Sqft"
           },
           "commercial_use_class": {
             "anyOf": [
@@ -36649,6 +36747,18 @@
             ],
             "description": "Ownership type (freehold, leasehold, etc.)",
             "title": "Ownership Type"
+          },
+          "passing_rent_pa": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rent a sitting tenant currently pays (£/yr)",
+            "title": "Passing Rent Pa"
           },
           "personalisation_chips": {
             "anyOf": [
@@ -46517,9 +46627,72 @@
         ]
       }
     },
+    "/api/v1/market-data/{property_id}/sale-history": {
+      "get": {
+        "description": "This home's own past sold prices, open to everyone (ENABLE_FREE_BROWSE_DATA).\n\nPublic Land Registry facts only: the ``sold_history`` block of the main\nmarket-data response and nothing else (no valuation, comps, rent or scores).",
+        "operationId": "get_property_sale_history_api_v1_market_data__property_id__sale_history_get",
+        "parameters": [
+          {
+            "description": "Property UUID or external listing id",
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "description": "Property UUID or external listing id",
+              "title": "Property Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Property Sale History Api V1 Market Data  Property Id  Sale History Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Property Sale History",
+        "tags": [
+          "Market data"
+        ]
+      }
+    },
     "/api/v1/market-data/{property_id}/sold-on-street": {
       "get": {
-        "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries sold-price records directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of source codes consulted",
+        "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries sold-price records directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of source codes consulted\n\nFree accounts reach this under ENABLE_FREE_BROWSE_DATA; they get the recorded\nsales without the comparable tier / similarity fields.",
         "operationId": "get_sold_on_street_api_v1_market_data__property_id__sold_on_street_get",
         "parameters": [
           {
@@ -53440,7 +53613,7 @@
     },
     "/api/v1/properties/comparison/compare": {
       "post": {
-        "description": "Compare 2-4 properties side-by-side.\n\n**Authentication Required**: Active subscription (starter, premium, professional)\n**Trial Access**: Trial users have full access during trial period\n\nArgs:\n    request: Comparison request with property IDs\n    db: Database session\n    current_user: Authenticated user with active subscription\n\nReturns:\n    Comparison response with metrics and best values\n\nRaises:\n    HTTPException: 401 if not authenticated, 403 if no active subscription",
+        "description": "Compare 1-4 listings side-by-side.\n\n**Authentication Required**: Active subscription (starter, premium, professional)\n**Trial Access**: Trial users have full access during trial period\n\nArgs:\n    request: Comparison request with property IDs\n    db: Database session\n    current_user: Authenticated user with active subscription\n\nReturns:\n    Comparison response with metrics and best values\n\nRaises:\n    HTTPException: 401 if not authenticated, 403 if no active subscription",
         "operationId": "compare_properties_api_v1_properties_comparison_compare_post",
         "parameters": [
           {
@@ -59554,7 +59727,7 @@
     },
     "/api/v1/properties/{property_id}/floor-plans": {
       "get": {
-        "description": "Get floor plans for a property.\n\nOptional Authentication: Enhanced data for authenticated users.",
+        "description": "Get floor plans for a property: the plan facts only (no bedroom potential).\n\nOpen to everyone; with ENABLE_FREE_FLOORPLANS on, signed-in callers only\n(require_floorplan_viewer: a signed-out caller gets 401).",
         "operationId": "get_property_floor_plans_api_v1_properties__property_id__floor_plans_get",
         "parameters": [
           {

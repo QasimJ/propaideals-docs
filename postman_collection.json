@@ -56,7 +56,7 @@
               },
               "raw": "{\n  \"property_ids\": [\n    \"123e4567-e89b-12d3-a456-426614174000\",\n    \"123e4567-e89b-12d3-a456-426614174001\"\n  ]\n}"
             },
-            "description": "Compare 2-4 properties side-by-side.\n\n**Authentication Required**: Active subscription (starter, premium, professional)\n**Trial Access**: Trial users have full access during trial period\n\nArgs:\n    request: Comparison request with property IDs\n    db: Database session\n    current_user: Authenticated user with active subscription\n\nReturns:\n    Comparison response with metrics and best values\n\nRaises:\n    HTTPException: 401 if not authenticated, 403 if no active subscription",
+            "description": "Compare 1-4 listings side-by-side.\n\n**Authentication Required**: Active subscription (starter, premium, professional)\n**Trial Access**: Trial users have full access during trial period\n\nArgs:\n    request: Comparison request with property IDs\n    db: Database session\n    current_user: Authenticated user with active subscription\n\nReturns:\n    Comparison response with metrics and best values\n\nRaises:\n    HTTPException: 401 if not authenticated, 403 if no active subscription",
             "header": [
               {
                 "key": "Accept",
@@ -1021,7 +1021,7 @@
         {
           "name": "Get Property Floor Plans",
           "request": {
-            "description": "Get floor plans for a property.\n\nOptional Authentication: Enhanced data for authenticated users.",
+            "description": "Get floor plans for a property: the plan facts only (no bedroom potential).\n\nOpen to everyone; with ENABLE_FREE_FLOORPLANS on, signed-in callers only\n(require_floorplan_viewer: a signed-out caller gets 401).",
             "header": [
               {
                 "key": "Accept",
@@ -7323,6 +7323,47 @@
           }
         },
         {
+          "name": "Get Property Sale History",
+          "request": {
+            "description": "This home's own past sold prices, open to everyone (ENABLE_FREE_BROWSE_DATA).\n\nPublic Land Registry facts only: the ``sold_history`` block of the main\nmarket-data response and nothing else (no valuation, comps, rent or scores).",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "market-data",
+                ":property_id",
+                "sale-history"
+              ],
+              "query": [
+                {
+                  "description": "",
+                  "disabled": true,
+                  "key": "user_id",
+                  "value": ""
+                }
+              ],
+              "raw": "{{baseUrl}}/api/v1/market-data/:property_id/sale-history",
+              "variable": [
+                {
+                  "description": "Property UUID or external listing id",
+                  "key": "property_id",
+                  "value": "<property_id>"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Get R2R Market Data",
           "request": {
             "description": "Get R2R (Rent-to-Rent) market data for investment analysis.\n\nProvides real market data for rental properties including:\n- Rental comparables nearby\n- Area average rents from market_data_rental by postcode/bedrooms\n- HMO room rates from propertydata_market_rentals\n- Calculated SA (Serviced Accommodation) projections\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    radius_meters: Search radius for comparables (100-2000m)\n    current_user: Optional authenticated user\n\nReturns:\n    R2R market data including rental comparables, area averages, and HMO rates",
@@ -7560,7 +7601,7 @@
         {
           "name": "Get Sold On Street",
           "request": {
-            "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries sold-price records directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of source codes consulted",
+            "description": "Get properties sold on the same street using PostGIS spatial search.\n\nNEW: Works immediately for ALL properties with lat/lon - no enrichment required!\nQueries sold-price records directly.\n\nUses PostGIS spatial matching + street name extraction for accurate same-street matching.\n\nArgs:\n    property_id: Property UUID\n    db: Database session\n    limit: Maximum number of properties to return (default: 100)\n    radius_meters: Search radius in meters (default: 100m)\n    current_user: Optional authenticated user\n\nReturns:\n    Dictionary with street sales data including:\n    - street_name: Extracted street name\n    - normalized_street_name: Normalized street name used for matching\n    - total_on_street: Count of properties found on same street\n    - total_with_sales_data: Count with historic sales\n    - properties: List of sold properties with full history\n    - summary: Average/min/max prices and distance stats\n    - data_sources: List of source codes consulted\n\nFree accounts reach this under ENABLE_FREE_BROWSE_DATA; they get the recorded\nsales without the comparable tier / similarity fields.",
             "header": [
               {
                 "key": "Accept",

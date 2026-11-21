@@ -104,7 +104,8 @@ const { data } = await res.json();
 | `valuation_scope` | string | `postcode` (an area answer), or `property` when `sale_estimate` is a listing's published value |
 | `property_id` | string | With `property_id`: the live sale listing matched. Set even when its value is withheld |
 | `postcode_estimate` | object | With `valuation_scope` `property`: the postcode figures (`sale_estimate`, `sale_lower`, `sale_upper`, `area_average`, `valuation_scope`, `resolution_level`, `sample_size`, `confidence`, `confidence_basis`, `scope_widened`, `valuation_notes`) the published value replaced. Area context, not the home's value |
-| `bmv_discount_pct` | number | With `valuation_scope` `property`: the published discount of the asking price below `sale_estimate` (positive = below value). Null when none is published |
+| `bmv_discount_pct` | number | With `valuation_scope` `property`: the published discount of the asking price below `sale_estimate` (positive = below value, negative = the asking price is above it). Null when none is published |
+| `gross_yield_basis` | string | What `gross_yield_pct` is divided by: `sale_estimate` on this endpoint (the value in this payload, not the asking price). Null when no yield is published |
 | `value_indicative` | boolean | With `valuation_scope` `property`: `true` when the value is published as indicative (few comparables of the home's own kind), with no discount |
 | `published_value_note` | string | Why the listing's value is indicative or withheld, or that it needs a paid plan |
 

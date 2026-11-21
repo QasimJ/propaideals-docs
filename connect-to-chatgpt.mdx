@@ -1,0 +1,117 @@
+---
+title: "Connect to ChatGPT (MCP)"
+description: "Set up the Prop AI Deals MCP server in ChatGPT. Gives ChatGPT direct access to UK property data: valuations, Land Registry comparables, deal scores and area market statistics, inside any conversation."
+---
+
+Connect PAID to ChatGPT and ask about UK property in plain English. ChatGPT
+queries our data directly and reasons over the results. It is the same server,
+the same tools and the same figures as the [Claude connector](./connect-to-claude)
+and the REST API.
+
+<Info>
+**Free to try.** Every account includes 200 credits a month, no card required.
+See [credit costs and plans](./connect-to-claude#credit-costs-per-tool); they
+are identical for ChatGPT.
+</Info>
+
+## Before you start
+
+- A PAID account: [sign up free](https://propaideals.co.uk/sign-up).
+- ChatGPT on the web. Adding a custom MCP server is a ChatGPT feature that
+  depends on your ChatGPT plan and, in a workspace, on what your admin allows.
+  If you cannot see **Add custom MCP server**, check your plan and workspace
+  permissions in ChatGPT.
+
+## Connect from ChatGPT
+
+<Steps>
+  <Step title="Open Plugins">
+    Go to [chatgpt.com/plugins](https://chatgpt.com/plugins), select the plus
+    button, then **Add custom MCP server**.
+  </Step>
+  <Step title="Enter the server">
+    Give it a name (for example `PAID`), and under **Connection** enter the
+    server URL exactly:
+
+    ```
+    https://api.propaideals.co.uk/mcp
+    ```
+  </Step>
+  <Step title="Choose OAuth">
+    Set authentication to **OAuth** and leave the client fields empty.
+    ChatGPT registers itself automatically, so there is no client id or secret
+    to copy.
+  </Step>
+  <Step title="Create and install">
+    Review ChatGPT's risk warning, select **I understand and want to
+    continue**, then **Create as a plugin**. Install the plugin from your
+    plugins list.
+  </Step>
+  <Step title="Authorise">
+    ChatGPT opens the PAID sign-in page (our authorisation is handled by
+    Clerk, the same provider that signs you into the dashboard). Sign in,
+    review the consent screen and approve. The token ChatGPT receives works
+    **only** against the MCP server; it cannot be replayed against your
+    dashboard session.
+  </Step>
+  <Step title="Ask something">
+    In a new conversation type `@`, pick the plugin, and try: *"Using PAID,
+    what would a 2-bed flat in M1 4BT be worth, and what comparable sales
+    support that?"*
+  </Step>
+</Steps>
+
+## What ChatGPT can do once connected
+
+| Ask | ChatGPT uses |
+|---|---|
+| "Find 2-bed flats under £250k in M1" | `search_properties` |
+| "What's that worth, and what would it rent for?" | `value_property` |
+| "Show me the comparable sales backing that" | `get_comparables` |
+| "How is the M1 market performing?" | `get_area_market` |
+| "Is this a good deal?" | `score_deal` |
+| "What has it sold for before, and which strategies does it fit?" | `get_property_details` |
+| "Give me everything on this property" | `get_property_report` |
+| "Show me your shortlist with notes" | `present_properties` (an interactive list) |
+
+Account actions (your pipeline, saved properties, scanners, preferences and
+portfolio) work as they do in Claude: see
+[Manage your account](./connect-to-claude#manage-your-account-from-claude).
+
+## Confirmations
+
+Every tool that only reads data is marked read-only, so ChatGPT runs it
+without asking. Tools that change your account (saving a property, adding to
+your pipeline, creating a scanner) are marked as write actions, and ChatGPT
+asks you to confirm each one before it runs.
+
+## After we add or change tools
+
+ChatGPT keeps a copy of the tool list from when you connected. To pick up new
+tools, open the plugin at [chatgpt.com/plugins](https://chatgpt.com/plugins)
+and select **Refresh**.
+
+## Troubleshooting
+
+**ChatGPT cannot connect.** Check the URL is exactly
+`https://api.propaideals.co.uk/mcp` (no trailing slash, no `www.`) and that
+authentication is set to **OAuth**, not **No authentication**: every request
+to this server needs a signed-in PAID account.
+
+**Sign-in completes but the tools fail with `401`.** Remove the plugin and
+add it again so a fresh token is issued. If it persists, email us with the
+approximate time; rejected tokens are logged on our side.
+
+**Tools stop with a quota message.** You have used the month's credits. Check
+usage at [/dashboard/api](https://propaideals.co.uk/dashboard/api).
+
+**A property tool returns "not found".** `score_deal`, `get_property_details`
+and `get_property_report` need a property id from `search_properties`. Ask
+ChatGPT to search first.
+
+## Notes for developers
+
+The transport, OAuth flow, credit costs and plans are the same as for Claude:
+see [Connect to Claude › Notes for developers](./connect-to-claude#notes-for-developers).
+ChatGPT's OAuth client is created by dynamic client registration (RFC 7591)
+with PKCE.
