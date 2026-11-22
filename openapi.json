@@ -18771,6 +18771,18 @@
             "title": "Price History",
             "type": "array"
           },
+          "price_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set to 'Price on application' for a sale listing with no asking price (price_numeric is 0 or null); null otherwise",
+            "title": "Price Note"
+          },
           "price_numeric": {
             "anyOf": [
               {
@@ -37120,6 +37132,18 @@
             ],
             "description": "Date when price last changed",
             "title": "Price Changed Date"
+          },
+          "price_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set to 'Price on application' for a sale listing with no asking price (price_numeric is 0 or null); null otherwise",
+            "title": "Price Note"
           },
           "price_numeric": {
             "anyOf": [
