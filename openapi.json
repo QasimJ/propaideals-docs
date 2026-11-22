@@ -12868,7 +12868,7 @@
                 "type": "null"
               }
             ],
-            "description": "Data-quality caveats, when any apply: the mean pricing above the 75th percentile (outlier skew — quote the median), and/or a requested property_type that maps to no Land Registry class, so no type filter was applied (property_type is then null).",
+            "description": "Data-quality caveats, when any apply: the mean pricing above the 75th percentile (outlier skew — quote the median), a requested property_type that maps to no Land Registry class, so no type filter was applied (property_type is then null), and/or a thin sold sample (fewer than 5 sales: the figures are those individual sales, not an area median).",
             "title": "Note"
           },
           "p25_price": {
@@ -30966,7 +30966,7 @@
                 "type": "null"
               }
             ],
-            "description": "Set when the stored best strategy did not survive read time - excluded by its playbook, a rental strategy with no verified rent, or outranked once the published scores are weighted by their hard-playbook tiers the way the deal score weights them. Explains the replacement or the abstention. Null when the stored best stands.",
+            "description": "Set when the stored best strategy did not survive read time - excluded by its playbook, a rental strategy with no verified rent, or outranked once the published scores are weighted by their hard-playbook tiers the way the deal score weights them. Explains the replacement or the abstention. When no best strategy is published it always gives the reason, in the words of the deal score's Strategy Alignment factor (e.g. 'Best strategy fit 28/100 (FLIP), below the viability floor (40/100)'). Null when the stored best stands.",
             "title": "Best Strategy Note"
           },
           "best_strategy_score": {
