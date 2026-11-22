@@ -57385,6 +57385,28 @@
             }
           },
           {
+            "description": "Planning status: granted or none (no planning yet)",
+            "in": "query",
+            "name": "planning",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "granted",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Planning status: granted or none (no planning yet)",
+              "title": "Planning"
+            }
+          },
+          {
             "description": "Freehold",
             "in": "query",
             "name": "freehold",

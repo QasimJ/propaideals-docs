@@ -3071,6 +3071,12 @@
                   "value": ""
                 },
                 {
+                  "description": "Planning status: granted or none (no planning yet)",
+                  "disabled": true,
+                  "key": "planning",
+                  "value": "granted"
+                },
+                {
                   "description": "Freehold",
                   "disabled": true,
                   "key": "freehold",
