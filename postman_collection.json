@@ -5031,33 +5031,6 @@
           }
         },
         {
-          "name": "Test Streamlined Search",
-          "request": {
-            "description": "Test endpoint to verify streamlined search is accessible.",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "method": "GET",
-            "url": {
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "properties",
-                "search",
-                "streamlined",
-                "test"
-              ],
-              "raw": "{{baseUrl}}/api/v1/properties/search/streamlined/test"
-            }
-          }
-        },
-        {
           "name": "Track Comparison View",
           "request": {
             "body": {

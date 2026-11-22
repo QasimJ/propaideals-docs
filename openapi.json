@@ -10458,10 +10458,30 @@
             "title": "Monthly Cash Flow"
           },
           "price": {
-            "maximum": 50000000.0,
-            "minimum": 1.0,
-            "title": "Price",
-            "type": "number"
+            "anyOf": [
+              {
+                "maximum": 50000000.0,
+                "minimum": 1.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Asking price. None for a listing with no stated price (see price_note)",
+            "title": "Price"
+          },
+          "price_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why there is no price, e.g. 'Price on application'",
+            "title": "Price Note"
           },
           "price_trend": {
             "pattern": "^(falling|stable|rising|surging|declining)$",
@@ -10547,7 +10567,6 @@
         },
         "required": [
           "property_id",
-          "price",
           "days_on_market",
           "investment_score",
           "market_demand",
@@ -17752,6 +17771,19 @@
             "title": "Key Features",
             "type": "array"
           },
+          "last_sale": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "This home's own most recent registered sale before the listing began: {price (GBP), date (ISO), source: 'hm_land_registry', category: 'standard' | 'non_standard' (category B: repossession, portfolio, transfer, etc.)}. From SoldHistoryMatchingService, strictly filtered to this building number, flat and street; England and Wales only; null when unmatched.",
+            "title": "Last Sale"
+          },
           "last_seen": {
             "anyOf": [
               {
@@ -19152,6 +19184,19 @@
             ],
             "description": "The opening offer roce_at_offer_pct is computed at",
             "title": "Realistic Offer Price"
+          },
+          "recent_resale": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "{months_before_listing, uplift_pct} when last_sale was within 24 months of the listing's first_seen (uplift = asking vs that sale); else null.",
+            "title": "Recent Resale"
           },
           "reception_rooms": {
             "anyOf": [
@@ -58645,26 +58690,6 @@
         ]
       }
     },
-    "/api/v1/properties/search/streamlined/test": {
-      "get": {
-        "description": "Test endpoint to verify streamlined search is accessible.",
-        "operationId": "test_streamlined_search_api_v1_properties_search_streamlined_test_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Test Streamlined Search",
-        "tags": [
-          "Properties"
-        ]
-      }
-    },
     "/api/v1/properties/search/suggestions": {
       "get": {
         "description": "Get Natural Language Search Suggestions\n\nProvides intelligent search suggestions for the natural language search bar dropdown.\n\nFeatures:\n- Recent user searches (last 10 searches)\n- Popular UK property search patterns\n- Real-time filtering based on partial query\n- UK market optimization (London, Manchester, Birmingham, Glasgow, Edinburgh, Cardiff, Belfast)\n- Investment property patterns (yield, ROI terms)\n\nExamples of suggestions returned:\n- \"2 bed flats in Manchester under £200k\"\n- \"houses in Edinburgh with garden\"\n- \"investment properties yield over 6%\"\n- \"3 bed properties near university\"\n\nReturns:\n    SearchSuggestionsResponse with filtered suggestions and metadata",
@@ -61835,7 +61860,7 @@
         },
         "security": [
           {
-            "Optional Bearer Token": []
+            "Bearer Token": []
           }
         ],
         "summary": "Get yield calculation comparables",
