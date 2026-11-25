@@ -3335,6 +3335,18 @@
                   "value": ""
                 },
                 {
+                  "description": "Multi-unit lot: two or more homes sold as one lot (includes blocks)",
+                  "disabled": true,
+                  "key": "is_multi_unit",
+                  "value": ""
+                },
+                {
+                  "description": "Minimum counted units in the lot (2 to 50)",
+                  "disabled": true,
+                  "key": "min_units",
+                  "value": ""
+                },
+                {
                   "description": "Affordable housing",
                   "disabled": true,
                   "key": "affordable_housing",
@@ -12808,6 +12820,12 @@
                   "disabled": true,
                   "key": "exclude_article4",
                   "value": "hmo"
+                },
+                {
+                  "description": "Minimum counted units",
+                  "disabled": true,
+                  "key": "min_units",
+                  "value": ""
                 },
                 {
                   "description": "Property category: residential, commercial",

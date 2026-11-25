@@ -10274,6 +10274,7 @@
                 "type": "null"
               }
             ],
+            "description": "When bmv_percentage is published: the property's own corrected market value, the figure bmv_percentage is measured against, not an average of the area. None when the value is published only as a range. Otherwise the area's average price. value_property gives the comparables' area average as area_average",
             "title": "Area Average Price"
           },
           "area_average_yield": {
@@ -13254,6 +13255,7 @@
         "type": "object"
       },
       "Property": {
+        "additionalProperties": true,
         "description": "Property model for API responses.",
         "example": {
           "address": "123 Princes Street",
@@ -18792,7 +18794,7 @@
                 "type": "null"
               }
             ],
-            "description": "Numeric price",
+            "description": "Numeric price; null for a sale with no asking price (see price_note)",
             "title": "Price Numeric"
           },
           "price_per_sqft": {
@@ -19233,6 +19235,21 @@
             ],
             "description": "Canonical rental evidence basis, e.g. beds_median_rent",
             "title": "Rent Evidence Basis"
+          },
+          "rent_evidence_counts": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lets in the last 12 months behind the published rent, by what became of them: live, let_agreed, off_market. Absent unless the server publishes it.",
+            "title": "Rent Evidence Counts"
           },
           "rent_evidence_scope": {
             "anyOf": [
@@ -22952,6 +22969,20 @@
             "description": "Minimum strategy score (0-100)",
             "title": "Min Strategy Score"
           },
+          "min_units": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 2.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum counted units",
+            "title": "Min Units"
+          },
           "min_yield": {
             "anyOf": [
               {
@@ -26214,6 +26245,20 @@
             "description": "Minimum strategy score (0-100)",
             "title": "Min Strategy Score"
           },
+          "min_units": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 2.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum counted units",
+            "title": "Min Units"
+          },
           "min_yield": {
             "anyOf": [
               {
@@ -27922,6 +27967,21 @@
             "description": "high | medium | low",
             "title": "Confidence",
             "type": "string"
+          },
+          "evidence_counts": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lets in the last 12 months behind the rent, by what became of them: live, let_agreed, off_market. Null unless the server publishes it.",
+            "title": "Evidence Counts"
           },
           "floor_area_note": {
             "anyOf": [
@@ -31462,6 +31522,11 @@
           "other": {
             "default": 0,
             "title": "Other",
+            "type": "integer"
+          },
+          "owned_outright": {
+            "default": 0,
+            "title": "Owned Outright",
             "type": "integer"
           }
         },
@@ -37154,7 +37219,7 @@
                 "type": "null"
               }
             ],
-            "description": "Numeric price",
+            "description": "Numeric price; null for a sale with no asking price (see price_note)",
             "title": "Price Numeric"
           },
           "price_per_sqft": {
@@ -37502,6 +37567,21 @@
             ],
             "description": "Canonical rental evidence basis, e.g. beds_median_rent",
             "title": "Rent Evidence Basis"
+          },
+          "rent_evidence_counts": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lets in the last 12 months behind the published rent, by what became of them: live, let_agreed, off_market. Absent unless the server publishes it.",
+            "title": "Rent Evidence Counts"
           },
           "rent_evidence_scope": {
             "anyOf": [
@@ -45160,6 +45240,26 @@
               ],
               "description": "Exclude HMO Article 4: hmo, or hmo_and_unverified (also unverified councils)",
               "title": "Exclude Article4"
+            }
+          },
+          {
+            "description": "Minimum counted units",
+            "in": "query",
+            "name": "min_units",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 50,
+                  "minimum": 2,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum counted units",
+              "title": "Min Units"
             }
           },
           {
@@ -58178,6 +58278,44 @@
               ],
               "description": "Block of flats",
               "title": "Block Of Flats"
+            }
+          },
+          {
+            "description": "Multi-unit lot: two or more homes sold as one lot (includes blocks)",
+            "in": "query",
+            "name": "is_multi_unit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Multi-unit lot: two or more homes sold as one lot (includes blocks)",
+              "title": "Is Multi Unit"
+            }
+          },
+          {
+            "description": "Minimum counted units in the lot (2 to 50)",
+            "in": "query",
+            "name": "min_units",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 50,
+                  "minimum": 2,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum counted units in the lot (2 to 50)",
+              "title": "Min Units"
             }
           },
           {
